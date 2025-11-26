@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import CategoryList from './layouts/admin/categories/CategoryList';
 import CategoryAdd from './layouts/admin/categories/CategoryAdd';
 import CategoryEdit from './layouts/admin/categories/CategotyEdit';
+import Register from './layouts/admin/users/register/Register';
 function App() {
   const [keyWords, setKeyWords] = useState("");
   const [categoryId, setCategoryId] = useState(0);
@@ -32,6 +33,7 @@ function App() {
             <Route path="/categories" element={<CategoryList />} />
             <Route path="/categories/add" element={<CategoryAdd />} />
             <Route path="/categories/edit/:id" element={<CategoryEdit />} />
+            <Route path="/register" element={<Register />} />
           </Routes>
         </AppContext.Provider>
         <Footer />

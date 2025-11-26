@@ -6,23 +6,25 @@ const CategoryAdd: React.FC = () => {
     const navigate = useNavigate();
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
-    const [isErrorName, setIsErrorName] = useState<boolean>();
-    const [isErrorDescription, setIsErrorDescription] = useState<boolean>();
+    const [isErrorName, setIsErrorName] = useState<string>("");
+    const [isErrorDescription, setIsErrorDescription] = useState<string>("");
+    const handleSubmit = async () => {
+        let nameError = ""
+        let descriptionError = ""
 
-    const handleSubmit = () => {
-        const nameError = name.trim() === "";
-        const descriptionError = description.trim() === "";
+        if (name.trim() === "") { nameError = "loi khong nhap"; }
+        if (description.trim() === "") { descriptionError = "loi khong nhap"; }
 
         setIsErrorName(nameError);
         setIsErrorDescription(descriptionError);
 
-        if (nameError || descriptionError) {
+        if (isErrorName !== "" || isErrorDescription !== "") {
             return;
         }
 
         const newCategory = new Category(0, name, description, false);
 
-        addCategory(newCategory)
+        await addCategory(newCategory)
             .then((category) => {
                 console.log(category);
                 navigate("/categories");
@@ -36,7 +38,7 @@ const CategoryAdd: React.FC = () => {
         <div>
             <div className="p-6 max-w-md mx-auto">
                 <h1 className="text-2xl font-bold mb-4">Thêm danh mục</h1>
-                <div className="space-y-4">
+                <form className="space-y-4">
                     <div>
                         <label className="block mb-1">Tên danh mục</label>
                         <input
@@ -47,7 +49,7 @@ const CategoryAdd: React.FC = () => {
                             className="w-full border px-3 py-2 rounded"
                             required
                         />
-                        <div className="text-red-500">{isErrorName ? "Tên danh mục không được để trống" : ""}</div>
+                        <div className="text-red-500">{isErrorName}</div>
                     </div>
 
                     <div>
@@ -58,7 +60,7 @@ const CategoryAdd: React.FC = () => {
                             onChange={e => setDescription(e.target.value)}
                             className="w-full border px-3 py-2 rounded"
                         />
-                        <div className="text-red-500">{isErrorDescription ? "Mô tả không được để trống" : ""}</div>
+                        <div className="text-red-500">{isErrorDescription}</div>
                     </div>
                     <button
                         type="button"
@@ -67,7 +69,7 @@ const CategoryAdd: React.FC = () => {
                     >
                         Thêm
                     </button>
-                </div>
+                </form>
             </div>
         </div>
     );

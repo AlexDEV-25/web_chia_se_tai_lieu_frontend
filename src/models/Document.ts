@@ -9,7 +9,7 @@ export class Document {
     viewsCount?: number;
     downloadsCount?: number;
     createdAt?: string;
-    hide: Boolean;
+    hide: boolean;
 
     constructor(
         id: number,
@@ -22,7 +22,7 @@ export class Document {
         viewsCount?: number,
         downloadsCount?: number,
         createdAt?: string,
-        hide: Boolean = false
+        hide: boolean = false
     ) {
         this.id = id;
         this.title = title;
