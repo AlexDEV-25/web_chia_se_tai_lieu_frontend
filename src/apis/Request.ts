@@ -11,7 +11,9 @@ export async function my_request_get(link: string) {
         if (!response.ok) {
             throw new Error("ERROR GET");
         }
-        let dataResponse = await response.json();
+        let data = await response.json();
+        let dataResponse = data.resultList;
+        // console.log(dataResponse);
         return dataResponse;
     } catch (error) {
         console.log(error);
