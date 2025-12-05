@@ -13,7 +13,6 @@ export async function my_request_get(link: string) {
         }
         let data = await response.json();
         let dataResponse = data.resultList;
-        // console.log(dataResponse);
         return dataResponse;
     } catch (error) {
         console.log(error);
@@ -28,7 +27,6 @@ export async function my_request_post(link: string, dataForm: any) {
                 headers: {
                     "Content-Type": "application/json",
                 },
-
                 body: JSON.stringify(dataForm)
             }
         );

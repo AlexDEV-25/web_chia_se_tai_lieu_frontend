@@ -1,9 +1,8 @@
-import { User } from "../models/User";
-import { my_request_get, my_request_delete, my_request_post, my_request_put } from "./Request";
+import { httpGet } from "./HttpClient";
+import type { APIResponse } from "../models/response/APIResponse";
 
-const link: string = "http://localhost:8080/api/users";
+export const checkEmailExist = (email: string) =>
+    httpGet<APIResponse<boolean>>(`/users/email/${email}`);
 
-export async function checkEmailExist(email: string): Promise<boolean> {
-    const response = await my_request_get(link + "/email/" + email);
-    return response;
-}
+export const checkUsernameExist = (username: string) =>
+    httpGet<APIResponse<boolean>>(`/users/username/${username}`);

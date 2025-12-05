@@ -9,7 +9,14 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import CategoryList from './layouts/admin/categories/CategoryList';
 import CategoryAdd from './layouts/admin/categories/CategoryAdd';
 import CategoryEdit from './layouts/admin/categories/CategotyEdit';
-import Register from './layouts/admin/users/register/Register';
+import Register from './layouts/common/register/Register';
+import DocumentDetail from './layouts/common/document_detail/DocumentDetail';
+import Login from './layouts/common/login/Login';
+import { pdfjs } from 'react-pdf';
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 function App() {
   const [keyWords, setKeyWords] = useState("");
   const [categoryId, setCategoryId] = useState(0);
@@ -34,6 +41,8 @@ function App() {
             <Route path="/categories/add" element={<CategoryAdd />} />
             <Route path="/categories/edit/:id" element={<CategoryEdit />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/document/:id" element={<DocumentDetail />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </AppContext.Provider>
         <Footer />
