@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { checkEmailExist, checkUsernameExist } from "../../../apis/UserApi";
 import { register } from "../../../apis/AuthApi";
-import User from "../../../models/request/User";
+import User from "../../../models/request/UserRequest";
 import { useNavigate } from "react-router-dom";
 
 const Register: React.FC = () => {

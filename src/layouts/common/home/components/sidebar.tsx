@@ -7,17 +7,14 @@ const Sidebar: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     useEffect(() => {
-        getAllCategory().then(
-            category => {
-                setCategories(category);
-                setLoading(false);
-            }
-        ).catch(
-            error => {
-                setLoading(false);
-                setError(error.message);
-            }
-        );
+        const categories = async () => {
+            const data = await getAllCategory();
+            setCategories(data?.resultList ?? []);
+            setLoading(false);
+        }
+        categories().catch(error => {
+            setError(error.message);
+        });
     }, [])
     if (loading) return <div className="text-center mt-5">Đang tải dữ liệu...</div>;
     if (error) return <div className="text-danger text-center mt-5">Lỗi: {error}</div>;

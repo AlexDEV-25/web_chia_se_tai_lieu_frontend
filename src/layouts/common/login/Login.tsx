@@ -8,7 +8,7 @@ const Login: React.FC = () => {
     const [password, setPassword] = useState<string>("");
     const [isErrorEmail, setIsErrorEmail] = useState<string>("");
     const [isErrorPassword, setIsErrorPassword] = useState<string>("");
-    const [isSuccess, setIsSuccess] = useState<string>("");
+    const [loginError, setLoginError] = useState<string>("");
 
     // ================= HANDLE SUBMIT =================
     const handleSubmit = async () => {
@@ -31,12 +31,28 @@ const Login: React.FC = () => {
 
         const authenticationRequest = new AuthenticationRequest(email, password);
         try {
+            console.log(authenticationRequest);
             const data = await login(authenticationRequest);
             console.log(data);
-            setIsSuccess("Đăng nhập thành công!");
+            const token = data.result?.token;
+
+            if (!token) {
+                setLoginError("Không lấy được token. Đăng nhập thất bại!");
+                return;
+            }
+
+            localStorage.setItem("token", token);
+
+            setLoginError("");
+
             navigate("/");
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            const msg =
+                error.response?.data?.message ||
+                "Đăng nhập thất bại. Vui lòng kiểm tra lại!";
+
+            setLoginError(msg);
+
         }
     };
 
@@ -44,7 +60,7 @@ const Login: React.FC = () => {
         <div className="container mt-5" style={{ maxWidth: "500px" }}>
             <h2 className="text-center mb-4">Đăng ký tài khoản</h2>
 
-            <div style={{ color: "green" }}>{isSuccess}</div>
+            <div style={{ color: "red" }}>{loginError}</div>
 
             {/* EMAIL */}
             <div className="mb-3">

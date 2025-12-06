@@ -2,25 +2,28 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getCategoryById, updateCategory } from "../../../apis/CategoryApi";
 import { Category } from "../../../models/Category";
+import CategoryRequest from "../../../models/request/CategoryRequest";
 const CategoryEdit: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const { id } = useParams<{ id: string | undefined }>();
     const navigate = useNavigate();
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [isErrorName, setIsErrorName] = useState<string>("");
     const [isErrorDescription, setIsErrorDescription] = useState<string>("");
+
     useEffect(() => {
         if (id) {
-            getCategoryById(parseInt(id))
-                .then((data) => {
-                    setName(data.name);
-                    setDescription(data.description);
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+            const category = async () => {
+                const data = await getCategoryById(parseInt(id));
+                setName(data.result?.name ?? "");
+                setDescription(data.result?.description ?? "");
+            }
+            category().catch(error => {
+                console.log(error);
+            });
         }
     }, [id]);
+
     const handleSubmit = () => {
         let nameError = ""
         let descriptionError = ""
@@ -35,15 +38,20 @@ const CategoryEdit: React.FC = () => {
             return;
         }
 
-        const newCategory = new Category(parseInt(id + ""), name, description, false);
-        updateCategory(newCategory)
-            .then((category) => {
-                console.log(category);
+        const newCategory = new CategoryRequest(name, description, false);
+
+        const updateItem = async () => {
+            if (id) {
+                const data = await updateCategory(parseInt(id), newCategory);
+                console.log(data);
                 navigate("/categories");
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+            }
+        }
+        updateItem().catch(error => {
+            console.log(error);
+        });
+
+
     };
     return (
         <div className="p-6 max-w-md mx-auto">

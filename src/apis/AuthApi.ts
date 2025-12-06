@@ -1,5 +1,5 @@
 import type { UserResponse } from "../models/response/UserResponse";
-import User from "../models/request/User";
+import User from "../models/request/UserRequest";
 import AuthenticationRequest from "../models/request/AuthenticationRequest";
 import { httpPost } from "./HttpClient";
 import type { APIResponse } from "../models/response/APIResponse";

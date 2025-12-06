@@ -11,23 +11,23 @@ const CategoryList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        getAllCategory().then(
-            category => {
-                setCategories(category);
-                setLoading(false);
-                setDeleted(false);
-            }
-        ).catch(
-            error => {
-                setError(error.message);
-                setLoading(false);
-            }
-        );
+        const categories = async () => {
+            const data = await getAllCategory();
+            setCategories(data?.resultList ?? []);
+            setLoading(false);
+        }
+        categories().catch(error => {
+            setError(error.message);
+        });
     }, [deleted]);
+
     const handleDelete = (id: number) => {
-        deleteCategory(id).then(() => {
+        const deleteItem = async () => {
+            await deleteCategory(id);
             setDeleted(true);
-        }).catch(error => {
+            setLoading(false);
+        }
+        deleteItem().catch(error => {
             setError(error.message);
         });
     };

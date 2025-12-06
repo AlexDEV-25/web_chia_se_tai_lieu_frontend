@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "./sidebar";
 import { Document } from "./../../../../models/Document";
 import { getAllDocument } from "../../../../apis/DocumentApi";
+import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
 
 
 
@@ -12,7 +13,7 @@ const Content: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [favorites, setFavorites] = useState<number[]>([]);
 
-    const [documents, setDocuments] = useState<Document[]>([]);
+    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
 
 
     const toggleFavorite = (id: number) => {
@@ -22,18 +23,12 @@ const Content: React.FC = () => {
     };
 
     useEffect(() => {
-        getAllDocument().then(
-            document => {
-                setDocuments(document);
-                setLoading(false);
-                console.log(document)
-            }
-        ).catch(
-            error => {
-                setLoading(false);
-                setError(error.message);
-            }
-        );
+        const documents = async () => {
+            const data = await getAllDocument();
+            setDocuments(data?.resultList ?? []);
+            setLoading(false);
+        }
+        documents();
     }, [])
     // Hàm format ngày tiếng Việt - đẹp nhất
     const formatVietnameseDate = (isoString: string): string => {

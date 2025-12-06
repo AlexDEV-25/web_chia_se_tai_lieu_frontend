@@ -1,30 +1,24 @@
-import { Category } from "../models/Category";
-import { my_request_get, my_request_delete, my_request_post, my_request_put } from "./Request";
+import type { APIResponse } from './../models/response/APIResponse';
+import { httpGet, httpPost, httpPut, httpDelete } from "./HttpClient";
+import type { CategoryResponse } from "./../models/response/CategoryResponse";
+import CategoryRequest from "./../models/request/CategoryRequest"
 
-
-const link: string = "http://localhost:8080/api/categories";
-
-export async function getAllCategory(): Promise<Category[]> {
-    const listCategory: Category[] = [];
-    const response = await my_request_get(link);
-    for (const data of response) {
-        listCategory.push(new Category(data.id, data.name, data.description, data.hide));
-    }
-    return listCategory as Category[];
-}
-export async function getCategoryById(id: number): Promise<Category> {
-    const response = await my_request_get(link + "/" + id);
-    return new Category(response.id, response.name, response.description, response.hide);
-}
-export async function deleteCategory(id: number): Promise<void> {
-    await my_request_delete(link + "/" + id);
+export const createCategory = (data: CategoryRequest) => {
+    httpPost<APIResponse<CategoryResponse>>(`/categories`, data);
 }
 
-export async function addCategory(category: Category): Promise<void> {
-    await my_request_post(link, category);
+export const updateCategory = (id: number, data: CategoryRequest) => {
+    httpPut<APIResponse<CategoryResponse>>(`/categories/${id}`, data);
 }
 
-export async function updateCategory(category: Category): Promise<void> {
-    await my_request_put(link + "/" + category.id, category);
+export const deleteCategory = (id: number) => {
+    httpDelete<APIResponse<void>>(`/categories/${id}`);
 }
 
+export const getAllCategory = async () => {
+    return await httpGet<APIResponse<CategoryResponse>>(`/categories`);
+}
+
+export const getCategoryById = async (id: number) => {
+    return await httpGet<APIResponse<CategoryResponse>>(`/categories/${id}`);
+}
