@@ -1,6 +1,5 @@
 export default class DocumentRequest {
     title: string;
-    type: string;
     description: string;
     viewsCount?: number;
     downloadsCount?: number;
@@ -12,7 +11,6 @@ export default class DocumentRequest {
 
     constructor(
         title: string,
-        type: string,
         description: string,
         viewsCount?: number,
         downloadsCount?: number,
@@ -23,7 +21,6 @@ export default class DocumentRequest {
         categoryId?: number,
     ) {
         this.title = title;
-        this.type = type;
         this.description = description;
         this.viewsCount = viewsCount;
         this.downloadsCount = downloadsCount;

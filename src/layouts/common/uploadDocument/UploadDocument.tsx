@@ -7,7 +7,6 @@ import { Category } from "./../../../models/Category";
 const UploadDocument: React.FC = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [type, setType] = useState("PDF");
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoryId, setCategoryId] = useState(1);
     const [file, setFile] = useState<File | null>(null);
@@ -51,7 +50,7 @@ const UploadDocument: React.FC = () => {
         // Stop
         if (tErr || dErr || fErr || iErr) return;
         const status: string = "PENDING";
-        const doc: DocumentRequest = { title, description, type, viewsCount: 0, downloadsCount: 0, status, hide: false, categoryId, };
+        const doc: DocumentRequest = { title, description, viewsCount: 0, downloadsCount: 0, status, hide: false, categoryId, };
 
         // ================= FORM DATA =================
         const formData = new FormData();
@@ -110,16 +109,6 @@ const UploadDocument: React.FC = () => {
                 <div style={{ color: "red" }}>{errDescription}</div>
             </div>
 
-            {/* TYPE */}
-            <div className="mb-3">
-                <label className="form-label">Loại tài liệu</label>
-                <select className="form-control" value={type} onChange={(e) => setType(e.target.value)}>
-                    <option value="PDF">PDF</option>
-                    <option value="DOC">DOC</option>
-                    <option value="IMG">IMG</option>
-                </select>
-            </div>
-
             {/* CATEGORY */}
             <div className="mb-3">
                 <label className="form-label">Category</label>
@@ -141,7 +130,7 @@ const UploadDocument: React.FC = () => {
 
             {/* FILE */}
             <div className="mb-3">
-                <label className="form-label">Chọn file</label>
+                <label className="form-label">Chọn file(pdf,doc,docx,ppt,pptx)</label>
                 <input
                     type="file"
                     className="form-control"
