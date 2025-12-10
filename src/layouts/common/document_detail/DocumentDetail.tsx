@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import PdfComp from "./components/pdfComp";
 import { getDocumentById, getAllDocumentByCategory, getAllDocumentByUser } from "../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import CommentComp from "./components/commentComp";
+import LeftSidebar from "./components/leftSidebar";
+import RightSidebar from "./components/rightSidebar";
 
 const DocumentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -153,61 +155,17 @@ const DocumentDetail: React.FC = () => {
 
                 {/* LEFT SIDEBAR – SLIDE LIST */}
                 <div className="col-md-2">
-                    <div className="border rounded p-3 shadow-sm bg-white" style={{ maxHeight: "75vh", overflowY: "auto" }}>
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                            <strong>Slides</strong>
-                            <div>
-                                <button
-                                    className="btn btn-sm btn-link p-0 me-2"
-                                    onClick={() => setActiveSlide(1)}
-                                >
-                                    Lên đầu
-                                </button>
-                                <button
-                                    className="btn btn-sm btn-link p-0"
-                                    onClick={() => {
-                                        if (totalPages) setActiveSlide(totalPages);
-                                    }}
-                                    disabled={!totalPages}
-                                >
-                                    Cuối
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="list-group">
-                            {Array.from({ length: maxShown }, (_, i) => i + 1).map((num) => {
-                                // Nếu totalPages known và num > totalPages thì ẩn
-                                if (totalPages && num > totalPages) return null;
-                                return (
-                                    <button
-                                        key={num}
-                                        onClick={() => setActiveSlide(num)}
-                                        className={`list-group-item list-group-item-action d-flex align-items-center justify-content-between ${num === activeSlide ? "active" : ""}`}
-                                        title={`Trang ${num}`}
-                                    >
-                                        <div className="d-flex align-items-center">
-                                            <div style={{ width: 44, height: 32, background: "#f3f3f3", borderRadius: 4, marginRight: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>
-                                                {num}
-                                            </div>
-                                            <div style={{ textAlign: "left" }}>
-                                                <div style={{ fontSize: 13, fontWeight: 600 }}>Trang {num}</div>
-                                            </div>
-                                        </div>
-
-                                        {/* {num === activeSlide && <small className="badge bg-light text-dark">Đang xem</small>} */}
-                                    </button>
-                                );
-                            })}
-
-                            {/* Nếu có nhiều trang bị giới hạn hiển thị */}
-                            {visibleSlidesCount > maxShown && (
-                                <div className="mt-2 text-center">
-                                    <small className="text-muted">... còn {visibleSlidesCount - maxShown} trang nữa</small>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    <LeftSidebar
+                        activeSlide={activeSlide}
+                        maxShown={maxShown}
+                        visibleSlidesCount={visibleSlidesCount}
+                        totalPages={totalPages}
+                        onSelectSlide={setActiveSlide}
+                        onJumpToStart={() => setActiveSlide(1)}
+                        onJumpToEnd={() => {
+                            if (totalPages) setActiveSlide(totalPages);
+                        }}
+                    />
                 </div>
 
                 {/* MIDDLE – PDF VIEWER */}
@@ -223,26 +181,7 @@ const DocumentDetail: React.FC = () => {
 
                 {/* RIGHT SIDEBAR – RELATED DOCS */}
                 <div className="col-md-3">
-                    <div className="border rounded p-3 shadow-sm bg-white" style={{ maxHeight: "75vh", overflowY: "auto" }}>
-                        <h5 className="fw-bold mb-3">Gợi ý thêm</h5>
-
-                        {relatedDocuments.length === 0 && (
-                            <p className="text-muted">Chưa có tài liệu liên quan.</p>
-                        )}
-
-                        <div className="list-group">
-                            {relatedDocuments.map((item) => (
-                                <Link
-                                    to={`/document/${item.id}`}
-                                    className="list-group-item list-group-item-action"
-                                    key={item.id}
-                                >
-                                    <strong className="d-block">{item.title}</strong>
-                                    <small className="text-muted">{item.description}</small>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
+                    <RightSidebar relatedDocuments={relatedDocuments} />
                 </div>
 
             </div>
