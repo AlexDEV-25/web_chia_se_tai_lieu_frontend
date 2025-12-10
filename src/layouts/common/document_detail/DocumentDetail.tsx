@@ -1,20 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import PdfComp from "./components/pdfComp";
-import { getDocumentById, getAllDocumentByCategory } from "../../../apis/DocumentApi";
+import { getDocumentById, getAllDocumentByCategory, getAllDocumentByUser } from "../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
-
-/**
- * DocumentDetail.tsx
- * - Sửa logic slide list: lấy số trang thực tế nếu có, fallback sẽ chờ PdfComp gọi onLoadPages.
- * - Khi click slide => setActiveSlide => truyền xuống PdfComp qua prop `pageNumber`.
- *
- * LƯU Ý:
- * - Nếu PdfComp chưa nhận prop `pageNumber` để hiển thị trang cụ thể, hãy thêm support:
- *    <PdfComp pageNumber={activeSlide} onLoadPages={(n)=>...} ... />
- * - Nếu PdfComp có thể tự báo số trang, nó nên gọi `onLoadPages(totalPages)`.
- * - Mình cố gắng không thay đổi logic API / dữ liệu, chỉ bổ sung props cho viewer.
- */
+import CommentComp from "./components/commentComp";
 
 const DocumentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -52,12 +41,12 @@ const DocumentDetail: React.FC = () => {
         fetchDetail();
     }, [docId]);
 
-    // Tải tài liệu liên quan theo category
+    // Tải tài liệu liên quan theo tác giả
     useEffect(() => {
         if (!document?.categoryId) return;
         const fetchRelated = async () => {
             try {
-                const data = await getAllDocumentByCategory(document.categoryId);
+                const data = await getAllDocumentByUser(document.userId);
                 const filtered = (data?.resultList ?? []).filter((item) => item.id !== document.id && item.status === "PUBLISHED");
                 setRelatedDocuments(filtered.slice(0, 8));
             } catch (err) {
@@ -224,12 +213,6 @@ const DocumentDetail: React.FC = () => {
                 {/* MIDDLE – PDF VIEWER */}
                 <div className="col-md-7">
                     <div className="border rounded shadow-sm bg-white p-2" style={{ minHeight: "70vh" }}>
-                        {/*
-                          Ghi chú về PdfComp props:
-                          - pageNumber: (number) trang hiện tại (1-based). PdfComp nên đổi trang khi prop này thay đổi.
-                          - onLoadPages: (pages: number) callback để PdfComp báo lại số trang thực tế khi load xong.
-                          Nếu PdfComp hiện tại chưa hỗ trợ, vui lòng thêm 2 prop này vào PdfComp để tương thích.
-                        */}
                         <PdfComp
                             docId={docId}
                             pageNumber={activeSlide}      // truyền trang muốn hiển thị
@@ -263,6 +246,15 @@ const DocumentDetail: React.FC = () => {
                 </div>
 
             </div>
+
+            {/* COMMENTS */}
+            {docId && (
+                <div className="row mt-4">
+                    <div className="col-md-9">
+                        <CommentComp docId={docId} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

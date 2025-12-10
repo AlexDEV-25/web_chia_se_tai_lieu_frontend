@@ -6,6 +6,10 @@ export const getAllDocumentByCategory = async (id: number) => {
     return await httpGet<APIResponse<DocumentResponse>>(`/documents/category/${id}`);
 }
 
+export const getAllDocumentByUser = async (id: number) => {
+    return await httpGet<APIResponse<DocumentResponse>>(`/documents/user/${id}`);
+}
+
 export const getDocumentById = async (id: number) => {
     return await httpGet<APIResponse<DocumentResponse>>(`/documents/${id}`);
 }
