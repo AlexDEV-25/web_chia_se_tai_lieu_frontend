@@ -6,6 +6,7 @@ import type { DocumentResponse } from "../../../models/response/DocumentResponse
 import CommentComp from "./components/commentComp";
 import LeftSidebar from "./components/leftSidebar";
 import RightSidebar from "./components/rightSidebar";
+import DocumentCarousel from "./components/documentCarousel";
 
 const DocumentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -185,6 +186,14 @@ const DocumentDetail: React.FC = () => {
                 </div>
 
             </div>
+
+            {/* CAROUSEL – SAME CATEGORY */}
+            {document.categoryId && (
+                <DocumentCarousel
+                    categoryId={document.categoryId}
+                    currentDocumentId={document.id}
+                />
+            )}
 
             {/* COMMENTS */}
             {docId && (
