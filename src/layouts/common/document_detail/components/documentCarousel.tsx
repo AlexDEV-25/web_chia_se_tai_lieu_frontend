@@ -8,10 +8,7 @@ interface DocumentCarouselProps {
     currentDocumentId: number;
 }
 
-const DocumentCarousel: React.FC<DocumentCarouselProps> = ({
-    categoryId,
-    currentDocumentId,
-}) => {
+const DocumentCarousel: React.FC<DocumentCarouselProps> = ({ categoryId, currentDocumentId }) => {
     const [documents, setDocuments] = useState<DocumentResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

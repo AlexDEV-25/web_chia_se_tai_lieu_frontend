@@ -3,20 +3,20 @@ import api from "./../../../apis/HttpClient";
 import DocumentRequest from "./../../../models/request/DocumentReques";
 import { getAllCategory } from "./../../../apis/CategoryApi";
 import { Category } from "./../../../models/Category";
-
+import { useRef } from "react";
 const UploadDocument: React.FC = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoryId, setCategoryId] = useState(1);
     const [file, setFile] = useState<File | null>(null);
-    const [img, setImg] = useState<File | null>(null);
+    const fileRef = useRef<HTMLInputElement | null>(null);
 
     // Error states
     const [errTitle, setErrTitle] = useState("");
     const [errDescription, setErrDescription] = useState("");
     const [errFile, setErrFile] = useState("");
-    const [errImg, setErrImg] = useState("");
+
 
     const [successMsg, setSuccessMsg] = useState("");
 
@@ -34,28 +34,25 @@ const UploadDocument: React.FC = () => {
         let tErr = "";
         let dErr = "";
         let fErr = "";
-        let iErr = "";
+
 
         if (title.trim() === "") tErr = "Tiêu đề không được để trống";
         if (description.trim() === "") dErr = "Mô tả không được để trống";
         if (!file) fErr = "Vui lòng chọn file";
-        if (!img) iErr = "Vui lòng chọn ảnh thumbnail";
 
         // Set errors
         setErrTitle(tErr);
         setErrDescription(dErr);
         setErrFile(fErr);
-        setErrImg(iErr);
 
         // Stop
-        if (tErr || dErr || fErr || iErr) return;
+        if (tErr || dErr || fErr) return;
         const status: string = "PENDING";
         const doc: DocumentRequest = { title, description, viewsCount: 0, downloadsCount: 0, status, hide: false, categoryId, };
 
         // ================= FORM DATA =================
         const formData = new FormData();
         formData.append("file", file!);
-        formData.append("img", img!);
         formData.append("data", JSON.stringify(doc));
 
         try {
@@ -69,8 +66,10 @@ const UploadDocument: React.FC = () => {
             // Reset form
             setTitle("");
             setDescription("");
-            setFile(null);
-            setImg(null);
+            // 👉 Reset input file
+            if (fileRef.current) {
+                fileRef.current.value = "";
+            }
 
         } catch (err) {
             console.error(err);
@@ -135,20 +134,9 @@ const UploadDocument: React.FC = () => {
                     type="file"
                     className="form-control"
                     onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    ref={fileRef}
                 />
                 <div style={{ color: "red" }}>{errFile}</div>
-            </div>
-
-            {/* IMG */}
-            <div className="mb-3">
-                <label className="form-label">Thumbnail</label>
-                <input
-                    type="file"
-                    accept="image/*"
-                    className="form-control"
-                    onChange={(e) => setImg(e.target.files?.[0] || null)}
-                />
-                <div style={{ color: "red" }}>{errImg}</div>
             </div>
 
             <button className="btn btn-primary w-100" onClick={handleUpload}>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import PdfComp from "./components/pdfComp";
-import { getDocumentById, getAllDocumentByCategory, getAllDocumentByUser } from "../../../apis/DocumentApi";
+import { getDocumentById } from "../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import CommentComp from "./components/commentComp";
 import LeftSidebar from "./components/leftSidebar";
@@ -13,7 +13,6 @@ const DocumentDetail: React.FC = () => {
     const docId = Number(id);
 
     const [document, setDocument] = useState<DocumentResponse | null>(null);
-    const [relatedDocuments, setRelatedDocuments] = useState<DocumentResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -44,21 +43,7 @@ const DocumentDetail: React.FC = () => {
         fetchDetail();
     }, [docId]);
 
-    // Tải tài liệu liên quan theo tác giả
-    useEffect(() => {
-        if (!document?.categoryId) return;
-        const fetchRelated = async () => {
-            try {
-                const data = await getAllDocumentByUser(document.userId);
-                const filtered = (data?.resultList ?? []).filter((item) => item.id !== document.id && item.status === "PUBLISHED");
-                setRelatedDocuments(filtered.slice(0, 8));
-            } catch (err) {
-                // im lặng, chỉ log nếu cần
-                console.error("fetch related error", err);
-            }
-        };
-        fetchRelated();
-    }, [document]);
+
 
     // Meta info
     const meta = useMemo(() => {
@@ -182,7 +167,10 @@ const DocumentDetail: React.FC = () => {
 
                 {/* RIGHT SIDEBAR – RELATED DOCS */}
                 <div className="col-md-3">
-                    <RightSidebar relatedDocuments={relatedDocuments} />
+                    <RightSidebar
+                        userId={document.userId}
+                        currentDocumentId={document.id}
+                    />
                 </div>
 
             </div>
