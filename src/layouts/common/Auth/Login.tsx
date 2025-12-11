@@ -37,7 +37,7 @@ const Login: React.FC = () => {
             const token = data.result?.token;
 
             if (!token) {
-                setLoginError("Không lấy được token. Đăng nhập thất bại!");
+                setLoginError("Đăng nhập thất bại!");
                 return;
             }
 

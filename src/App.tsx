@@ -10,9 +10,10 @@ import CategoryList from './layouts/admin/categories/CategoryList';
 import CategoryAdd from './layouts/admin/categories/CategoryAdd';
 import CategoryEdit from './layouts/admin/categories/CategotyEdit';
 import UploadDocument from './layouts/common/uploadDocument/UploadDocument';
-import Register from './layouts/common/register/Register';
+import Register from './layouts/common/Auth/Register';
 import DocumentDetail from './layouts/common/document_detail/DocumentDetail';
-import Login from './layouts/common/login/Login';
+import Login from './layouts/common/Auth/Login';
+import Activate from './layouts/common/Auth/Activate';
 import MyProfile from './layouts/admin/users/profile/MyProfile';
 import { pdfjs } from 'react-pdf';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -47,6 +48,7 @@ function App() {
             <Route path="/document/:id" element={<DocumentDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/profile" element={<MyProfile />} />
+            <Route path="/activate/:email/:activationCode" element={<Activate />} />
           </Routes>
         </AppContext.Provider>
         <Footer />

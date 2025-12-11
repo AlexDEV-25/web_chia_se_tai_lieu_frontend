@@ -2,10 +2,8 @@ import { useState } from "react";
 import { checkEmailExist, checkUsernameExist } from "../../../apis/UserApi";
 import { register } from "../../../apis/AuthApi";
 import User from "../../../models/request/UserRequest";
-import { useNavigate } from "react-router-dom";
 
 const Register: React.FC = () => {
-    const navigate = useNavigate();
     const [username, setUsername] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -17,9 +15,14 @@ const Register: React.FC = () => {
     const [isErrorRePassword, setIsErrorRePassword] = useState<string>("");
 
     const [isSuccess, setIsSuccess] = useState<string>("");
+    const [isLoading, setIsLoading] = useState(false);
 
     // ================= HANDLE SUBMIT =================
     const handleSubmit = async () => {
+        if (isLoading) return;
+
+        setIsLoading(true);
+
         let usernameError = "";
         let emailError = "";
         let passwordError = "";
@@ -71,7 +74,10 @@ const Register: React.FC = () => {
         setIsErrorRePassword(rePasswordError);
 
         // STOP
-        if (usernameError || emailError || passwordError || rePasswordError) return;
+        if (usernameError || emailError || passwordError || rePasswordError) {
+            setIsLoading(false);
+            return;
+        }
 
         // ================= CREATE REQUEST OBJECT =================
         const now = new Date().toISOString();
@@ -86,11 +92,11 @@ const Register: React.FC = () => {
             setEmail("");
             setPassword("");
             setRePassword("");
-            navigate("/login");
-            setIsSuccess("Đăng ký thành công!");
-
+            setIsSuccess("Đăng ký thành công vui lòng vào Email để kích hoạt tài khoản!");
         } catch (error) {
             console.log(error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -156,8 +162,9 @@ const Register: React.FC = () => {
                 type="button"
                 onClick={handleSubmit}
                 className="btn btn-primary w-100"
+                disabled={isLoading}
             >
-                Đăng ký
+                {isLoading ? "Đang xử lý..." : "Đăng ký"}
             </button>
         </div>
     );
