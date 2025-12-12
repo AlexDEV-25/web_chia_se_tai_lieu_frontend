@@ -1,23 +1,32 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-function Header() {
+import { logout } from "../../../apis/AuthApi";
+interface Props {
+    token: string | null
+    setToken: (value: string | null) => void
+}
+const Header: React.FC<Props> = ({ token, setToken }) => {
     const navigate = useNavigate();
-    const [token, setToken] = useState<string | null>(null);
 
-    useEffect(() => {
-        const t = localStorage.getItem("token");
-        setToken(t);
-    }, []);
+    const handleLogout = async () => {
+        try {
+            if (token) {
+                await logout();
+            }
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            localStorage.removeItem("token");
+            setToken(null);
+            navigate("/");
+        }
+    };
 
     return (
         <nav className="navbar navbar-expand-lg bg-light shadow-sm sticky-top">
             <div className="container">
 
-                <a className="navbar-brand fw-bold" href="#">
-                    StudyShare
-                </a>
+                <Link className="navbar-brand fw-bold" to="/">StudyShare</Link>
 
                 <div className="collapse navbar-collapse" id="navbarNav">
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
@@ -51,10 +60,7 @@ function Header() {
                                 <li>
                                     <button
                                         className="dropdown-item text-danger"
-                                        onClick={() => {
-                                            localStorage.removeItem("token");
-                                            navigate("/");
-                                        }}
+                                        onClick={handleLogout}
                                     >
                                         Đăng xuất
                                     </button>

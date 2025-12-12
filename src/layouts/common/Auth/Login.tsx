@@ -2,7 +2,10 @@ import { useState } from "react";
 import { login } from "../../../apis/AuthApi";
 import AuthenticationRequest from "../../../models/request/AuthenticationRequest";
 import { useNavigate } from "react-router-dom";
-const Login: React.FC = () => {
+interface Props {
+    setToken: (value: string | null) => void
+}
+const Login: React.FC<Props> = ({ setToken }) => {
     const navigate = useNavigate();
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -31,9 +34,7 @@ const Login: React.FC = () => {
 
         const authenticationRequest = new AuthenticationRequest(email, password);
         try {
-            console.log(authenticationRequest);
             const data = await login(authenticationRequest);
-            console.log(data);
             const token = data.result?.token;
 
             if (!token) {
@@ -42,9 +43,8 @@ const Login: React.FC = () => {
             }
 
             localStorage.setItem("token", token);
-
+            setToken(token);
             setLoginError("");
-
             navigate("/");
         } catch (error: any) {
             const msg =
