@@ -1,26 +1,27 @@
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../../apis/AuthApi";
+import { useEffect, useState } from "react";
 interface Props {
     token: string | null
     setToken: (value: string | null) => void
 }
 const Header: React.FC<Props> = ({ token, setToken }) => {
     const navigate = useNavigate();
+    const [valid, setValid] = useState<boolean>(false);
 
-    const handleLogout = async () => {
-        try {
-            if (token) {
-                await logout();
-            }
-        } catch (error) {
-            console.error("Logout error:", error);
-        } finally {
-            localStorage.removeItem("token");
-            setToken(null);
-            navigate("/");
-        }
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        setToken(null);
+        navigate("/");
     };
+    useEffect(() => {
+        if (token === null) {
+            setValid(false);
+        } else {
+            setValid(true);
+        }
+    }, [token])
+
 
     return (
         <nav className="navbar navbar-expand-lg bg-light shadow-sm sticky-top">
@@ -31,8 +32,8 @@ const Header: React.FC<Props> = ({ token, setToken }) => {
                 <div className="collapse navbar-collapse" id="navbarNav">
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                         <li className="nav-item"><Link className="nav-link" to="/">Tài liệu</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/">Môn học</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/upload">Upload</Link></li>
+                        <li className="nav-item"><Link className="nav-link" to="/">Bài giảng</Link></li>
+                        {valid && <li className="nav-item"><Link className="nav-link" to="/upload">Upload</Link></li>}
                     </ul>
 
                     <form className="d-flex me-3" role="search">

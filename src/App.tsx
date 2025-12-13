@@ -49,7 +49,7 @@ function App() {
         console.log("refresh token");
         setToken(data.result?.token ?? null);
       }
-    }, 60 * 1000); // 1 phút
+    }, 15 * 60 * 1000); // 15 phút
     return () => clearInterval(interval);
   }, []);
 

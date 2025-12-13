@@ -14,8 +14,6 @@ export const login = (data: AuthenticationRequest) =>
 export const activateUser = (email: string, activationCode: string) =>
     httpGet<APIResponse<void>>(`/auth/activate?email=${email}&activationCode=${activationCode}`);
 
-export const logout = () => httpPost<APIResponse<void>>(`/auth/log-out`);
-
 export const refreshToken = () => httpPost<APIResponse<AuthenticationResponse>>(`/auth/refresh-token`);
 
 export const introspect = () => httpPost<APIResponse<IntrospectResponse>>(`/auth/introspect`);
