@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import api from "../../../../apis/HttpClient";
-import type { UserResponse } from "../../../../models/response/UserResponse";
+import api from "../../../apis/HttpClient";
+import type { UserResponse } from "../../../models/response/UserResponse";
 
 const MyProfile: React.FC = () => {
     const [user, setUser] = useState<UserResponse | null>(null);

@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-
 type Stats = {
     totalDocuments: number;
     totalDownloads: number;
@@ -34,10 +32,6 @@ const HeroBlock = ({ searchTerm, onSearchChange, stats }: HeroBlockProps) => {
                             onChange={(e) => onSearchChange(e.target.value)}
                         />
                     </div>
-                    <Link to="/upload" className="btn-pill primary">
-                        <i className="fa fa-upload me-2" />
-                        Upload tài liệu
-                    </Link>
                 </div>
             </div>
             <div className="hero-metrics">

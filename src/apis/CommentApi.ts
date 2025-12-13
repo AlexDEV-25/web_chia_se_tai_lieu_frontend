@@ -3,9 +3,10 @@ import type { APIResponse } from "../models/response/APIResponse";
 import type { CommentResponse } from "../models/response/CommentResponse";
 import type { CommentRequest } from "../models/request/CommentRequest";
 
-export const getCommentsByDocument = (documentId: number) =>
-    httpGet<APIResponse<CommentResponse>>(`/comments/document/${documentId}`);
+export const getCommentsByDocument = async (documentId: number) => {
+    return await httpGet<APIResponse<CommentResponse>>(`/comments/document/${documentId}`);
+}
 
-export const createComment = (payload: CommentRequest) =>
-    httpPost<APIResponse<CommentResponse>>(`/comments`, payload);
-
+export const createComment = async (data: CommentRequest) => {
+    return await httpPost<APIResponse<CommentResponse>>(`/comments`, data);
+}

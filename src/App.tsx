@@ -14,7 +14,8 @@ import DocumentDetail from './layouts/common/document_detail/DocumentDetail';
 import Register from './layouts/common/Auth/Register';
 import Login from './layouts/common/Auth/Login';
 import Activate from './layouts/common/Auth/Activate';
-import MyProfile from './layouts/admin/users/profile/MyProfile';
+import MyProfile from './layouts/user/profile/MyProfile';
+import FavoriteDocuments from './layouts/user/favorites/FavoriteDocuments';
 import { pdfjs } from 'react-pdf';
 import { introspect, refreshToken } from './apis/AuthApi';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -69,6 +70,7 @@ function App() {
             <Route path="/document/:id" element={<DocumentDetail />} />
             <Route path="/login" element={<Login setToken={setToken} />} />
             <Route path="/profile" element={<MyProfile />} />
+            <Route path="/favorites" element={<FavoriteDocuments />} />
             <Route path="/activate/:email/:activationCode" element={<Activate />} />
           </Routes>
         </AppContext.Provider>

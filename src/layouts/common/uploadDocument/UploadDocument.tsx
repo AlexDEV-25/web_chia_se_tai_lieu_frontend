@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./../../../apis/HttpClient";
-import DocumentRequest from "./../../../models/request/DocumentReques";
+import type { DocumentRequest } from "./../../../models/request/DocumentReques";
 import { getAllCategory } from "./../../../apis/CategoryApi";
 import { Category } from "./../../../models/Category";
 import { useRef } from "react";
@@ -19,6 +19,7 @@ const UploadDocument: React.FC = () => {
 
 
     const [successMsg, setSuccessMsg] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const categories = async () => {
@@ -31,6 +32,9 @@ const UploadDocument: React.FC = () => {
     }, []);
 
     const handleUpload = async () => {
+        if (isLoading) return;
+        setIsLoading(true);
+
         let tErr = "";
         let dErr = "";
         let fErr = "";
@@ -46,7 +50,10 @@ const UploadDocument: React.FC = () => {
         setErrFile(fErr);
 
         // Stop
-        if (tErr || dErr || fErr) return;
+        if (tErr || dErr || fErr) {
+            setIsLoading(false);
+            return;
+        }
         const status: string = "PENDING";
         const doc: DocumentRequest = { title, description, viewsCount: 0, downloadsCount: 0, status, hide: false, categoryId, };
 
@@ -74,6 +81,8 @@ const UploadDocument: React.FC = () => {
         } catch (err) {
             console.error(err);
             setSuccessMsg("Upload thất bại!");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -139,9 +148,15 @@ const UploadDocument: React.FC = () => {
                 <div style={{ color: "red" }}>{errFile}</div>
             </div>
 
-            <button className="btn btn-primary w-100" onClick={handleUpload}>
-                Upload
+            <button
+                type="button"
+                onClick={handleUpload}
+                className="btn btn-primary w-100"
+                disabled={isLoading}
+            >
+                {isLoading ? "Đang xử lý..." : "Upload"}
             </button>
+
         </div >
     );
 };

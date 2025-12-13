@@ -1,4 +1,4 @@
-export default class DocumentRequest {
+export interface DocumentRequest {
     title: string;
     description: string;
     viewsCount?: number;
@@ -9,25 +9,4 @@ export default class DocumentRequest {
     hide: boolean;
     categoryId?: number;
 
-    constructor(
-        title: string,
-        description: string,
-        viewsCount?: number,
-        downloadsCount?: number,
-        createdAt?: string,
-        updatedAt?: string,
-        status?: string,
-        hide: boolean = false,
-        categoryId?: number,
-    ) {
-        this.title = title;
-        this.description = description;
-        this.viewsCount = viewsCount;
-        this.downloadsCount = downloadsCount;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.status = status;
-        this.hide = hide;
-        this.categoryId = categoryId;
-    }
 }

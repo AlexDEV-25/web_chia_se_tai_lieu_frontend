@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { createCategory } from "../../../apis/CategoryApi";
-import CategoryRequest from "../../../models/request/CategoryRequest";
+import type { CategoryRequest } from "../../../models/request/CategoryRequest";
 const CategoryAdd: React.FC = () => {
     const navigate = useNavigate();
     const [name, setName] = useState<string>("");
@@ -22,14 +22,9 @@ const CategoryAdd: React.FC = () => {
             return;
         }
 
-        const newCategory = new CategoryRequest(name, description, false);
-
-        const addCategory = async () => {
-            const data = await createCategory(newCategory);
-            console.log(data);
-            navigate("/categories");
-        }
-        addCategory()
+        const newCategory: CategoryRequest = { name: name, description: description, hide: false }
+        createCategory(newCategory);
+        navigate("/categories");
     };
 
     return (

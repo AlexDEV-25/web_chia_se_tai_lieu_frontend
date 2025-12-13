@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { checkEmailExist, checkUsernameExist } from "../../../apis/UserApi";
 import { register } from "../../../apis/AuthApi";
-import User from "../../../models/request/UserRequest";
+import type { UserRequest } from "../../../models/request/UserRequest";
 
 const Register: React.FC = () => {
     const [username, setUsername] = useState<string>("");
@@ -82,7 +82,10 @@ const Register: React.FC = () => {
         // ================= CREATE REQUEST OBJECT =================
         const now = new Date().toISOString();
 
-        const newUser = new User(username, email, password, false, now, now, ["USER"], false);
+        const newUser: UserRequest = {
+            username: username, email: email, password: password, verified: false,
+            createdAt: now, updatedAt: now, roles: ["USER"], hide: false
+        };
 
         try {
             const data = await register(newUser);

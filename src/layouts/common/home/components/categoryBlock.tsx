@@ -30,7 +30,7 @@ const CategoryBlock = ({
                 </div>
                 {hasMoreCategories && (
                     <button
-                        className="btn-link"
+                        className="btn-pill primary"
                         onClick={() => {
                             onToggleShowAll();
                         }}

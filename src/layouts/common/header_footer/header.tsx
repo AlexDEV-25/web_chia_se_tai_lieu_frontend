@@ -33,6 +33,7 @@ const Header: React.FC<Props> = ({ token, setToken }) => {
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                         <li className="nav-item"><Link className="nav-link" to="/">Tài liệu</Link></li>
                         <li className="nav-item"><Link className="nav-link" to="/">Bài giảng</Link></li>
+                        <li className="nav-item"><Link className="nav-link" to="/favorites">Kho lưu</Link></li>
                         {valid && <li className="nav-item"><Link className="nav-link" to="/upload">Upload</Link></li>}
                     </ul>
 

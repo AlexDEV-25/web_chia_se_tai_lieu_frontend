@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { login } from "../../../apis/AuthApi";
-import AuthenticationRequest from "../../../models/request/AuthenticationRequest";
+import type { AuthenticationRequest } from "../../../models/request/AuthenticationRequest";
 import { useNavigate } from "react-router-dom";
 interface Props {
     setToken: (value: string | null) => void
@@ -32,7 +32,7 @@ const Login: React.FC<Props> = ({ setToken }) => {
         // STOP
         if (emailError || passwordError) return;
 
-        const authenticationRequest = new AuthenticationRequest(email, password);
+        const authenticationRequest: AuthenticationRequest = { email: email, password: password };
         try {
             const data = await login(authenticationRequest);
             const token = data.result?.token;

@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import PdfComp from "./components/pdfComp";
-import { getDocumentById } from "../../../apis/DocumentApi";
+import { downloadFile, getDocumentById, increaseDownload, increaseView } from "../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import CommentComp from "./components/commentComp";
 import LeftSidebar from "./components/leftSidebar";
 import RightSidebar from "./components/rightSidebar";
 import DocumentCarousel from "./components/documentCarousel";
+import RatingComp from "./components/ratingComp";
 
 const DocumentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const docId = Number(id);
 
-    const [document, setDocument] = useState<DocumentResponse | null>(null);
+    const [documentDetail, setDocumentDetail] = useState<DocumentResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -21,8 +22,9 @@ const DocumentDetail: React.FC = () => {
 
     // Trang đang hiển thị (1-based)
     const [activeSlide, setActiveSlide] = useState<number>(1);
+    const [downloading, setDownloading] = useState(false);
 
-    // Tải document
+    // Tải thông tin document
     useEffect(() => {
         if (!docId) {
             setError("Không tìm thấy tài liệu.");
@@ -33,7 +35,7 @@ const DocumentDetail: React.FC = () => {
         const fetchDetail = async () => {
             try {
                 const data = await getDocumentById(docId);
-                setDocument(data?.result ?? null);
+                setDocumentDetail(data?.result ?? null);
             } catch (err) {
                 setError("Không thể tải chi tiết tài liệu.");
             } finally {
@@ -43,35 +45,28 @@ const DocumentDetail: React.FC = () => {
         fetchDetail();
     }, [docId]);
 
+    // Tăng lượt xem khi người dùng mở trang
+    useEffect(() => {
+        if (!docId) return;
+        increaseView(docId).catch(() => undefined);
+    }, [docId]);
 
 
     // Meta info
     const meta = useMemo(() => {
-        if (!document) return [];
+        if (!documentDetail) return [];
         return [
-            { label: "Danh mục", value: document.categoryName ?? "Chưa rõ" },
-            { label: "Lượt xem", value: document.viewsCount?.toLocaleString("vi-VN") ?? "0" },
-            { label: "Lượt tải", value: document.downloadsCount?.toLocaleString("vi-VN") ?? "0" },
+            { label: "Danh mục", value: documentDetail.categoryName ?? "Chưa rõ" },
+            { label: "Lượt xem", value: documentDetail.viewsCount?.toLocaleString("vi-VN") ?? "0" },
+            { label: "Lượt tải", value: documentDetail.downloadsCount?.toLocaleString("vi-VN") ?? "0" },
             {
                 label: "Cập nhật",
-                value: document.updatedAt
-                    ? new Date(document.updatedAt).toLocaleDateString("vi-VN")
+                value: documentDetail.updatedAt
+                    ? new Date(documentDetail.updatedAt).toLocaleDateString("vi-VN")
                     : "Chưa rõ",
             },
         ];
-    }, [document]);
-
-    // Nếu API trả số trang (giả sử có trường pageCount), dùng luôn
-    useEffect(() => {
-        if (document && (document as any).pageCount && !(totalPages && totalPages > 0)) {
-            const n = Number((document as any).pageCount);
-            if (!Number.isNaN(n) && n > 0) {
-                setTotalPages(n);
-                // ensure activeSlide is in-range
-                setActiveSlide((prev) => (prev > n ? 1 : prev));
-            }
-        }
-    }, [document, totalPages]);
+    }, [documentDetail]);
 
     // Helper: gọi khi PdfComp báo số trang thực tế
     const handlePdfLoadedPages = (pages: number) => {
@@ -81,11 +76,31 @@ const DocumentDetail: React.FC = () => {
         setActiveSlide((prev) => (prev < 1 || prev > pages ? 1 : prev));
     };
 
+    const handleDownload = async () => {
+        if (!documentDetail) return;
+        setDownloading(true);
+        try {
+            await increaseDownload(documentDetail.id);
+            const blob = await downloadFile(documentDetail.fileUrl);
+            const url = window.URL.createObjectURL(blob);
+            const link = window.document.createElement("a");
+            link.href = url;
+            link.download = documentDetail.title ? `${documentDetail.title}.pdf` : "document.pdf";
+            link.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(error);
+            alert("Vui lòng đăng nhập để tải tài liệu");
+        } finally {
+            setDownloading(false);
+        }
+    };
+
     if (loading) {
         return <div className="document-detail loading-state p-4">Đang tải nội dung...</div>;
     }
 
-    if (error || !document || !docId) {
+    if (error || !documentDetail || !docId) {
         return (
             <div className="document-detail error-state p-4">
                 <p>{error ?? "Không thể hiển thị tài liệu."}</p>
@@ -105,8 +120,8 @@ const DocumentDetail: React.FC = () => {
             <div className="row mb-4">
                 <div className="col-md-9">
                     <p className="text-muted small mb-1">StudyShare · Tài liệu</p>
-                    <h2 className="fw-bold">{document.title}</h2>
-                    <p className="text-secondary">{document.description}</p>
+                    <h2 className="fw-bold">{documentDetail.title}</h2>
+                    <p className="text-secondary">{documentDetail.description}</p>
 
                     <div className="row g-3 mt-3">
                         {meta.map((item) => (
@@ -121,14 +136,18 @@ const DocumentDetail: React.FC = () => {
                 </div>
 
                 <div className="col-md-3 text-md-end mt-3 mt-md-0">
-                    <a
-                        href={`http://localhost:8080/api/documents/download-file?fileName=${document.fileUrl}`}
-                        target="_blank"
-                        rel="noreferrer"
+                    <button
+                        type="button"
+                        onClick={handleDownload}
                         className="btn btn-primary mb-2 w-100"
+                        disabled={downloading}
                     >
-                        <i className="fa fa-download me-2" /> Tải xuống
-                    </a>
+                        {downloading ? "Đang xử lý..." : (
+                            <>
+                                <i className="fa fa-download me-2" /> Tải xuống
+                            </>
+                        )}
+                    </button>
 
                     <button onClick={() => window.history.back()} className="btn btn-outline-secondary w-100">
                         Quay lại
@@ -168,19 +187,28 @@ const DocumentDetail: React.FC = () => {
                 {/* RIGHT SIDEBAR – RELATED DOCS */}
                 <div className="col-md-3">
                     <RightSidebar
-                        userId={document.userId}
-                        currentDocumentId={document.id}
+                        userId={documentDetail.userId}
+                        currentDocumentId={documentDetail.id}
                     />
                 </div>
 
             </div>
 
             {/* CAROUSEL – SAME CATEGORY */}
-            {document.categoryId && (
+            {documentDetail.categoryId && (
                 <DocumentCarousel
-                    categoryId={document.categoryId}
-                    currentDocumentId={document.id}
+                    categoryId={documentDetail.categoryId}
+                    currentDocumentId={documentDetail.id}
                 />
+            )}
+
+            {/* RATING */}
+            {docId && (
+                <div className="row mt-4">
+                    <div className="col-md-9">
+                        <RatingComp docId={docId} />
+                    </div>
+                </div>
             )}
 
             {/* COMMENTS */}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getCategoryById, updateCategory } from "../../../apis/CategoryApi";
 import { Category } from "../../../models/Category";
-import CategoryRequest from "../../../models/request/CategoryRequest";
+import type { CategoryRequest } from "../../../models/request/CategoryRequest";
 const CategoryEdit: React.FC = () => {
     const { id } = useParams<{ id: string | undefined }>();
     const navigate = useNavigate();
@@ -38,7 +38,7 @@ const CategoryEdit: React.FC = () => {
             return;
         }
 
-        const newCategory = new CategoryRequest(name, description, false);
+        const newCategory: CategoryRequest = { name: name, description: description, hide: false };
 
         const updateItem = async () => {
             if (id) {
