@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { AppContext, type AppContextType } from "../../../AppContext";
 interface Props {
     token: string | null
     setToken: (value: string | null) => void
@@ -8,6 +9,8 @@ interface Props {
 const Header: React.FC<Props> = ({ token, setToken }) => {
     const navigate = useNavigate();
     const [valid, setValid] = useState<boolean>(false);
+    const ctx = useContext(AppContext) as AppContextType | null;
+    const [searchValue, setSearchValue] = useState(ctx?.keyWords ?? "");
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -20,60 +23,85 @@ const Header: React.FC<Props> = ({ token, setToken }) => {
         } else {
             setValid(true);
         }
-    }, [token])
+    }, [token]);
 
+    useEffect(() => {
+        setSearchValue(ctx?.keyWords ?? "");
+    }, [ctx?.keyWords]);
+
+    const navLinks = useMemo(() => ([
+        { to: "/", label: "Tài liệu" },
+        { to: "/favorites", label: "Kho lưu" },
+        { to: "/upload", label: "Upload", restricted: true },
+    ]), []);
+
+    const handleSearchChange = (value: string) => {
+        setSearchValue(value);
+        ctx?.setKeyWords(value);
+    };
 
     return (
-        <nav className="navbar navbar-expand-lg bg-light shadow-sm sticky-top">
-            <div className="container">
+        <header className="site-header">
+            <Link className="brand" to="/">
+                Study<span>Share</span>
+            </Link>
 
-                <Link className="navbar-brand fw-bold" to="/">StudyShare</Link>
+            <nav className="nav-links">
+                {navLinks.map((item) => {
+                    if (item.restricted && !valid) return null;
+                    return (
+                        <NavLink
+                            key={item.to}
+                            to={item.to}
+                            className={({ isActive }) => isActive ? "active" : ""}
+                        >
+                            {item.label}
+                        </NavLink>
+                    );
+                })}
+            </nav>
 
-                <div className="collapse navbar-collapse" id="navbarNav">
-                    <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li className="nav-item"><Link className="nav-link" to="/">Tài liệu</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/">Bài giảng</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/favorites">Kho lưu</Link></li>
-                        {valid && <li className="nav-item"><Link className="nav-link" to="/upload">Upload</Link></li>}
-                    </ul>
-
-                    <form className="d-flex me-3" role="search">
-                        <input className="form-control" type="search" placeholder="Tìm kiếm..." />
-                    </form>
-
-                    {token === null ? (
-                        <div className="d-flex gap-2">
-                            <Link className="btn btn-primary" to="/login">Đăng nhập</Link>
-                            <Link className="btn btn-outline-primary" to="/register">Đăng ký</Link>
-                        </div>
-                    ) : (
-                        <div className="dropdown">
-                            <button
-                                className="btn btn-secondary dropdown-toggle"
-                                type="button"
-                                data-bs-toggle="dropdown"
-                            >
-                                Tài khoản
-                            </button>
-                            <ul className="dropdown-menu dropdown-menu-end">
-                                <li><Link className="dropdown-item" to="/profile">Thông tin cá nhân</Link></li>
-                                <li><Link className="dropdown-item" to="/upload">Upload tài liệu</Link></li>
-                                <li><hr className="dropdown-divider" /></li>
-                                <li>
-                                    <button
-                                        className="dropdown-item text-danger"
-                                        onClick={handleLogout}
-                                    >
-                                        Đăng xuất
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                    )}
-
-                </div>
+            <div className="nav-search">
+                <i className="fa fa-search text-muted" />
+                <input
+                    type="text"
+                    placeholder="Tìm kiếm tài liệu..."
+                    value={searchValue}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                />
             </div>
-        </nav>
+
+            <div className="nav-actions">
+                {token === null ? (
+                    <>
+                        <Link className="btn-chip ghost" to="/login">
+                            Đăng nhập
+                        </Link>
+                        <Link className="btn-chip" to="/register">
+                            Đăng ký
+                        </Link>
+                    </>
+                ) : (
+                    <div className="user-menu">
+                        <details>
+                            <summary>
+                                <span className="avatar-chip">
+                                    Tài khoản
+                                </span>
+                            </summary>
+                            <div className="user-dropdown">
+                                <Link to="/profile">Thông tin cá nhân</Link>
+                                <Link to="/upload">Upload tài liệu</Link>
+                                <hr />
+                                <button type="button" onClick={handleLogout}>
+                                    Đăng xuất
+                                </button>
+                            </div>
+                        </details>
+                    </div>
+                )}
+            </div>
+        </header>
     );
 }
 

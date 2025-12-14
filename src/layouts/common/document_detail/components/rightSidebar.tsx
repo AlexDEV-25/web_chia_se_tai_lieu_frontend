@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getAllDocumentByUser } from "../../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
 
@@ -9,7 +9,6 @@ interface RightSidebarProps {
 }
 
 const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }) => {
-
     const [documents, setDocuments] = useState<DocumentResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -23,10 +22,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                 const list = (response.resultList ?? []).filter(
                     (doc) => doc.id !== currentDocumentId && doc.status === "PUBLISHED"
                 );
-                setDocuments(list.slice(0, 12));
+                setDocuments(list.slice(0, 6));
             } catch (err) {
-                console.error("DocumentCarousel error", err);
-                setError("Không thể tải tài liệu cùng danh mục.");
+                console.error("RightSidebar error", err);
+                setError("Không thể tải thêm slide của tác giả này.");
             } finally {
                 setLoading(false);
             }
@@ -37,32 +36,59 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
         }
     }, [userId, currentDocumentId]);
 
+    const formatNumber = useMemo(() => {
+        return (value?: number) => {
+            if (!value) return "0";
+            if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+            return value.toString();
+        };
+    }, []);
+
     if (!userId) return null;
 
     return (
-        <div className="border rounded p-3 shadow-sm bg-white" style={{ maxHeight: "75vh", overflowY: "auto" }}>
-            <h5 className="fw-bold mb-3">Gợi ý thêm</h5>
+        <section className="documents-block compact">
+            <div className="section-heading">
+                <div>
+                    <p className="eyebrow">Từ tác giả này</p>
+                    <h3>Slide nổi bật</h3>
+                </div>
+            </div>
 
-            {documents.length === 0 && (
-                <p className="text-muted">Chưa có tài liệu liên quan.</p>
+            {loading && <div className="empty-state">Đang tải...</div>}
+            {error && <div className="alert alert-danger">{error}</div>}
+
+            {!loading && documents.length === 0 && (
+                <div className="empty-state">Tác giả chưa có thêm slide công khai.</div>
             )}
 
-            {loading && <div className="text-muted">Đang tải...</div>}
-            {error && <div className="text-danger">{error}</div>}
-
-            <div className="list-group">
-                {documents.map((item) => (
-                    <Link
-                        to={`/document/${item.id}`}
-                        className="list-group-item list-group-item-action"
-                        key={item.id}
-                    >
-                        <strong className="d-block">{item.title}</strong>
-                        <small className="text-muted">{item.description}</small>
-                    </Link>
+            <div className="document-grid stacked">
+                {documents.map((doc) => (
+                    <article key={doc.id} className="document-card compact">
+                        <div className="doc-thumbnail">
+                            <img
+                                src={`http://localhost:8080/api/images/thumbnail/${doc.thumbnailUrl}`}
+                                alt={doc.title}
+                            />
+                            <span className="doc-type">{doc.type}</span>
+                        </div>
+                        <div className="doc-body">
+                            <h3>{doc.title}</h3>
+                            <p>{doc.userName ?? "admin"}</p>
+                            <div className="doc-meta">
+                                <span><i className="fa fa-eye me-1" /> {formatNumber(doc.viewsCount)}</span>
+                                <span><i className="fa fa-download me-1" /> {formatNumber(doc.downloadsCount)}</span>
+                            </div>
+                        </div>
+                        <div className="doc-actions">
+                            <Link to={`/document/${doc.id}`} className="btn-pill ghost small">
+                                Đọc ngay
+                            </Link>
+                        </div>
+                    </article>
                 ))}
             </div>
-        </div>
+        </section>
     );
 };
 

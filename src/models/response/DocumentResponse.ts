@@ -14,6 +14,7 @@ export interface DocumentResponse {
     categoryId: number;
     categoryName: string;
     userId: number;
+    userName: string;
 }
 
 // Nếu enums ở FE cũng cần:

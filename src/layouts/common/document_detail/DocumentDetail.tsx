@@ -72,8 +72,11 @@ const DocumentDetail: React.FC = () => {
     const handlePdfLoadedPages = (pages: number) => {
         if (!pages || pages <= 0) return;
         setTotalPages(pages);
-        // nếu activeSlide nằm ngoài range, reset về 1
         setActiveSlide((prev) => (prev < 1 || prev > pages ? 1 : prev));
+    };
+
+    const handleSlideSelect = (slide: number) => {
+        setActiveSlide(slide);
     };
 
     const handleDownload = async () => {
@@ -97,13 +100,15 @@ const DocumentDetail: React.FC = () => {
     };
 
     if (loading) {
-        return <div className="document-detail loading-state p-4">Đang tải nội dung...</div>;
+        return <div className="document-detail-shell"><div className="glass-card">Đang tải nội dung...</div></div>;
     }
 
     if (error || !documentDetail || !docId) {
         return (
-            <div className="document-detail error-state p-4">
-                <p>{error ?? "Không thể hiển thị tài liệu."}</p>
+            <div className="document-detail-shell">
+                <div className="glass-card error-state">
+                    <p>{error ?? "Không thể hiển thị tài liệu."}</p>
+                </div>
             </div>
         );
     }
@@ -114,58 +119,62 @@ const DocumentDetail: React.FC = () => {
     const maxShown = Math.min(visibleSlidesCount, 50);
 
     return (
-        <div className="container py-4">
+        <div className="document-detail-shell">
+            <section className="doc-overview glass-card">
+                <div className="doc-overview-main">
+                    <p className="eyebrow text-white-50">StudyShare · Slide deck</p>
+                    <h1>{documentDetail.title}</h1>
+                    <p>{documentDetail.description}</p>
 
-            {/* HEADER */}
-            <div className="row mb-4">
-                <div className="col-md-9">
-                    <p className="text-muted small mb-1">StudyShare · Tài liệu</p>
-                    <h2 className="fw-bold">{documentDetail.title}</h2>
-                    <p className="text-secondary">{documentDetail.description}</p>
+                    <div className="doc-meta-chips">
+                        {documentDetail.type && <span className="chip">{documentDetail.type}</span>}
+                        {documentDetail.categoryName && <span className="chip ghost">{documentDetail.categoryName}</span>}
+                        <span className="chip ghost">
+                            <i className="fa fa-eye" /> {documentDetail.viewsCount?.toLocaleString("vi-VN") ?? 0} lượt xem
+                        </span>
+                        <span className="chip ghost">
+                            <i className="fa fa-download" /> {documentDetail.downloadsCount?.toLocaleString("vi-VN") ?? 0} tải xuống
+                        </span>
+                    </div>
 
-                    <div className="row g-3 mt-3">
+                    <div className="stat-grid">
                         {meta.map((item) => (
-                            <div className="col-6 col-md-3" key={item.label}>
-                                <div className="p-3 border rounded shadow-sm bg-white">
-                                    <p className="mb-1 text-muted small">{item.label}</p>
-                                    <strong>{item.value}</strong>
-                                </div>
+                            <div className="stat-card" key={item.label}>
+                                <p className="text-muted">{item.label}</p>
+                                <strong>{item.value}</strong>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="col-md-3 text-md-end mt-3 mt-md-0">
+                <div className="document-actions">
                     <button
                         type="button"
                         onClick={handleDownload}
-                        className="btn btn-primary mb-2 w-100"
+                        className="btn-elevated"
                         disabled={downloading}
                     >
                         {downloading ? "Đang xử lý..." : (
                             <>
-                                <i className="fa fa-download me-2" /> Tải xuống
+                                <i className="fa fa-download" /> Tải xuống
                             </>
                         )}
                     </button>
 
-                    <button onClick={() => window.history.back()} className="btn btn-outline-secondary w-100">
-                        Quay lại
+                    <button onClick={() => window.history.back()} className="btn-outline">
+                        Quay lại thư viện
                     </button>
                 </div>
-            </div>
+            </section>
 
-            {/* BODY CONTENT */}
-            <div className="row">
-
-                {/* LEFT SIDEBAR – SLIDE LIST */}
-                <div className="col-md-2">
+            <section className="document-layout">
+                <div className="slide-panel rail-pane">
                     <LeftSidebar
                         activeSlide={activeSlide}
                         maxShown={maxShown}
                         visibleSlidesCount={visibleSlidesCount}
                         totalPages={totalPages}
-                        onSelectSlide={setActiveSlide}
+                        onSelectSlide={handleSlideSelect}
                         onJumpToStart={() => setActiveSlide(1)}
                         onJumpToEnd={() => {
                             if (totalPages) setActiveSlide(totalPages);
@@ -173,51 +182,42 @@ const DocumentDetail: React.FC = () => {
                     />
                 </div>
 
-                {/* MIDDLE – PDF VIEWER */}
-                <div className="col-md-7">
-                    <div className="border rounded shadow-sm bg-white p-2" style={{ minHeight: "70vh" }}>
-                        <PdfComp
-                            docId={docId}
-                            pageNumber={activeSlide}      // truyền trang muốn hiển thị
-                            onLoadPages={handlePdfLoadedPages} // callback để PdfComp báo số trang thực tế
-                        />
-                    </div>
+                <div className="viewer-panel rail-pane">
+                    <PdfComp
+                        docId={docId}
+                        pageNumber={activeSlide}
+                        onLoadPages={handlePdfLoadedPages}
+                        onPageChange={handleSlideSelect}
+                    />
                 </div>
 
-                {/* RIGHT SIDEBAR – RELATED DOCS */}
-                <div className="col-md-3">
+                <div className="suggestion-panel rail-pane">
                     <RightSidebar
                         userId={documentDetail.userId}
                         currentDocumentId={documentDetail.id}
                     />
                 </div>
+            </section>
 
-            </div>
-
-            {/* CAROUSEL – SAME CATEGORY */}
             {documentDetail.categoryId && (
-                <DocumentCarousel
-                    categoryId={documentDetail.categoryId}
-                    currentDocumentId={documentDetail.id}
-                />
+                <section className="glass-card doc-related">
+                    <DocumentCarousel
+                        categoryId={documentDetail.categoryId}
+                        currentDocumentId={documentDetail.id}
+                    />
+                </section>
             )}
 
-            {/* RATING */}
             {docId && (
-                <div className="row mt-4">
-                    <div className="col-md-9">
-                        <RatingComp docId={docId} />
-                    </div>
-                </div>
+                <section className="glass-card doc-feedback">
+                    <RatingComp docId={docId} />
+                </section>
             )}
 
-            {/* COMMENTS */}
             {docId && (
-                <div className="row mt-4">
-                    <div className="col-md-9">
-                        <CommentComp docId={docId} />
-                    </div>
-                </div>
+                <section className="glass-card doc-feedback">
+                    <CommentComp docId={docId} />
+                </section>
             )}
         </div>
     );

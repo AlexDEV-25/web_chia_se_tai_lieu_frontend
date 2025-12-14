@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { login } from "../../../apis/AuthApi";
 import type { AuthenticationRequest } from "../../../models/request/AuthenticationRequest";
 import { useNavigate } from "react-router-dom";
@@ -57,44 +58,66 @@ const Login: React.FC<Props> = ({ setToken }) => {
     };
 
     return (
-        <div className="container mt-5" style={{ maxWidth: "500px" }}>
-            <h2 className="text-center mb-4">Đăng ký tài khoản</h2>
+        <div className="auth-shell">
+            <section className="page-hero glass-card">
+                <p className="eyebrow text-white-50">StudyShare · Tài khoản</p>
+                <h1>Chào mừng trở lại 👋</h1>
+                <p>Đăng nhập để đồng bộ kho tài liệu, đánh dấu yêu thích và tải lên những bài giảng chất lượng.</p>
+                <div className="page-actions">
+                    <Link to="/" className="pill-link">
+                        Về trang chủ
+                    </Link>
+                </div>
+            </section>
 
-            <div style={{ color: "red" }}>{loginError}</div>
+            <section className="glass-card auth-grid">
+                <div className="auth-form">
+                    <h2>Đăng nhập</h2>
+                    {loginError && <div className="error-text">{loginError}</div>}
 
-            {/* EMAIL */}
-            <div className="mb-3">
-                <label className="form-label">Email</label>
-                <input
-                    type="email"
-                    className="form-control"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="example@gmail.com"
-                />
-                <div style={{ color: "red" }}>{isErrorEmail}</div>
-            </div>
+                    <div className="input-field">
+                        <label>Email</label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="example@gmail.com"
+                        />
+                        {isErrorEmail && <span className="error-text">{isErrorEmail}</span>}
+                    </div>
 
-            {/* PASSWORD */}
-            <div className="mb-3">
-                <label className="form-label">Mật khẩu</label>
-                <input
-                    type="password"
-                    className="form-control"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Nhập mật khẩu"
-                />
-                <div style={{ color: "red" }}>{isErrorPassword}</div>
-            </div>
+                    <div className="input-field">
+                        <label>Mật khẩu</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Nhập mật khẩu"
+                        />
+                        {isErrorPassword && <span className="error-text">{isErrorPassword}</span>}
+                    </div>
 
-            <button
-                type="button"
-                onClick={handleSubmit}
-                className="btn btn-primary w-100"
-            >
-                Đăng nhập
-            </button>
+                    <button
+                        type="button"
+                        onClick={handleSubmit}
+                        className="btn-elevated"
+                    >
+                        Đăng nhập
+                    </button>
+                </div>
+
+                <div className="auth-note">
+                    <h4>Vì sao nên tạo tài khoản?</h4>
+                    <ul>
+                        <li>Lưu tài liệu yêu thích và xem nhanh.</li>
+                        <li>Tải lên tài liệu của bạn cho cộng đồng.</li>
+                        <li>Nhận đề xuất cá nhân hóa theo môn học.</li>
+                    </ul>
+                    <p className="mt-3">
+                        Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+                    </p>
+                </div>
+            </section>
         </div>
     );
 };
