@@ -221,6 +221,17 @@ body {
     gap: 1.5rem;
 }
 
+.document-grid.two-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+    .document-grid.two-col {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+}
+
 .document-card {
     border-radius: 24px;
     background: #FFFFFF;
@@ -230,6 +241,28 @@ body {
     flex-direction: column;
     gap: 1rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.document-card.compact.simple {
+    gap: 0.75rem;
+    padding: 0.9rem;
+}
+
+.document-card.compact.simple .doc-body h3 {
+    font-size: 1rem;
+}
+
+.document-card.compact.simple .doc-body p {
+    font-size: 0.85rem;
+    color: var(--brand-muted);
+}
+
+.document-card.compact.simple .doc-thumbnail {
+    height: 140px;
+}
+
+.document-card.compact.simple .doc-meta {
+    font-size: 0.75rem;
 }
 
 .document-card:hover {
@@ -743,8 +776,8 @@ body {
 
 .document-layout {
     display: grid;
-    grid-template-columns: minmax(200px, 1fr) minmax(420px, 2.5fr) minmax(220px, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: minmax(160px, 0.85fr) minmax(420px, 2.4fr) minmax(260px, 1.35fr);
+    gap: 1.75rem;
 }
 
 @media (max-width: 1200px) {

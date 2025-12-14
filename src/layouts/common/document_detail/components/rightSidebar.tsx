@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getAllDocumentByUser } from "../../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
 
@@ -22,7 +22,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                 const list = (response.resultList ?? []).filter(
                     (doc) => doc.id !== currentDocumentId && doc.status === "PUBLISHED"
                 );
-                setDocuments(list.slice(0, 6));
+                setDocuments(list.slice(0, 8));
             } catch (err) {
                 console.error("RightSidebar error", err);
                 setError("Không thể tải thêm slide của tác giả này.");
@@ -36,13 +36,11 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
         }
     }, [userId, currentDocumentId]);
 
-    const formatNumber = useMemo(() => {
-        return (value?: number) => {
-            if (!value) return "0";
-            if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
-            return value.toString();
-        };
-    }, []);
+    const formatNumber = (value?: number) => {
+        if (!value) return "0";
+        if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+        return value.toString();
+    };
 
     if (!userId) return null;
 
@@ -53,6 +51,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                     <p className="eyebrow">Từ tác giả này</p>
                     <h3>Slide nổi bật</h3>
                 </div>
+                <span className="chip ghost">{documents.length}</span>
             </div>
 
             {loading && <div className="empty-state">Đang tải...</div>}
@@ -62,28 +61,22 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                 <div className="empty-state">Tác giả chưa có thêm slide công khai.</div>
             )}
 
-            <div className="document-grid stacked">
+            <div className="document-grid two-col">
                 {documents.map((doc) => (
-                    <article key={doc.id} className="document-card compact">
-                        <div className="doc-thumbnail">
-                            <img
-                                src={`http://localhost:8080/api/images/thumbnail/${doc.thumbnailUrl}`}
-                                alt={doc.title}
-                            />
+                    <article key={doc.id} className="document-card compact simple">
+                        <Link to={`/document/${doc.id}`} className="doc-thumbnail">
+                            <img src={`http://localhost:8080/api/images/thumbnail/${doc.thumbnailUrl}`} alt={doc.title} />
                             <span className="doc-type">{doc.type}</span>
-                        </div>
+                        </Link>
                         <div className="doc-body">
-                            <h3>{doc.title}</h3>
-                            <p>{doc.userName ?? "admin"}</p>
+                            <Link to={`/document/${doc.id}`}>
+                                <h3>{doc.title}</h3>
+                            </Link>
+                            <p>by: {doc.userName ?? "Tác giả ẩn danh"}</p>
                             <div className="doc-meta">
                                 <span><i className="fa fa-eye me-1" /> {formatNumber(doc.viewsCount)}</span>
                                 <span><i className="fa fa-download me-1" /> {formatNumber(doc.downloadsCount)}</span>
                             </div>
-                        </div>
-                        <div className="doc-actions">
-                            <Link to={`/document/${doc.id}`} className="btn-pill ghost small">
-                                Đọc ngay
-                            </Link>
                         </div>
                     </article>
                 ))}
