@@ -5,4 +5,5 @@ export interface FavoriteResponse {
     documentId: number;
     documentTitle: string;
     documentThumbnailUrl: string;
+    authorName: string;
 }

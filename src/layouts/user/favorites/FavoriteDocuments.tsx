@@ -129,26 +129,25 @@ const FavoriteDocuments: React.FC = () => {
                                     )}
                                     <span className="doc-type">Kho lưu</span>
                                 </Link>
-
-                                <div className="doc-body">
-                                    <Link to={`/document/${fav.documentId}`}>
-                                        <h3>{fav.documentTitle}</h3>
-                                    </Link>
-                                    <p>Đã lưu vào: {formatSavedDate(fav.createdAt)}</p>
-                                    <div className="doc-meta">
-                                        <span>
-                                            <i className="fa fa-clock-o me-1" /> {formatSavedDate(fav.createdAt)}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            className="favorite-remove-btn"
-                                            onClick={() => handleRemove(fav.id)}
-                                            disabled={removingId === fav.id}
-                                            aria-label="Xóa khỏi kho lưu"
-                                        >
-                                            <i className="fa fa-trash" />
-                                        </button>
+                                <div className="doc-meta d-flex justify-content-between align-items-center">
+                                    <div className="d-flex flex-column fw-semibold text-dark">
+                                        <div>
+                                            <i className="fa fa-user me-1 text-secondary" /> by: {fav.authorName}
+                                        </div>
+                                        <div>
+                                            <i className="fa fa-clock-o me-1 text-secondary" /> {formatSavedDate(fav.createdAt)}
+                                        </div>
                                     </div>
+
+                                    <button
+                                        type="button"
+                                        className="favorite-remove-btn"
+                                        onClick={() => handleRemove(fav.id)}
+                                        disabled={removingId === fav.id}
+                                        aria-label="Xóa khỏi kho lưu"
+                                    >
+                                        <i className="fa fa-trash" />
+                                    </button>
                                 </div>
                             </article>
                         ))}
