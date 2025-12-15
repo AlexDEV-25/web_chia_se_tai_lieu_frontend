@@ -10,6 +10,16 @@ const FavoriteDocuments: React.FC = () => {
     const [removingId, setRemovingId] = useState<number | null>(null);
     const token = localStorage.getItem("token");
 
+    const formatSavedDate = (value: string) => {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "Không xác định";
+        return date.toLocaleDateString("vi-VN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        });
+    };
+
     useEffect(() => {
         if (!token) {
             setLoading(false);
@@ -96,45 +106,54 @@ const FavoriteDocuments: React.FC = () => {
                     </Link>
                 </div>
             ) : (
-                <div className="row g-4">
-                    {favorites.map((fav) => (
-                        <div key={fav.id} className="col-md-4">
-                            <div className="card h-100 shadow-sm">
-                                <div className="card-img-top favorite-thumb">
+                <section className="documents-block compact">
+                    <div className="section-heading">
+                        <div>
+                            <p className="eyebrow">Danh sách đã lưu</p>
+                            <h3>Bộ sưu tập của bạn</h3>
+                        </div>
+                        <span className="chip ghost">{favorites.length}</span>
+                    </div>
+
+                    <div className="document-grid three-col favorites-grid">
+                        {favorites.map((fav) => (
+                            <article key={fav.id} className="document-card compact simple">
+                                <Link to={`/document/${fav.documentId}`} className="doc-thumbnail">
                                     {fav.documentThumbnailUrl ? (
                                         <img
                                             src={`http://localhost:8080/api/images/thumbnail/${fav.documentThumbnailUrl}`}
                                             alt={fav.documentTitle}
                                         />
                                     ) : (
-                                        <div className="bg-light d-flex align-items-center justify-content-center text-muted" style={{ height: 160 }}>
-                                            Không có ảnh
-                                        </div>
+                                        <div className="thumb-placeholder">Không có ảnh</div>
                                     )}
-                                </div>
-                                <div className="card-body d-flex flex-column">
-                                    <h5 className="card-title">{fav.documentTitle}</h5>
-                                    <p className="text-muted small mb-3">
-                                        Đã lưu vào: {new Date(fav.createdAt).toLocaleDateString("vi-VN")}
-                                    </p>
-                                    <div className="mt-auto d-flex gap-2">
-                                        <Link to={`/document/${fav.documentId}`} className="btn btn-primary flex-grow-1">
-                                            Đọc lại
-                                        </Link>
+                                    <span className="doc-type">Kho lưu</span>
+                                </Link>
+
+                                <div className="doc-body">
+                                    <Link to={`/document/${fav.documentId}`}>
+                                        <h3>{fav.documentTitle}</h3>
+                                    </Link>
+                                    <p>Đã lưu vào: {formatSavedDate(fav.createdAt)}</p>
+                                    <div className="doc-meta">
+                                        <span>
+                                            <i className="fa fa-clock-o me-1" /> {formatSavedDate(fav.createdAt)}
+                                        </span>
                                         <button
                                             type="button"
-                                            className="btn btn-outline-danger"
+                                            className="favorite-remove-btn"
                                             onClick={() => handleRemove(fav.id)}
                                             disabled={removingId === fav.id}
+                                            aria-label="Xóa khỏi kho lưu"
                                         >
                                             <i className="fa fa-trash" />
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                            </article>
+                        ))}
+                    </div>
+                </section>
             )}
         </div>
     );

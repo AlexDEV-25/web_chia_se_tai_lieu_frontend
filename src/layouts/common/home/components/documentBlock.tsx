@@ -123,7 +123,7 @@ const DocumentBlock = ({
                 </div>
             ) : (
                 <div className="document-grid">
-                    {documents.slice(0, 8).map((doc) => {
+                    {documents.slice(0, documents.length).map((doc) => {
                         const isFavorite = Boolean(favoriteMap[doc.id]);
                         const isLoadingFavorite = favoriteLoadingId === doc.id;
                         return (

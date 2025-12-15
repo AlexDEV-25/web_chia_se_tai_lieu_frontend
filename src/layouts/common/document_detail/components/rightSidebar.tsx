@@ -22,7 +22,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                 const list = (response.resultList ?? []).filter(
                     (doc) => doc.id !== currentDocumentId && doc.status === "PUBLISHED"
                 );
-                setDocuments(list.slice(0, 8));
+                setDocuments(list.slice(0, 6));
             } catch (err) {
                 console.error("RightSidebar error", err);
                 setError("Không thể tải thêm slide của tác giả này.");
