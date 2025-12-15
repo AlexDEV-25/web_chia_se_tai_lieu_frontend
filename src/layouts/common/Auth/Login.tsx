@@ -59,7 +59,7 @@ const Login: React.FC<Props> = ({ setToken }) => {
 
     return (
         <div className="auth-shell">
-            <section className="page-hero glass-card">
+            <section className="page-hero">
                 <p className="eyebrow text-white-50">StudyShare · Tài khoản</p>
                 <h1>Chào mừng trở lại 👋</h1>
                 <p>Đăng nhập để đồng bộ kho tài liệu, đánh dấu yêu thích và tải lên những bài giảng chất lượng.</p>
