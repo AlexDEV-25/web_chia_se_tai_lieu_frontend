@@ -5,12 +5,10 @@ type Stats = {
 };
 
 type HeroBlockProps = {
-    searchTerm: string;
-    onSearchChange: (value: string) => void;
     stats: Stats;
 };
 
-const HeroBlock = ({ searchTerm, onSearchChange, stats }: HeroBlockProps) => {
+const HeroBlock = ({ stats }: HeroBlockProps) => {
     return (
         <section className="hero-block">
             <div>
@@ -22,17 +20,6 @@ const HeroBlock = ({ searchTerm, onSearchChange, stats }: HeroBlockProps) => {
                     Hàng trăm tài liệu mới được cập nhật mỗi tuần, phân loại rõ ràng theo học phần & kỹ năng.
                     Khám phá ngay hôm nay để bắt kịp tiến độ học tập của bạn.
                 </p>
-                <div className="hero-actions">
-                    <div className="search-pill">
-                        <i className="fa fa-search" />
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm tài liệu, môn học, từ khóa..."
-                            value={searchTerm}
-                            onChange={(e) => onSearchChange(e.target.value)}
-                        />
-                    </div>
-                </div>
             </div>
             <div className="hero-metrics">
                 <div className="metric-card">

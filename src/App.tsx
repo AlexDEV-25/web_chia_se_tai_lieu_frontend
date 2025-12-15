@@ -54,14 +54,14 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-
+  console.log(keyWords)
   return (
     <>
       <BrowserRouter>
         <AppContext.Provider value={ctxValue}>
-          <Header token={token} setToken={setToken} />
+          <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} />
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home keyWords={keyWords} />} />
             <Route path="/categories" element={<CategoryList />} />
             <Route path="/categories/add" element={<CategoryAdd />} />
             <Route path="/categories/edit/:id" element={<CategoryEdit />} />

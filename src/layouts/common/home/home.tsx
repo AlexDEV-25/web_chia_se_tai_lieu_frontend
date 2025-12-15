@@ -6,14 +6,15 @@ import type { CategoryResponse } from "../../../models/response/CategoryResponse
 import HeroBlock from "./components/heroBlock";
 import CategoryBlock from "./components/categoryBlock";
 import DocumentBlock from "./components/documentBlock";
-
-const Home = () => {
+interface Props {
+    keyWords: string
+}
+const Home = ({ keyWords }: Props) => {
     const [documents, setDocuments] = useState<DocumentResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [loadingDocs, setLoadingDocs] = useState(true);
     const [loadingCats, setLoadingCats] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<"all" | number>("all");
     const [showAllCategories, setShowAllCategories] = useState(false);
 
@@ -51,11 +52,11 @@ const Home = () => {
                 return false;
             }
             const matchCategory = selectedCategory === "all" || doc.categoryId === selectedCategory;
-            const matchSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                doc.description.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchSearch = doc.title.toLowerCase().includes(keyWords.toLowerCase()) ||
+                doc.description.toLowerCase().includes(keyWords.toLowerCase());
             return matchCategory && matchSearch;
         });
-    }, [documents, searchTerm, selectedCategory]);
+    }, [documents, keyWords, selectedCategory]);
 
     const topCategories = useMemo(() => categories.slice(0, 6), [categories]);
     const displayedCategories = showAllCategories ? categories : topCategories;
@@ -79,8 +80,6 @@ const Home = () => {
     return (
         <div className="home-shell">
             <HeroBlock
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
                 stats={stats}
             />
 

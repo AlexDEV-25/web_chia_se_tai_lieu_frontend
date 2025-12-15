@@ -1,16 +1,18 @@
 import { Link, NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect, useMemo, useState } from "react";
-import { AppContext, type AppContextType } from "../../../AppContext";
+import { useEffect, useMemo, useState } from "react";
+
 interface Props {
     token: string | null
     setToken: (value: string | null) => void
+    keyWords: string
+    setKeyWords: (value: string) => void
 }
-const Header: React.FC<Props> = ({ token, setToken }) => {
+const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => {
     const navigate = useNavigate();
     const [valid, setValid] = useState<boolean>(false);
-    const ctx = useContext(AppContext) as AppContextType | null;
-    const [searchValue, setSearchValue] = useState(ctx?.keyWords ?? "");
+    const [TempKeyWords, setTempKeyWords] = useState("");
+
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -26,20 +28,14 @@ const Header: React.FC<Props> = ({ token, setToken }) => {
     }, [token]);
 
     useEffect(() => {
-        setSearchValue(ctx?.keyWords ?? "");
-    }, [ctx?.keyWords]);
+        setKeyWords(keyWords);
+    }, [keyWords]);
 
     const navLinks = useMemo(() => ([
         { to: "/", label: "Tài liệu" },
         { to: "/favorites", label: "Kho lưu" },
         { to: "/upload", label: "Upload", restricted: true },
     ]), []);
-
-    const handleSearchChange = (value: string) => {
-        setSearchValue(value);
-        ctx?.setKeyWords(value);
-    };
-
     return (
         <header className="site-header">
             <Link className="brand" to="/">
@@ -61,15 +57,24 @@ const Header: React.FC<Props> = ({ token, setToken }) => {
                 })}
             </nav>
 
-            <div className="nav-search">
-                <i className="fa fa-search text-muted" />
+            <div className="search-box">
+                <i className="fa fa-search search-icon" />
+
                 <input
                     type="text"
                     placeholder="Tìm kiếm tài liệu..."
-                    value={searchValue}
-                    onChange={(e) => handleSearchChange(e.target.value)}
+                    value={TempKeyWords}
+                    onChange={(e) => setTempKeyWords(e.target.value)}
                 />
+
+                <button
+                    type="button"
+                    onClick={() => setKeyWords(TempKeyWords)}
+                >
+                    Tìm kiếm
+                </button>
             </div>
+
 
             <div className="nav-actions">
                 {token === null ? (
