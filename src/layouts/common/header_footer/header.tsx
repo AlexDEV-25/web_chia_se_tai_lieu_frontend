@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import UploadDropdown from "./components/UploadDropdown";
 
 interface Props {
     token: string | null
@@ -33,8 +34,8 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => 
 
     const navLinks = useMemo(() => ([
         { to: "/", label: "Tài liệu" },
+        { to: "/lesson", label: "Bài giảng" },
         { to: "/favorites", label: "Kho lưu" },
-        { to: "/upload", label: "Upload", restricted: true },
     ]), []);
     return (
         <header className="site-header">
@@ -43,18 +44,16 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => 
             </Link>
 
             <nav className="nav-links">
-                {navLinks.map((item) => {
-                    if (item.restricted && !valid) return null;
-                    return (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            className={({ isActive }) => isActive ? "active" : ""}
-                        >
-                            {item.label}
-                        </NavLink>
-                    );
-                })}
+                {navLinks.map((item) => (
+                    <NavLink
+                        key={item.to}
+                        to={item.to}
+                        className={({ isActive }) => isActive ? "active" : ""}
+                    >
+                        {item.label}
+                    </NavLink>
+                ))}
+                {valid && <UploadDropdown />}
             </nav>
 
             <div className="search-box">
@@ -96,7 +95,15 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => 
                             </summary>
                             <div className="user-dropdown">
                                 <Link to="/profile">Thông tin cá nhân</Link>
-                                <Link to="/upload">Upload tài liệu</Link>
+                                <details className="upload-submenu">
+                                    <summary>
+                                        Lịch sử
+                                        <i className="fa fa-chevron-right" />
+                                    </summary>
+                                    <div className="submenu-content">
+                                        <Link to="/uploadHistory">Lịch sử Upload</Link>
+                                    </div>
+                                </details>
                                 <hr />
                                 <button type="button" onClick={handleLogout}>
                                     Đăng xuất

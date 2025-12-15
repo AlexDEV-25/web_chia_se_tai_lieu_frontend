@@ -490,6 +490,134 @@ body {
     text-align: left;
 }
 
+.upload-submenu {
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.upload-submenu summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: none;
+    background: transparent;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--brand-dark);
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    list-style: none;
+    outline: none;
+}
+
+.upload-submenu summary::-webkit-details-marker {
+    display: none;
+}
+
+.upload-submenu summary i {
+    transition: transform 0.2s ease;
+}
+
+.upload-submenu[open] summary i {
+    transform: rotate(90deg);
+}
+
+.upload-dropdown {
+    position: relative;
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
+.upload-dropdown summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: rgba(15, 23, 42, 0.75);
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+    outline: none;
+    transition: background 0.2s ease;
+}
+
+.upload-dropdown summary:hover {
+    background: rgba(25, 118, 210, 0.12);
+    color: var(--brand-primary);
+}
+
+.upload-dropdown summary::-webkit-details-marker {
+    display: none;
+}
+
+.upload-dropdown summary i {
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+}
+
+.upload-dropdown[open] summary i {
+    transform: rotate(180deg);
+}
+
+.dropdown-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.5rem;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-soft);
+    min-width: 180px;
+    z-index: 10;
+}
+
+.dropdown-content a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--brand-dark);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+.dropdown-content a:hover {
+    background: rgba(25, 118, 210, 0.08);
+    color: var(--brand-primary);
+}
+
+.submenu-content {
+    padding-left: 1rem;
+    margin-top: 0.25rem;
+}
+
+.submenu-content a {
+    display: block;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--brand-muted);
+    font-size: 0.9rem;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.submenu-content a:hover {
+    color: var(--brand-primary);
+    background: rgba(25, 118, 210, 0.08);
+}
+
 .user-dropdown a:hover,
 .user-dropdown button:hover {
     background: var(--surface-soft);
@@ -971,6 +1099,62 @@ body {
 .suggestion-card:hover {
     border-color: var(--brand-primary);
     transform: translateX(6px);
+}
+
+/* -------------------------------------------------------------
+   UPLOAD LAYOUTS
+-------------------------------------------------------------- */
+.upload-grid-three {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    align-items: start;
+}
+
+.upload-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* -------------------------------------------------------------
+   UPLOAD DROPDOWN IN NAVIGATION
+-------------------------------------------------------------- */
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.doc-thumbnail:hover .video-overlay {
+    opacity: 1;
+}
+
+.video-overlay .fa-play-circle {
+    font-size: 3rem;
+    color: #fff;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
 /* UPLOAD */

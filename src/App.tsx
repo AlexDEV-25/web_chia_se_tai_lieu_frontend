@@ -9,15 +9,18 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import CategoryList from './layouts/admin/categories/CategoryList';
 import CategoryAdd from './layouts/admin/categories/CategoryAdd';
 import CategoryEdit from './layouts/admin/categories/CategotyEdit';
-import UploadDocument from './layouts/common/uploadDocument/UploadDocument';
+import UploadDocument from './layouts/common/uploads/UploadDocument';
 import DocumentDetail from './layouts/common/document_detail/DocumentDetail';
 import Register from './layouts/common/Auth/Register';
 import Login from './layouts/common/Auth/Login';
 import Activate from './layouts/common/Auth/Activate';
 import MyProfile from './layouts/user/profile/MyProfile';
 import FavoriteDocuments from './layouts/user/favorites/FavoriteDocuments';
+import LessonDetail from './layouts/common/lesson_detail/lesson_detail';
+import Lesson from './layouts/common/lesson/lesson';
 import { pdfjs } from 'react-pdf';
 import { introspect, refreshToken } from './apis/AuthApi';
+import UploadLesson from './layouts/common/uploads/UploadLesson';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -62,12 +65,15 @@ function App() {
           <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} />
           <Routes>
             <Route path="/" element={<Home keyWords={keyWords} />} />
+            <Route path="/lesson" element={<Lesson keyWords={keyWords} />} />
             <Route path="/categories" element={<CategoryList />} />
             <Route path="/categories/add" element={<CategoryAdd />} />
             <Route path="/categories/edit/:id" element={<CategoryEdit />} />
-            <Route path="/upload" element={<UploadDocument />} />
+            <Route path="/uploadDocument" element={<UploadDocument />} />
+            <Route path="/uploadLesson" element={<UploadLesson />} />
             <Route path="/register" element={<Register />} />
             <Route path="/document/:id" element={<DocumentDetail />} />
+            <Route path="/lesson/:id" element={<LessonDetail />} />
             <Route path="/login" element={<Login setToken={setToken} />} />
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/favorites" element={<FavoriteDocuments />} />

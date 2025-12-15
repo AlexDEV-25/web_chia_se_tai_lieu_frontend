@@ -127,7 +127,6 @@ const DocumentDetail: React.FC = () => {
                     <p>{documentDetail.description}</p>
 
                     <div className="doc-meta-chips">
-                        {documentDetail.type && <span className="chip">{documentDetail.type}</span>}
                         {documentDetail.categoryName && <span className="chip ghost">{documentDetail.categoryName}</span>}
                         <span className="chip ghost">
                             <i className="fa fa-eye" /> {documentDetail.viewsCount?.toLocaleString("vi-VN") ?? 0} lượt xem

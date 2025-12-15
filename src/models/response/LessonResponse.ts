@@ -1,11 +1,12 @@
-export interface DocumentResponse {
+export interface LessonResponse {
     id: number;
     title: string;
-    fileUrl: string;
+    lessonUrl: string;
+    documentUrl: string;
+    subFileUrl: string;
     description: string;
     thumbnailUrl: string;
     viewsCount: number;
-    downloadsCount: number;
     createdAt: string;
     updatedAt: string;
     status: Status;
