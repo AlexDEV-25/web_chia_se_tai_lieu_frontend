@@ -119,7 +119,7 @@ const Register: React.FC = () => {
 
             <section className="glass-card auth-grid-register">
                 <div className="auth-image">
-                    <img src="public/images/register.png" alt="Đăng ký tài khoản" />
+                    <img src="/images/register.png" alt="Đăng ký tài khoản" />
                 </div>
 
                 <div className="auth-content">
@@ -185,8 +185,9 @@ const Register: React.FC = () => {
                         <h4>Quyền lợi thành viên</h4>
                         <ul>
                             <li>Quản lý hồ sơ cá nhân & avatar.</li>
-                            <li>Xem lịch sử tải xuống và đánh giá.</li>
-                            <li>Nhận thông báo khi tài liệu yêu thích được cập nhật.</li>
+                            <li>Tham gia thảo luận, chia sẻ tài liệu, đề thi và bài giảng.</li>
+                            <li>Xem tìm kiếm, tải xuống và đánh giá tài liệu.</li>
+                            <li>Lưu trữ tài liệu yêu thích vào kho riêng.</li>
                         </ul>
                     </div>
                 </div>

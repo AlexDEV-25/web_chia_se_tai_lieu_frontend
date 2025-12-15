@@ -70,52 +70,58 @@ const Login: React.FC<Props> = ({ setToken }) => {
                 </div>
             </section>
 
-            <section className="glass-card auth-grid">
-                <div className="auth-form">
-                    <h2>Đăng nhập</h2>
-                    {loginError && <div className="error-text">{loginError}</div>}
-
-                    <div className="input-field">
-                        <label>Email</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="example@gmail.com"
-                        />
-                        {isErrorEmail && <span className="error-text">{isErrorEmail}</span>}
-                    </div>
-
-                    <div className="input-field">
-                        <label>Mật khẩu</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Nhập mật khẩu"
-                        />
-                        {isErrorPassword && <span className="error-text">{isErrorPassword}</span>}
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        className="btn-elevated"
-                    >
-                        Đăng nhập
-                    </button>
+            <section className="glass-card auth-grid-register">
+                <div className="auth-image">
+                    <img src="/images/login.png" alt="Đăng nhập tài khoản" />
                 </div>
 
-                <div className="auth-note">
-                    <h4>Vì sao nên tạo tài khoản?</h4>
-                    <ul>
-                        <li>Lưu tài liệu yêu thích và xem nhanh.</li>
-                        <li>Tải lên tài liệu của bạn cho cộng đồng.</li>
-                        <li>Nhận đề xuất cá nhân hóa theo môn học.</li>
-                    </ul>
-                    <p className="mt-3">
-                        Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
-                    </p>
+                <div className="auth-content">
+                    <div className="auth-form">
+                        <h2>Đăng nhập</h2>
+                        {loginError && <div className="error-text">{loginError}</div>}
+
+                        <div className="input-field">
+                            <label>Email</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="example@gmail.com"
+                            />
+                            {isErrorEmail && <span className="error-text">{isErrorEmail}</span>}
+                        </div>
+
+                        <div className="input-field">
+                            <label>Mật khẩu</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Nhập mật khẩu"
+                            />
+                            {isErrorPassword && <span className="error-text">{isErrorPassword}</span>}
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            className="btn-elevated"
+                        >
+                            Đăng nhập
+                        </button>
+                    </div>
+
+                    <div className="auth-note">
+                        <h4>Vì sao nên tạo tài khoản?</h4>
+                        <ul>
+                            <li>Lưu tài liệu yêu thích và xem nhanh.</li>
+                            <li>Tải lên tài liệu của bạn cho cộng đồng.</li>
+                            <li>Nhận đề xuất cá nhân hóa theo môn học.</li>
+                        </ul>
+                        <p className="mt-3">
+                            Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+                        </p>
+                    </div>
                 </div>
             </section>
         </div>
