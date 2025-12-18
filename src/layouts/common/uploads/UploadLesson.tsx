@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import api from "./../../../apis/HttpClient";
 import type { LessonRequest } from "./../../../models/request/LessonRequest";
 import { getAllCategory } from "./../../../apis/CategoryApi";
+import { uploadLesson } from "./../../../apis/LessonApi";
 import { Category } from "./../../../models/Category";
 import { useRef } from "react";
 
@@ -68,23 +68,10 @@ const UploadLesson: React.FC = () => {
             categoryId
         };
 
-        // ================= FORM DATA =================
-        const formData = new FormData();
-        formData.append("video", videoFile!);
-        if (documentFile) {
-            formData.append("document", documentFile);
-        }
-        if (subFile) {
-            formData.append("subfile", subFile);
-        }
-        formData.append("data", JSON.stringify(lesson));
-
         try {
-            const res = await api.post("/lessons/upload-file", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+            const res = await uploadLesson(videoFile!, lesson, documentFile || undefined, subFile || undefined);
 
-            console.log(res.data);
+            console.log(res);
             setSuccessMsg("Upload bài giảng thành công!");
 
             // Reset form
