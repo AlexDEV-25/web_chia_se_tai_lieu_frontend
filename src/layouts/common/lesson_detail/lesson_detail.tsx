@@ -177,7 +177,6 @@ const LessonDetail: React.FC = () => {
                 <div className="rail-pane lesson-video-pane">
                     <VideoComp
                         lessonId={lessonId}
-                        lessonUrl={lessonDetail.lessonUrl}
                         thumbnailUrl={lessonDetail.thumbnailUrl}
                     />
                 </div>
@@ -186,7 +185,6 @@ const LessonDetail: React.FC = () => {
                     <div className="rail-pane lesson-document-pane">
                         <DocumentComp
                             lessonId={lessonId}
-                            documentUrl={lessonDetail.documentUrl}
                         />
                     </div>
                 ) : (

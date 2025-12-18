@@ -141,7 +141,7 @@ const DocumentCarousel: React.FC<DocumentCarouselProps> = ({ categoryId, current
                             <article key={doc.id} className="document-card">
                                 <div className="doc-thumbnail">
                                     <img src={`http://localhost:8080/api/images/thumbnail/${doc.thumbnailUrl}`} alt={doc.title} />
-                                    <span className="doc-type">{doc.type}</span>
+                                    <span className="doc-type">PDF</span>
                                 </div>
                                 <div className="doc-body">
                                     <h3>{doc.title}</h3>

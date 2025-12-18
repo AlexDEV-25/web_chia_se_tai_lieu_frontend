@@ -66,7 +66,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                     <article key={doc.id} className="document-card compact simple">
                         <Link to={`/document/${doc.id}`} className="doc-thumbnail">
                             <img src={`http://localhost:8080/api/images/thumbnail/${doc.thumbnailUrl}`} alt={doc.title} />
-                            <span className="doc-type">{doc.type}</span>
+                            <span className="doc-type">PDF</span>
                         </Link>
                         <div className="doc-body">
                             <Link to={`/document/${doc.id}`}>

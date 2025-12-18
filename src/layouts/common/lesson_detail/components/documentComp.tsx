@@ -3,12 +3,11 @@ import { Document, Page } from "react-pdf";
 
 interface DocumentCompProps {
     lessonId?: number;
-    documentUrl?: string | null;
 }
 
 const MAX_RENDER_WIDTH = 520;
 
-const DocumentComp: React.FC<DocumentCompProps> = ({ lessonId, documentUrl }) => {
+const DocumentComp: React.FC<DocumentCompProps> = ({ lessonId }) => {
     const [numPages, setNumPages] = useState<number>();
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -17,9 +16,7 @@ const DocumentComp: React.FC<DocumentCompProps> = ({ lessonId, documentUrl }) =>
 
     const fileSource = lessonId
         ? `http://localhost:8080/api/lessons/${lessonId}/document`
-        : documentUrl
-            ? `http://localhost:8080${documentUrl}`
-            : null;
+        : null;
 
     useEffect(() => {
         if (!containerRef.current || typeof ResizeObserver === "undefined") return;

@@ -18,6 +18,7 @@ import MyProfile from './layouts/user/profile/MyProfile';
 import FavoriteDocuments from './layouts/user/favorites/FavoriteDocuments';
 import LessonDetail from './layouts/common/lesson_detail/lesson_detail';
 import Lesson from './layouts/common/lesson/lesson';
+import ChatGemini from './layouts/common/chatbot/ChatGemini';
 import { pdfjs } from 'react-pdf';
 import { introspect, refreshToken } from './apis/AuthApi';
 import UploadLesson from './layouts/common/uploads/UploadLesson';
@@ -80,6 +81,7 @@ function App() {
             <Route path="/activate/:email/:activationCode" element={<Activate />} />
           </Routes>
         </AppContext.Provider>
+        <ChatGemini />
         <Footer />
 
       </BrowserRouter>
