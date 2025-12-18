@@ -1,6 +1,7 @@
 import type { APIResponse } from './../models/response/APIResponse';
 import api, { httpGet, httpPost } from "./HttpClient";
 import type { DocumentResponse } from "./../models/response/DocumentResponse";
+import type { DocumentRequest } from "./../models/request/DocumentReques";
 
 export const getAllDocumentByCategory = async (id: number) => {
     return await httpGet<APIResponse<DocumentResponse>>(`/documents/category/${id}`);
@@ -34,6 +35,18 @@ export const downloadFile = async (fileName: string): Promise<Blob> => {
     const response = await api.get<Blob>(`/documents/download-file`, {
         params: { fileName },
         responseType: "blob",
+    });
+
+    return response.data;
+}
+
+export const uploadDocument = async (file: File, documentData: DocumentRequest): Promise<APIResponse<DocumentResponse>> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("data", JSON.stringify(documentData));
+
+    const response = await api.post<APIResponse<DocumentResponse>>("/documents/upload-file", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
     });
 
     return response.data;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import api from "./../../../apis/HttpClient";
 import type { DocumentRequest } from "./../../../models/request/DocumentReques";
 import { getAllCategory } from "./../../../apis/CategoryApi";
+import { uploadDocument } from "./../../../apis/DocumentApi";
 import { Category } from "./../../../models/Category";
 import { useRef } from "react";
 const UploadDocument: React.FC = () => {
@@ -57,17 +57,10 @@ const UploadDocument: React.FC = () => {
         const status: string = "PENDING";
         const doc: DocumentRequest = { title, description, viewsCount: 0, downloadsCount: 0, status, hide: false, categoryId, };
 
-        // ================= FORM DATA =================
-        const formData = new FormData();
-        formData.append("file", file!);
-        formData.append("data", JSON.stringify(doc));
-
         try {
-            const res = await api.post("/documents/upload-file", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+            const res = await uploadDocument(file!, doc);
 
-            console.log(res.data);
+            console.log(res);
             setSuccessMsg("Upload thành công!");
 
             // Reset form

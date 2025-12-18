@@ -178,7 +178,6 @@ const LessonDetail: React.FC = () => {
                     <VideoComp
                         lessonId={lessonId}
                         lessonUrl={lessonDetail.lessonUrl}
-                        title={lessonDetail.title}
                         thumbnailUrl={lessonDetail.thumbnailUrl}
                     />
                 </div>
