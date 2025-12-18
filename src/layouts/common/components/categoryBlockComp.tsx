@@ -1,4 +1,4 @@
-import type { CategoryResponse } from "../../../../models/response/CategoryResponse";
+import type { CategoryResponse } from "../../../models/response/CategoryResponse";
 
 type CategoryBlockProps = {
     loading: boolean;

@@ -11,9 +11,9 @@ import CategoryAdd from './layouts/admin/categories/CategoryAdd';
 import CategoryEdit from './layouts/admin/categories/CategotyEdit';
 import UploadDocument from './layouts/common/uploads/UploadDocument';
 import DocumentDetail from './layouts/common/document_detail/DocumentDetail';
-import Register from './layouts/common/Auth/Register';
-import Login from './layouts/common/Auth/Login';
-import Activate from './layouts/common/Auth/Activate';
+import Register from './layouts/common/auth/Register';
+import Login from './layouts/common/auth/Login';
+import Activate from './layouts/common/auth/Activate';
 import MyProfile from './layouts/user/profile/MyProfile';
 import FavoriteDocuments from './layouts/user/favorites/FavoriteDocuments';
 import LessonDetail from './layouts/common/lesson_detail/lesson_detail';
@@ -51,14 +51,12 @@ function App() {
       const data = await refreshToken();
       if (data != null) {
         localStorage.setItem("token", data.result?.token ?? "");
-        console.log("refresh token");
         setToken(data.result?.token ?? null);
       }
     }, 15 * 60 * 1000); // 15 phút
     return () => clearInterval(interval);
   }, []);
 
-  console.log(keyWords)
   return (
     <>
       <BrowserRouter>

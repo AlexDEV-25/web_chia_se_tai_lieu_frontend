@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import type { RatingResponse } from "../../../../models/response/RatingResponse";
-import type { UserResponse } from "../../../../models/response/UserResponse";
-import { getRatingsByDocument, createRating } from "../../../../apis/RatingApi";
-import api from "../../../../apis/HttpClient";
+import type { RatingResponse } from "../../../models/response/RatingResponse";
+import type { UserResponse } from "../../../models/response/UserResponse";
+import { getRatingsByDocument, createRating } from "../../../apis/RatingApi";
+import api from "../../../apis/HttpClient";
 
 interface RatingCompProps {
     docId: number;

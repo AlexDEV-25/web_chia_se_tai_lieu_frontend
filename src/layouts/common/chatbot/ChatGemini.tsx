@@ -45,11 +45,9 @@ const ChatGemini: React.FC = () => {
             const response = await getAllHistoryByUser();
             const historyMessages = response.resultList?.map((item: ChatHistoryResponse, index: number) => ({
                 id: `history-${index}`,
-                text: item.content,
+                text: formatMessageText(item.content),
                 sender: item.role === "USER" ? "user" as const : "bot" as const,
-                timestamp: new Date(),
             })) || [];
-            console.log(historyMessages);
             setMessages(historyMessages);
         } catch (error) {
             console.error("Error loading chat history:", error);
@@ -98,7 +96,7 @@ const ChatGemini: React.FC = () => {
 
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
-                text: response.result || "Xin lỗi, tôi không thể trả lời ngay lúc này.",
+                text: formatMessageText(response.result || "Xin lỗi, tôi không thể trả lời ngay lúc này."),
                 sender: "bot",
             };
 
@@ -139,6 +137,19 @@ const ChatGemini: React.FC = () => {
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
+    };
+
+    const formatMessageText = (text: string) => {
+        // Handle bold text (**...**)
+        let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        // Handle numbered lists (1., 2., 3.) and add line breaks
+        formattedText = formattedText.replace(/(\d+\.\s)/g, '\n$1');
+
+        // Handle colons with line breaks
+        formattedText = formattedText.replace(/:/g, ':\n');
+
+        return formattedText;
     };
 
     if (isMinimized) {
@@ -226,7 +237,7 @@ const ChatGemini: React.FC = () => {
                                             <span>{message.fileName}</span>
                                         </div>
                                     )}
-                                    <p>{message.text}</p>
+                                    <p dangerouslySetInnerHTML={{ __html: message.text }}></p>
                                 </div>
                             </div>
                         ))}

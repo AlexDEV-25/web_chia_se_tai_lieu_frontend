@@ -1724,4 +1724,73 @@ body {
     }
 }
 
-/*  */
+/* Chat message text formatting fixes */
+.message-content p {
+    white-space: pre-line !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+}
+
+/* Bold text formatting */
+.message-content strong,
+.message-content b {
+    font-weight: bold !important;
+}
+
+/* Ensure proper text wrapping */
+.message-content {
+    white-space: pre-line !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+.doc-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.doc-meta .meta-left {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.favorite-inline {
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    margin-left: auto;
+}
+
+.favorite-inline:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    transform: scale(1.1);
+}
+
+.favorite-inline.active {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.favorite-inline:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.favorite-inline i {
+    font-size: 12px;
+}

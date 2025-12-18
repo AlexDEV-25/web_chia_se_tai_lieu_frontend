@@ -1,38 +1,49 @@
-import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
-import type { FavoriteResponse } from "../../../../models/response/FavoriteResponse";
-import type { UserResponse } from "../../../../models/response/UserResponse";
-import { addFavorite, getFavoritesByUser, removeFavorite } from "../../../../apis/FavoriteApi";
-import api from "../../../../apis/HttpClient";
+import { Link } from "react-router-dom";
+import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
+import type { DocumentResponse } from "../../../models/response/DocumentResponse";
+import type { FavoriteResponse } from "../../../models/response/FavoriteResponse";
+import { addFavorite, getFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
+import api from "../../../apis/HttpClient";
 
-type DocumentBlockProps = {
-    loading: boolean;
-    error: string | null;
-    documents: DocumentResponse[];
-    shimmerPlaceholders: unknown[];
-    selectedCategoryLabel: string;
-};
+interface CarouselProps {
+    categoryId: number;
+    currentDocumentId: number;
+}
 
-type FavoriteMap = Record<
-    number,
-    {
-        favoriteId: number;
-    }
->;
+type FavoriteMap = Record<number, { favoriteId: number }>;
 
-const DocumentBlock = ({
-    loading,
-    error,
-    documents,
-    shimmerPlaceholders,
-    selectedCategoryLabel,
-}: DocumentBlockProps) => {
-    const hasDocuments = documents.length > 0;
+const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }) => {
+    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const token = localStorage.getItem("token");
+
+    useEffect(() => {
+        const fetchByCategory = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await getAllDocumentByCategory(categoryId);
+                const list = (response.resultList ?? []).filter(
+                    (doc) => doc.id !== currentDocumentId && doc.status === "PUBLISHED"
+                );
+                setDocuments(list.slice(0, 8));
+            } catch (err) {
+                console.error("DocumentCarousel error", err);
+                setError("Không thể tải tài liệu cùng danh mục.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (categoryId) {
+            fetchByCategory();
+        }
+    }, [categoryId, currentDocumentId]);
 
     useEffect(() => {
         if (!token) {
@@ -41,28 +52,27 @@ const DocumentBlock = ({
             return;
         }
 
-        const fetchUserAndFavorites = async () => {
+        const fetchFavorites = async () => {
             try {
                 const userResponse = await api.get("/users/my-info");
-                const user = userResponse.data.result as UserResponse;
+                const user = userResponse.data.result;
                 setCurrentUserId(user.id);
 
                 const favoritesResponse = await getFavoritesByUser();
-                const list = favoritesResponse.resultList ?? [];
                 const map: FavoriteMap = {};
-                list.forEach((fav: FavoriteResponse) => {
+                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteResponse) => {
                     if (fav.documentId) {
                         map[fav.documentId] = { favoriteId: fav.id };
                     }
                 });
                 setFavoriteMap(map);
             } catch (err) {
-                console.error("Không thể tải danh sách yêu thích", err);
+                console.error("Không thể tải kho lưu", err);
                 setFavoriteMap({});
             }
         };
 
-        fetchUserAndFavorites();
+        fetchFavorites();
     }, [token]);
 
     const handleToggleFavorite = async (doc: DocumentResponse) => {
@@ -70,8 +80,10 @@ const DocumentBlock = ({
             alert("Vui lòng đăng nhập để lưu tài liệu yêu thích.");
             return;
         }
+
         const existing = favoriteMap[doc.id];
         setFavoriteLoadingId(doc.id);
+
         try {
             if (existing) {
                 await removeFavorite(existing.favoriteId);
@@ -100,30 +112,29 @@ const DocumentBlock = ({
         }
     };
 
+    const hasDocuments = documents.length > 0;
+
+    if (!categoryId) return null;
+
     return (
         <section className="documents-block">
             <div className="section-heading">
                 <div>
-                    <p className="eyebrow">Tài liệu đề xuất</p>
-                    <h2>{selectedCategoryLabel}</h2>
+                    <p className="eyebrow">Đề xuất thêm</p>
+                    <h2>Tài liệu cùng danh mục</h2>
                 </div>
             </div>
 
+            {loading && <div className="empty-state">Đang tải...</div>}
             {error && <div className="alert alert-danger">{error}</div>}
 
-            {loading ? (
+            {!loading && !hasDocuments && (
+                <div className="empty-state">Chưa có tài liệu phù hợp.</div>
+            )}
+
+            {hasDocuments && (
                 <div className="document-grid">
-                    {shimmerPlaceholders.map((_, index) => (
-                        <div key={index} className="document-card shimmer" />
-                    ))}
-                </div>
-            ) : !hasDocuments ? (
-                <div className="empty-state">
-                    <p>Không tìm thấy tài liệu phù hợp. Hãy thử từ khóa khác nhé!</p>
-                </div>
-            ) : (
-                <div className="document-grid">
-                    {documents.slice(0, documents.length).map((doc) => {
+                    {documents.map((doc) => {
                         const isFavorite = Boolean(favoriteMap[doc.id]);
                         const isLoadingFavorite = favoriteLoadingId === doc.id;
                         return (
@@ -134,7 +145,7 @@ const DocumentBlock = ({
                                 </div>
                                 <div className="doc-body">
                                     <h3>{doc.title}</h3>
-                                    <p>{doc.description}</p>
+                                    <p>{doc.description ?? "Tài liệu chưa có mô tả."}</p>
                                     <div className="doc-meta">
                                         <span><i className="fa fa-eye me-1" /> {doc.viewsCount}</span>
                                         <span><i className="fa fa-download me-1" /> {doc.downloadsCount}</span>
@@ -163,4 +174,4 @@ const DocumentBlock = ({
     );
 };
 
-export default DocumentBlock;
+export default CarouselComp;

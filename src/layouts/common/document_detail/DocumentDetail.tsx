@@ -3,11 +3,11 @@ import { useParams } from "react-router-dom";
 import PdfComp from "./components/pdfComp";
 import { downloadFile, getDocumentById, increaseDownload, increaseView } from "../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
-import CommentComp from "./components/commentComp";
+import CommentComp from "../components/commentComp";
 import LeftSidebar from "./components/leftSidebar";
 import RightSidebar from "./components/rightSidebar";
-import DocumentCarousel from "./components/documentCarousel";
-import RatingComp from "./components/ratingComp";
+import CarouselComp from "../components/carouselComp";
+import RatingComp from "../components/ratingComp";
 
 const DocumentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -45,12 +45,19 @@ const DocumentDetail: React.FC = () => {
         fetchDetail();
     }, [docId]);
 
-    // Tăng lượt xem khi người dùng mở trang
     useEffect(() => {
         if (!docId) return;
-        increaseView(docId).catch(() => undefined);
-    }, [docId]);
 
+        const timer = setTimeout(async () => {
+            try {
+                await increaseView(docId);
+            } catch (error) {
+                console.error("Failed to increase view count:", error);
+            }
+        }, 30000); // 30 seconds
+
+        return () => clearTimeout(timer);
+    }, [docId]);
 
     // Meta info
     const meta = useMemo(() => {
@@ -200,7 +207,7 @@ const DocumentDetail: React.FC = () => {
 
             {documentDetail.categoryId && (
                 <section className="glass-card doc-related">
-                    <DocumentCarousel
+                    <CarouselComp
                         categoryId={documentDetail.categoryId}
                         currentDocumentId={documentDetail.id}
                     />

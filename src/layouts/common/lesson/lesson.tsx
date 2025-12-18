@@ -3,9 +3,9 @@ import { getAllLesson } from "../../../apis/LessonApi";
 import { getAllCategory } from "../../../apis/CategoryApi";
 import type { LessonResponse } from "../../../models/response/LessonResponse";
 import type { CategoryResponse } from "../../../models/response/CategoryResponse";
-import LessonHeroBlock from "./components/lessonHeroBlock";
-import CategoryBlock from "../home/components/categoryBlock";
-import LessonBlock from "./components/lessonBlock";
+import HeroBlockComp from "../components/heroBlockComp";
+import CategoryBlockComp from "../components/categoryBlockComp";
+import MainBlockComp from "../components/mainBlockComp";
 
 interface Props {
     keyWords: string
@@ -81,11 +81,32 @@ const Lesson = ({ keyWords }: Props) => {
 
     return (
         <div className="home-shell">
-            <LessonHeroBlock
-                stats={stats}
+            <HeroBlockComp
+                content={{
+                    eyebrow: "StudyShare · Video học tập",
+                    title: "Học hiệu quả với <span>video bài giảng chất lượng</span>",
+                    subtitle: "Hàng trăm video bài giảng từ giảng viên kinh nghiệm, kèm tài liệu chi tiết. Nâng cao kiến thức và kỹ năng của bạn ngay hôm nay."
+                }}
+                metrics={[
+                    {
+                        label: "Video",
+                        value: stats.totalLessons,
+                        subtext: "bài giảng"
+                    },
+                    {
+                        label: "Lượt xem",
+                        value: stats.totalViews.toLocaleString("vi-VN"),
+                        subtext: "đang học"
+                    },
+                    {
+                        label: "Tài liệu",
+                        value: stats.totalVideos,
+                        subtext: "đã sẵn sàng"
+                    }
+                ]}
             />
 
-            <CategoryBlock
+            <CategoryBlockComp
                 loading={loadingCats}
                 categories={displayedCategories}
                 selectedCategory={selectedCategory}
@@ -99,12 +120,15 @@ const Lesson = ({ keyWords }: Props) => {
                 shimmerPlaceholders={shimmer}
             />
 
-            <LessonBlock
+            <MainBlockComp
                 loading={loadingLessons}
                 error={error}
-                lessons={filteredLessons}
+                items={filteredLessons}
                 shimmerPlaceholders={shimmer}
                 selectedCategoryLabel={selectedCategoryLabel}
+                itemType="lesson"
+                sectionTitle="Video đề xuất"
+                emptyMessage="Không có video nào trong danh mục này. Hãy thử danh mục khác."
             />
         </div>
     );

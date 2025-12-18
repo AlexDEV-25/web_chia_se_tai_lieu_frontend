@@ -5,9 +5,9 @@ import DocumentComp from "./components/documentComp";
 import { downloadDocument, downloadSubFile, getLessonById, increaseView } from "../../../apis/LessonApi";
 import type { LessonResponse } from "../../../models/response/LessonResponse";
 import LessonRightSidebar from "./components/lessonRightSidebar";
-import DocumentCarousel from "../document_detail/components/documentCarousel";
-import RatingComp from "../document_detail/components/ratingComp";
-import CommentComp from "../document_detail/components/commentComp";
+import CarouselComp from "../components/carouselComp";
+import RatingComp from "../components/ratingComp";
+import CommentComp from "../components/commentComp";
 
 const LessonDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -41,7 +41,16 @@ const LessonDetail: React.FC = () => {
 
     useEffect(() => {
         if (!lessonId) return;
-        increaseView(lessonId).catch(() => undefined);
+
+        const timer = setTimeout(async () => {
+            try {
+                await increaseView(lessonId);
+            } catch (error) {
+                console.error("Failed to increase view count:", error);
+            }
+        }, 30000); // 30 seconds
+
+        return () => clearTimeout(timer);
     }, [lessonId]);
 
     const meta = useMemo(() => {
@@ -199,7 +208,7 @@ const LessonDetail: React.FC = () => {
 
             {lessonDetail.categoryId && (
                 <section className="glass-card doc-related">
-                    <DocumentCarousel
+                    <CarouselComp
                         categoryId={lessonDetail.categoryId}
                         currentDocumentId={lessonDetail.id}
                     />

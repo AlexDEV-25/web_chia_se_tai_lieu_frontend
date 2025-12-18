@@ -1,11 +1,11 @@
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { getCommentsByDocument, createComment } from "../../../../apis/CommentApi";
-import type { CommentRequest } from "../../../../models/request/CommentRequest";
-import type { CommentResponse } from "../../../../models/response/CommentResponse";
-import type { UserResponse } from "../../../../models/response/UserResponse";
-import api from "../../../../apis/HttpClient";
+import { getCommentsByDocument, createComment } from "../../../apis/CommentApi";
+import type { CommentRequest } from "../../../models/request/CommentRequest";
+import type { CommentResponse } from "../../../models/response/CommentResponse";
+import type { UserResponse } from "../../../models/response/UserResponse";
+import api from "../../../apis/HttpClient";
 
 interface CommentCompProps {
     docId: number;

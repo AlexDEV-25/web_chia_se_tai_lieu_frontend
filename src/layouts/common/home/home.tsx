@@ -3,9 +3,9 @@ import { getAllDocument } from "../../../apis/DocumentApi";
 import { getAllCategory } from "../../../apis/CategoryApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import type { CategoryResponse } from "../../../models/response/CategoryResponse";
-import HeroBlock from "./components/heroBlock";
-import CategoryBlock from "./components/categoryBlock";
-import DocumentBlock from "./components/documentBlock";
+import HeroBlockComp from "../components/heroBlockComp";
+import CategoryBlockComp from "../components/categoryBlockComp";
+import MainBlockComp from "../components/mainBlockComp";
 interface Props {
     keyWords: string
 }
@@ -79,11 +79,32 @@ const Home = ({ keyWords }: Props) => {
 
     return (
         <div className="home-shell">
-            <HeroBlock
-                stats={stats}
+            <HeroBlockComp
+                content={{
+                    eyebrow: "StudyShare · Kho chia sẻ học tập",
+                    title: "Đón đầu kỳ thi cùng bộ <span>tài liệu chuẩn hóa</span>",
+                    subtitle: "Hàng trăm tài liệu mới được cập nhật mỗi tuần, phân loại rõ ràng theo học phần & kỹ năng. Khám phá ngay hôm nay để bắt kịp tiến độ học tập của bạn."
+                }}
+                metrics={[
+                    {
+                        label: "Tài liệu",
+                        value: stats.totalDocuments,
+                        subtext: "đã sẵn sàng"
+                    },
+                    {
+                        label: "Lượt tải",
+                        value: stats.totalDownloads.toLocaleString("vi-VN"),
+                        subtext: "từ cộng đồng"
+                    },
+                    {
+                        label: "Lượt xem",
+                        value: stats.totalViews.toLocaleString("vi-VN"),
+                        subtext: "đang học"
+                    }
+                ]}
             />
 
-            <CategoryBlock
+            <CategoryBlockComp
                 loading={loadingCats}
                 categories={displayedCategories}
                 selectedCategory={selectedCategory}
@@ -97,12 +118,15 @@ const Home = ({ keyWords }: Props) => {
                 shimmerPlaceholders={shimmer}
             />
 
-            <DocumentBlock
+            <MainBlockComp
                 loading={loadingDocs}
                 error={error}
-                documents={filteredDocuments}
+                items={filteredDocuments}
                 shimmerPlaceholders={shimmer}
                 selectedCategoryLabel={selectedCategoryLabel}
+                itemType="document"
+                sectionTitle="Tài liệu đề xuất"
+                emptyMessage="Không tìm thấy tài liệu phù hợp. Hãy thử từ khóa khác nhé!"
             />
         </div>
     );
