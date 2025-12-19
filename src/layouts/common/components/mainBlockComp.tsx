@@ -263,10 +263,10 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                                 <Link to={getItemLink(item)}>
                                     <h3>{item.title}</h3>
                                 </Link>
-                                <p>
+                                <div>
                                     <i>{item.description ? item.description : "Không có mô tả."}</i>
-                                    <div><strong>by: {item.userName}</strong></div>
-                                </p>
+                                    <div><strong style={{ fontWeight: 500, opacity: 0.7 }}>by:</strong> {item.userName}</div>
+                                </div>
                                 {renderMeta(item)}
                             </div>
                             {renderActions()}
