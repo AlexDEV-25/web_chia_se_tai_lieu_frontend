@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../../apis/HttpClient";
 import type { UserResponse } from "../../../models/response/UserResponse";
+import { getMyInfo } from "../../../apis/UserApi";
 
 const MyProfile: React.FC = () => {
     const [user, setUser] = useState<UserResponse | null>(null);
@@ -25,10 +26,10 @@ const MyProfile: React.FC = () => {
     // ================= GET MY INFO =================
     const fetchMyInfo = async () => {
         try {
-            const res = await api.get("/users/my-info");
-            setUser(res.data.result);
-            setUsername(res.data.result.username);
-            setEmail(res.data.result.email);
+            const res = await getMyInfo();
+            setUser(res.result);
+            setUsername(res?.result?.username || "");
+            setEmail(res?.result?.email || "");
         } catch (err) {
             console.error(err);
         }
@@ -120,7 +121,7 @@ const MyProfile: React.FC = () => {
                 {/* AVATAR */}
                 <div className="text-center mb-4">
                     <img
-                        src={`http://localhost:8080/api/images/avatar/${user.avatarUrl}`}
+                        src={`http://localhost:8080/api/images/avatar/${user.avatarUrl ?? "myAvatar.jpg"}`}
                         alt="avatar"
                         style={{ width: 140, height: 140, borderRadius: "50%", objectFit: "cover", border: "3px solid #ddd", }}
                     />

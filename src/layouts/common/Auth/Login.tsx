@@ -4,7 +4,7 @@ import { login } from "../../../apis/AuthApi";
 import type { AuthenticationRequest } from "../../../models/request/AuthenticationRequest";
 import { useNavigate } from "react-router-dom";
 import { OAuthConfig } from "../../../configurations/configuration";
-import { exchangeToken, getUserDetails } from "../../../apis/GoogleApi";
+import { exchangeToken } from "../../../apis/GoogleApi";
 import { useSearchParams } from "react-router-dom";
 interface Props {
     setToken: (value: string | null) => void
@@ -20,7 +20,6 @@ const Login: React.FC<Props> = ({ setToken }) => {
 
     const calledRef = useRef(false);
     const [code, setCode] = useState<string>("");
-    const [accessToken, setAccessToken] = useState<string>("");
     const [searchParams] = useSearchParams();
 
     // ================= HANDLE SUBMIT =================
@@ -94,7 +93,14 @@ const Login: React.FC<Props> = ({ setToken }) => {
                 try {
                     const data = await exchangeToken(code);
                     console.log(data)
-                    setAccessToken(data.result?.token + "");
+                    const token = data.result?.token;
+                    if (!token) {
+                        setLoginError("Đăng nhập thất bại!");
+                        return;
+                    }
+                    localStorage.setItem("token", token);
+                    setToken(token);
+                    navigate("/");
                 }
                 catch (err) {
                     console.log(err);
@@ -103,21 +109,6 @@ const Login: React.FC<Props> = ({ setToken }) => {
             fetchExchangeToken();
         }
     }, [code])
-
-    useEffect(() => {
-        if (accessToken !== "") {
-            const fetchGoogleData = async () => {
-                try {
-                    const data = await getUserDetails(accessToken);
-                    console.log(data);
-                }
-                catch (err) {
-                    console.log(err);
-                }
-            }
-            fetchGoogleData();
-        }
-    }, [accessToken])
 
 
     return (

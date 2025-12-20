@@ -16,7 +16,7 @@ const ChatGemini: React.FC = () => {
     const [inputMessage, setInputMessage] = useState("");
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [isMinimized, setIsMinimized] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(true);
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,8 +63,30 @@ const ChatGemini: React.FC = () => {
     useEffect(() => {
         if (isAuthenticated) {
             loadChatHistory();
+            setIsMinimized(false);
         }
     }, [isAuthenticated]);
+
+    useEffect(() => {
+        const checkTokenChange = () => {
+            const token = localStorage.getItem("token");
+
+            // Handle login: token exists but no user data
+            if (token && !currentUser) {
+                fetchCurrentUser();
+            }
+
+            // Handle logout: no token but user data still exists
+            if (!token && currentUser) {
+                setCurrentUser(null);
+                setMessages([]);
+                setIsMinimized(true);
+            }
+        };
+
+        const interval = setInterval(checkTokenChange, 1000);
+        return () => clearInterval(interval);
+    }, [currentUser]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
