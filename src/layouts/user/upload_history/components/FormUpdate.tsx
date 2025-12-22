@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
 import type { LessonResponse } from "../../../../models/response/LessonResponse";
 import type { DocumentRequest } from "../../../../models/request/DocumentReques";
 import type { LessonRequest } from "../../../../models/request/LessonRequest";
+import { getAllCategory } from "../../../../apis/CategoryApi";
+import type { CategoryResponse } from "../../../../models/response/CategoryResponse";
 
 export type FormDataType = DocumentRequest | LessonRequest;
 export type ItemType = "document" | "lesson";
@@ -24,8 +26,24 @@ const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSav
         status: item.status,
     });
 
+    const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await getAllCategory();
+                setCategories(response?.resultList ?? []);
+            } catch (error) {
+                console.error("Failed to fetch categories:", error);
+            }
+        };
+
+        if (isVisible) {
+            fetchCategories();
+        }
+    }, [isVisible]);
 
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
@@ -126,6 +144,11 @@ const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSav
                             }
                         >
                             <option value={0}>Chọn danh mục</option>
+                            {categories.map((category) => (
+                                <option key={category.id} value={category.id}>
+                                    {category.name}
+                                </option>
+                            ))}
                         </select>
                         {errors.categoryId && (
                             <div className="error-message">{errors.categoryId}</div>

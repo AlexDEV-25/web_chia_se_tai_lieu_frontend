@@ -1,0 +1,81 @@
+/* ========================================
+   UPLOAD PAGE STYLES
+   ======================================== */
+.upload-shell,
+.favorites-shell,
+.profile-shell {
+    padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 6vw, 4rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.upload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.file-drop {
+    border: 1px dashed var(--border);
+    border-radius: 22px;
+    padding: 1.25rem;
+    text-align: center;
+    color: var(--brand-muted);
+}
+
+/* -------------------------------------------------------------
+   UPLOAD LAYOUTS
+-------------------------------------------------------------- */
+.upload-grid-three {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    align-items: start;
+}
+
+.upload-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* -------------------------------------------------------------
+   UPLOAD DROPDOWN IN NAVIGATION
+-------------------------------------------------------------- */
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.doc-thumbnail:hover .video-overlay {
+    opacity: 1;
+}
+
+.video-overlay .fa-play-circle {
+    font-size: 3rem;
+    color: #fff;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}

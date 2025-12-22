@@ -1,0 +1,14 @@
+/* ========================================
+   CSS VARIABLES
+   ======================================== */
+:root {
+    --brand-primary: #1976D2;
+    --brand-secondary: #4CAF50;
+    --brand-dark: #0F172A;
+    --brand-muted: #94A3B8;
+    --surface: #FFFFFF;
+    --surface-soft: #F4F7FB;
+    --border: #E2E8F0;
+    --shadow-card: 0 25px 60px rgba(15, 23, 42, 0.08);
+    --shadow-soft: 0 8px 30px rgba(15, 23, 42, 0.12);
+}

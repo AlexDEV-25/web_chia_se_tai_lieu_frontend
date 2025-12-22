@@ -65,14 +65,6 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
         setDeletingLesson(null);
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("vi-VN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-        });
-    };
-
     if (lessons.length === 0) {
         return (
             <div className="empty-state">
@@ -121,41 +113,10 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
                                     <i className="fa fa-eye"></i>
                                     <span>{lesson.viewsCount}</span>
                                 </div>
-                                <div className="meta-item">
-                                    <i className="fa fa-calendar"></i>
-                                    <span>{formatDate(lesson.createdAt)}</span>
-                                </div>
-                            </div>
-
-                            <div className="lesson-category">
-                                <span className="category-tag">{lesson.categoryName}</span>
-                            </div>
-
-                            <div className="lesson-files">
-                                {lesson.documentUrl && (
-                                    <div className="file-indicator">
-                                        <i className="fa fa-file-text"></i>
-                                        <span>Tài liệu</span>
-                                    </div>
-                                )}
-                                {lesson.subFileUrl && (
-                                    <div className="file-indicator">
-                                        <i className="fa fa-closed-captioning"></i>
-                                        <span>Phụ đề</span>
-                                    </div>
-                                )}
                             </div>
                         </div>
 
-                        <div className="lesson-actions">
-                            <button
-                                className="action-button edit"
-                                onClick={() => handleEdit(lesson)}
-                                title="Sửa bài học"
-                            >
-                                <i className="fa fa-edit"></i>
-                                Sửa
-                            </button>
+                        <div className="lesson-action">
                             <button
                                 className="action-button delete"
                                 onClick={() => handleDelete(lesson)}
@@ -163,6 +124,14 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
                             >
                                 <i className="fa fa-trash"></i>
                                 Xóa
+                            </button>
+                            <button
+                                className="action-button edit"
+                                onClick={() => handleEdit(lesson)}
+                                title="Sửa bài học"
+                            >
+                                <i className="fa fa-edit"></i>
+                                Sửa
                             </button>
                         </div>
                     </div>

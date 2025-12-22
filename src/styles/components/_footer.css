@@ -1,0 +1,49 @@
+/* ========================================
+   FOOTER COMPONENT STYLES
+   ======================================== */
+.site-footer {
+    background: #0b1120;
+    color: rgba(248, 250, 252, 0.85);
+    padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 6vw, 4rem);
+    margin-top: 4rem;
+}
+
+.site-footer .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+}
+
+.site-footer h5,
+.site-footer h6 {
+    color: #fff;
+    margin-bottom: 0.75rem;
+}
+
+.site-footer a {
+    color: rgba(248, 250, 252, 0.8);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+}
+
+.site-footer a:hover {
+    color: #fff;
+}
+
+.site-footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.site-footer .footer-bottom {
+    margin-top: 2rem;
+    border-top: 1px solid rgba(226, 232, 240, 0.15);
+    padding-top: 1.5rem;
+    font-size: 0.9rem;
+    text-align: center;
+}

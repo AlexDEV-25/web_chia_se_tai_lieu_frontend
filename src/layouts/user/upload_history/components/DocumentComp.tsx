@@ -65,14 +65,6 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
         setDeletingDocument(null);
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("vi-VN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-        });
-    };
-
     if (documents.length === 0) {
         return (
             <div className="empty-state">
@@ -122,26 +114,11 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
                                     <i className="fa fa-download"></i>
                                     <span>{document.downloadsCount}</span>
                                 </div>
-                                <div className="meta-item">
-                                    <i className="fa fa-calendar"></i>
-                                    <span>{formatDate(document.createdAt)}</span>
-                                </div>
-                            </div>
 
-                            <div className="document-category">
-                                <span className="category-tag">{document.categoryName}</span>
                             </div>
                         </div>
 
-                        <div className="document-actions">
-                            <button
-                                className="action-button edit"
-                                onClick={() => handleEdit(document)}
-                                title="Sửa tài liệu"
-                            >
-                                <i className="fa fa-edit"></i>
-                                Sửa
-                            </button>
+                        <div className="document-action">
                             <button
                                 className="action-button delete"
                                 onClick={() => handleDelete(document)}
@@ -149,6 +126,14 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
                             >
                                 <i className="fa fa-trash"></i>
                                 Xóa
+                            </button>
+                            <button
+                                className="action-button edit"
+                                onClick={() => handleEdit(document)}
+                                title="Sửa tài liệu"
+                            >
+                                <i className="fa fa-edit"></i>
+                                Sửa
                             </button>
                         </div>
                     </div>

@@ -1,0 +1,234 @@
+/* ========================================
+   DOCUMENT DETAIL PAGE STYLES
+   ======================================== */
+.document-detail-shell {
+    padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 6vw, 5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.document-hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-card {
+    border-radius: 20px;
+    background: var(--surface-soft);
+    padding: 1rem;
+    border: 1px solid var(--border);
+}
+
+.document-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.doc-overview {
+    display: grid;
+    grid-template-columns: minmax(260px, 2fr) minmax(220px, 1fr);
+    gap: 2rem;
+    align-items: center;
+}
+
+.doc-meta-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.chip {
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    background: rgba(250, 250, 250, 0.2);
+    border: 1px solid rgba(250, 250, 250, 0.4);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.chip.ghost {
+    background: rgba(15, 23, 42, 0.05);
+    color: var(--brand-dark);
+    border-color: rgba(148, 163, 184, 0.4);
+}
+
+.document-layout {
+    display: grid;
+    grid-template-columns: minmax(160px, 0.85fr) minmax(420px, 2.4fr) minmax(260px, 1.35fr);
+    gap: 1.75rem;
+}
+
+@media (max-width: 1200px) {
+    .document-layout {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+}
+
+.slide-panel,
+.viewer-panel,
+.suggestion-panel {
+    border-radius: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-soft);
+    padding: 1.25rem;
+}
+
+.viewer-panel {
+    min-height: 70vh;
+}
+
+.slide-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.slide-item {
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    padding: 0.65rem 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--surface-soft);
+    cursor: pointer;
+    transition: border 0.2s ease, transform 0.2s ease;
+}
+
+.slide-item.active {
+    border-color: var(--brand-primary);
+    background: rgba(25, 118, 210, 0.08);
+    transform: translateX(4px);
+}
+
+.slide-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.15), rgba(79, 70, 229, 0.25));
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+}
+
+.slide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.slide-nav {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.slide-nav button {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: var(--brand-primary);
+}
+
+.slide-more {
+    margin-top: 0.5rem;
+    text-align: center;
+    color: var(--brand-muted);
+    font-size: 0.85rem;
+}
+
+.pdf-viewer-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.pdf-stage {
+    background: #0f172a;
+    border-radius: 20px;
+    padding: 1.25rem;
+    display: flex;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.15);
+    min-height: 60vh;
+}
+
+.pdf-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pdf-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pdf-nav button {
+    border: none;
+    background: var(--surface-soft);
+    border-radius: 999px;
+    padding: 0.5rem 1.25rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.pdf-page-indicator {
+    font-weight: 600;
+}
+
+.pdf-progress {
+    width: 100%;
+    accent-color: var(--brand-primary);
+}
+
+.suggestion-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.suggestion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    overflow-y: auto;
+}
+
+.suggestion-card {
+    border-radius: 18px;
+    border: 1px solid transparent;
+    padding: 0.75rem;
+    background: var(--surface-soft);
+    text-decoration: none;
+    color: inherit;
+    transition: border 0.2s ease, transform 0.2s ease;
+}
+
+.suggestion-card:hover {
+    text-align: center;
+    color: var(--brand-muted);
+    font-size: 0.85rem;
+}
