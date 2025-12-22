@@ -48,7 +48,7 @@ const Home = ({ keyWords }: Props) => {
 
     const filteredDocuments = useMemo(() => {
         return documents.filter(doc => {
-            if (doc.status && doc.status !== "PUBLISHED" && doc.hide !== false) {
+            if ((doc.status && doc.status !== "PUBLISHED") || (doc.hide !== false)) {
                 return false;
             }
             const matchCategory = selectedCategory === "all" || doc.categoryId === selectedCategory;

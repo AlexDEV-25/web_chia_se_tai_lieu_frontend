@@ -50,7 +50,7 @@ const Lesson = ({ keyWords }: Props) => {
 
     const filteredLessons = useMemo(() => {
         return lessons.filter(lesson => {
-            if (lesson.status && lesson.status !== "PUBLISHED" && lesson.hide !== false) {
+            if ((lesson.status && lesson.status !== "PUBLISHED") || (lesson.hide !== false)) {
                 return false;
             }
             const matchCategory = selectedCategory === "all" || lesson.categoryId === selectedCategory;

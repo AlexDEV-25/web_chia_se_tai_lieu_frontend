@@ -121,8 +121,9 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
         }
     };
 
-    const formatNumber = (num: number) => {
-        return num.toLocaleString("vi-VN");
+    const formatNumber = (value?: number | null) => {
+        if (value == null) return "0";
+        return value.toLocaleString("vi-VN");
     };
 
     const formatDuration = () => {

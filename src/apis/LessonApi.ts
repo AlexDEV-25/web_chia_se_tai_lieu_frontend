@@ -71,3 +71,27 @@ export const uploadLesson = async (
 
     return response.data;
 }
+
+export const updateLesson = async (id: number, lessonData: LessonRequest): Promise<APIResponse<LessonResponse>> => {
+    const response = await api.put<APIResponse<LessonResponse>>(`/lessons/${id}`, lessonData);
+    return response.data;
+}
+
+export const deleteLesson = async (id: number): Promise<APIResponse<void>> => {
+    const response = await api.delete<APIResponse<void>>(`/lessons/${id}`);
+    return response.data;
+}
+
+export const getMyLesson = async () => {
+    return await httpGet<APIResponse<LessonResponse>>(`/lessons/my-lesson`);
+}
+
+export const updateMyLesson = async (id: number, lessonData: LessonRequest): Promise<APIResponse<LessonResponse>> => {
+    const response = await api.put<APIResponse<LessonResponse>>(`/lessons/my-lesson/${id}`, lessonData);
+    return response.data;
+}
+
+export const deleteMyLesson = async (id: number): Promise<APIResponse<void>> => {
+    const response = await api.delete<APIResponse<void>>(`/lessons/my-lesson/${id}`);
+    return response.data;
+}

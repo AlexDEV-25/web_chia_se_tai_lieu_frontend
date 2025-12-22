@@ -22,6 +22,7 @@ import ChatGemini from './layouts/common/chatbot/ChatGemini';
 import { pdfjs } from 'react-pdf';
 import { introspect, refreshToken } from './apis/AuthApi';
 import UploadLesson from './layouts/common/uploads/UploadLesson';
+import UploadHistory from './layouts/user/upload_history/UploadHistory';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -76,6 +77,7 @@ function App() {
             <Route path="/login" element={<Login setToken={setToken} />} />
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/favorites" element={<FavoriteDocuments />} />
+            <Route path="/uploadHistory" element={<UploadHistory />} />
             <Route path="/activate/:email/:activationCode" element={<Activate />} />
           </Routes>
         </AppContext.Provider>
