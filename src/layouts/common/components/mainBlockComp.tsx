@@ -1,7 +1,15 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import type { FavoriteResponse } from "../../../models/response/FavoriteResponse";
-import { addFavorite, getFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
+import type { FavoriteDocumentResponse } from "../../../models/response/FavoriteDocumentResponse";
+import type { FavoriteLessonResponse } from "../../../models/response/FavoriteLessonResponse";
+import {
+    addFavoriteDocument,
+    addFavoriteLesson,
+    getDocumentFavoritesByUser,
+    getLessonFavoritesByUser,
+    removeFavorite,
+} from "../../../apis/FavoriteApi";
+
 import { getMyInfo } from "../../../apis/UserApi";
 
 interface BaseItem {
@@ -62,16 +70,30 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
         const fetchUserAndFavorites = async () => {
             try {
                 const user = await getMyInfo();
-                setCurrentUserId(user?.result?.id ?? null);
+                const fetchedUserId = user?.result?.id ?? null;
+                setCurrentUserId(fetchedUserId);
 
-                const favoritesResponse = await getFavoritesByUser();
-                const favorites = favoritesResponse.resultList ?? [];
+                if (!fetchedUserId) {
+                    setFavoriteMap({});
+                    return;
+                }
+
                 const map: FavoriteMap = {};
-                favorites.forEach((fav: FavoriteResponse) => {
-                    if (fav.documentId) {
-                        map[fav.documentId] = { favoriteId: fav.id };
-                    }
-                });
+                if (itemType === "document") {
+                    const favoritesResponse = await getDocumentFavoritesByUser();
+                    (favoritesResponse.resultList ?? []).forEach((fav: FavoriteDocumentResponse) => {
+                        if (fav.documentId) {
+                            map[fav.documentId] = { favoriteId: fav.id };
+                        }
+                    });
+                } else {
+                    const favoritesResponse = await getLessonFavoritesByUser();
+                    (favoritesResponse.resultList ?? []).forEach((fav: FavoriteLessonResponse) => {
+                        if (fav.lessonId) {
+                            map[fav.lessonId] = { favoriteId: fav.id };
+                        }
+                    });
+                }
                 setFavoriteMap(map);
             } catch (err) {
                 console.error("Không thể tải dữ liệu người dùng hoặc yêu thích", err);
@@ -80,11 +102,11 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
         };
 
         fetchUserAndFavorites();
-    }, [token]);
+    }, [token, itemType]);
 
     const handleToggleFavorite = async (itemId: number) => {
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để lưu mục yêu thích.");
+            alert(`Vui lòng đăng nhập để lưu ${itemType === "document" ? "tài liệu" : "bài giảng"} yêu thích.`);
             return;
         }
 
@@ -94,15 +116,22 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
         try {
             if (existing) {
                 await removeFavorite(existing.favoriteId);
+
                 setFavoriteMap((prev) => {
                     const { [itemId]: _removed, ...rest } = prev;
                     return rest;
                 });
             } else {
-                const response = await addFavorite({
-                    userId: currentUserId,
-                    documentId: itemId,
-                });
+                const response =
+                    itemType === "document"
+                        ? await addFavoriteDocument({
+                            userId: currentUserId,
+                            documentId: itemId,
+                        })
+                        : await addFavoriteLesson({
+                            userId: currentUserId,
+                            lessonId: itemId,
+                        });
                 const saved = response.result;
                 if (saved) {
                     setFavoriteMap((prev) => ({
@@ -183,30 +212,32 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
             </span>
         );
 
-        if (itemType === "document" && "downloadsCount" in item) {
-            const isFavorite = Boolean(favoriteMap[item.id]);
-            const isLoadingFavorite = favoriteLoadingId === item.id;
 
-            return (
-                <div className="doc-meta">
-                    <div className="meta-left">
-                        {views}
+        const isFavorite = Boolean(favoriteMap[item.id]);
+        const isLoadingFavorite = favoriteLoadingId === item.id;
+
+        return (
+            <div className="doc-meta">
+                <div className="meta-left">
+                    {views}
+                    {itemType === "document" && "downloadsCount" in item && (
                         <span>
                             <i className="fa fa-download me-1" /> {formatNumber(item.downloadsCount || 0)}
                         </span>
-                    </div>
-                    <button
-                        type="button"
-                        className={`favorite-inline ${isFavorite ? "active" : ""}`}
-                        aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
-                        onClick={() => handleToggleFavorite(item.id)}
-                        disabled={isLoadingFavorite}
-                    >
-                        <i className={`fa ${isFavorite ? "fa-heart" : "fa-heart-o"}`} />
-                    </button>
+                    )}
                 </div>
-            );
-        }
+                <button
+                    type="button"
+                    className={`favorite-inline ${isFavorite ? "active" : ""}`}
+                    aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+                    onClick={() => handleToggleFavorite(item.id)}
+                    disabled={isLoadingFavorite}
+                >
+                    <i className={`fa ${isFavorite ? "fa-heart" : "fa-heart-o"}`} />
+                </button>
+            </div>
+        );
+
 
         return (
             <div className="doc-meta">

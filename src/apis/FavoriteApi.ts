@@ -1,16 +1,30 @@
-import type { APIResponse } from './../models/response/APIResponse';
-import { httpPost, httpDelete, httpGet } from "./HttpClient";
-import type { FavoriteResponse } from "./../models/response/FavoriteResponse";
-import type { FavoriteRequest } from "./../models/request/FavoriteRequest"
+import type { APIResponse } from "../models/response/APIResponse";
+import { httpDelete, httpGet, httpPost } from "./HttpClient";
+import type { FavoriteDocumentRequest } from "../models/request/FavoriteDocumentRequest";
+import type { FavoriteDocumentResponse } from "../models/response/FavoriteDocumentResponse";
+import type { FavoriteLessonRequest } from "../models/request/FavoriteLessonRequest";
+import type { FavoriteLessonResponse } from "../models/response/FavoriteLessonResponse";
 
-export const addFavorite = async (data: FavoriteRequest) => {
-    return await httpPost<APIResponse<FavoriteResponse>>(`/favorites`, data);
+export const addFavoriteDocument = async (data: FavoriteDocumentRequest) => {
+    return await httpPost<APIResponse<FavoriteDocumentResponse>>(`/favorites/document`, data);
+};
+
+export const addFavoriteLesson = async (data: FavoriteLessonRequest) => {
+    return await httpPost<APIResponse<FavoriteLessonResponse>>(`/favorites/lesson`, data);
+};
+
+export const getDocumentFavoritesByUser = async () => {
+    return await httpGet<APIResponse<FavoriteDocumentResponse>>(`/favorites/document/user`);
+};
+
+export const getLessonFavoritesByUser = async () => {
+    return await httpGet<APIResponse<FavoriteLessonResponse>>(`/favorites/lesson/user`);
 };
 
 export const removeFavorite = async (id: number) => {
     return await httpDelete<APIResponse<void>>(`/favorites/${id}`);
 };
 
-export const getFavoritesByUser = async () => {
-    return await httpGet<APIResponse<FavoriteResponse>>(`/favorites/user`);
-};
+// Backwards-compatible exports for existing document-only flows
+export const addFavorite = addFavoriteDocument;
+export const getFavoritesByUser = getDocumentFavoritesByUser;

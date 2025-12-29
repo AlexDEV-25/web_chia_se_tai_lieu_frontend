@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
-import type { FavoriteResponse } from "../../../models/response/FavoriteResponse";
-import { addFavorite, getFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
+import type { FavoriteDocumentResponse } from "../../../models/response/FavoriteDocumentResponse";
+import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import { getMyInfo } from "../../../apis/UserApi";
 
 interface CarouselProps {
@@ -55,11 +55,16 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
         const fetchFavorites = async () => {
             try {
                 const user = await getMyInfo();
-                setCurrentUserId(user?.result?.id ?? null);
+                const fetchedUserId = user?.result?.id ?? null;
+                setCurrentUserId(fetchedUserId);
+                if (!fetchedUserId) {
+                    setFavoriteMap({});
+                    return;
+                }
 
-                const favoritesResponse = await getFavoritesByUser();
+                const favoritesResponse = await getDocumentFavoritesByUser();
                 const map: FavoriteMap = {};
-                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteResponse) => {
+                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteDocumentResponse) => {
                     if (fav.documentId) {
                         map[fav.documentId] = { favoriteId: fav.id };
                     }
@@ -91,10 +96,11 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
                     return rest;
                 });
             } else {
-                const response = await addFavorite({
+                const response = await addFavoriteDocument({
                     userId: currentUserId,
                     documentId: doc.id,
                 });
+
                 const saved = response.result;
                 if (saved) {
                     setFavoriteMap((prev) => ({

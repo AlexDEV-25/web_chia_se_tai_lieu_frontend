@@ -9,7 +9,7 @@ import RightSidebar from "./components/RightSidebar";
 import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/MatingComp";
 import { getMyInfo } from "../../../apis/UserApi";
-import { addFavorite, getFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
+import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 
 const DocumentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -85,7 +85,7 @@ const DocumentDetail: React.FC = () => {
                     return;
                 }
 
-                const favoritesResponse = await getFavoritesByUser();
+                const favoritesResponse = await getDocumentFavoritesByUser();
                 if (!isMounted) return;
                 const favorites = favoritesResponse.resultList ?? [];
                 const existing = favorites.find((fav) => fav.documentId === docId);
@@ -119,7 +119,7 @@ const DocumentDetail: React.FC = () => {
                 await removeFavorite(favoriteId);
                 setFavoriteId(null);
             } else {
-                const response = await addFavorite({
+                const response = await addFavoriteDocument({
                     userId: currentUserId,
                     documentId: docId,
                 });

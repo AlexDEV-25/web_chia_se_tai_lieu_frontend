@@ -1,4 +1,4 @@
-export interface FavoriteResponse {
+export interface FavoriteDocumentResponse {
     id: number;
     createdAt: string;
     userId: number;

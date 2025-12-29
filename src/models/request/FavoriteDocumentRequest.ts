@@ -1,4 +1,4 @@
-export interface FavoriteRequest {
+export interface FavoriteDocumentRequest {
     userId: number;
     documentId: number;
 }

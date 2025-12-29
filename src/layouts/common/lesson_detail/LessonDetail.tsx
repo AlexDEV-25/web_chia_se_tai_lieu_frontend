@@ -9,7 +9,7 @@ import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/MatingComp";
 import CommentComp from "../components/CommentComp";
 import { getMyInfo } from "../../../apis/UserApi";
-import { addFavorite, getFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
+import { addFavoriteLesson, getLessonFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 
 const LessonDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -79,10 +79,10 @@ const LessonDetail: React.FC = () => {
                     return;
                 }
 
-                const favoritesResponse = await getFavoritesByUser();
+                const favoritesResponse = await getLessonFavoritesByUser();
                 if (!isMounted) return;
                 const favorites = favoritesResponse.resultList ?? [];
-                const existing = favorites.find((fav) => fav.documentId === lessonId);
+                const existing = favorites.find((fav) => fav.lessonId === lessonId);
                 setFavoriteId(existing ? existing.id : null);
             } catch (err) {
                 console.error("Không thể tải kho lưu", err);
@@ -102,7 +102,7 @@ const LessonDetail: React.FC = () => {
     const handleToggleFavorite = async () => {
         if (!lessonId) return;
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để lưu tài liệu yêu thích.");
+            alert("Vui lòng đăng nhập để lưu bài giảng yêu thích.");
             return;
         }
 
@@ -113,10 +113,11 @@ const LessonDetail: React.FC = () => {
                 await removeFavorite(favoriteId);
                 setFavoriteId(null);
             } else {
-                const response = await addFavorite({
+                const response = await addFavoriteLesson({
                     userId: currentUserId,
-                    documentId: lessonId,
+                    lessonId,
                 });
+
                 const saved = response.result;
                 if (saved) {
                     setFavoriteId(saved.id);
