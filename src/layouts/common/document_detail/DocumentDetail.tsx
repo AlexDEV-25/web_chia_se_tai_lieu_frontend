@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import PdfComp from "./components/pdfComp";
+import CenterComp from "./components/CenterComp";
 import { downloadFile, getDocumentById, increaseDownload, increaseView } from "../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
-import CommentComp from "../components/commentComp";
-import LeftSidebar from "./components/leftSidebar";
-import RightSidebar from "./components/rightSidebar";
-import CarouselComp from "../components/carouselComp";
-import RatingComp from "../components/ratingComp";
+import CommentComp from "../components/CommentComp";
+import LeftSidebar from "./components/LeftSidebar";
+import RightSidebar from "./components/RightSidebar";
+import CarouselComp from "../components/CarouselComp";
+import RatingComp from "../components/MatingComp";
+import { getMyInfo } from "../../../apis/UserApi";
+import { addFavorite, getFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 
 const DocumentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -23,6 +25,10 @@ const DocumentDetail: React.FC = () => {
     // Trang đang hiển thị (1-based)
     const [activeSlide, setActiveSlide] = useState<number>(1);
     const [downloading, setDownloading] = useState(false);
+    const [favoriteId, setFavoriteId] = useState<number | null>(null);
+    const [favoriteLoading, setFavoriteLoading] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
     // Tải thông tin document
     useEffect(() => {
@@ -58,6 +64,77 @@ const DocumentDetail: React.FC = () => {
 
         return () => clearTimeout(timer);
     }, [docId]);
+
+    useEffect(() => {
+        if (!docId || !token) {
+            setFavoriteId(null);
+            setCurrentUserId(null);
+            return;
+        }
+
+        let isMounted = true;
+
+        const fetchFavoriteState = async () => {
+            try {
+                const user = await getMyInfo();
+                if (!isMounted) return;
+                const fetchedUserId = user?.result?.id ?? null;
+                setCurrentUserId(fetchedUserId);
+                if (!fetchedUserId) {
+                    setFavoriteId(null);
+                    return;
+                }
+
+                const favoritesResponse = await getFavoritesByUser();
+                if (!isMounted) return;
+                const favorites = favoritesResponse.resultList ?? [];
+                const existing = favorites.find((fav) => fav.documentId === docId);
+                setFavoriteId(existing ? existing.id : null);
+            } catch (err) {
+                console.error("Không thể tải kho lưu", err);
+                if (isMounted) {
+                    setFavoriteId(null);
+                }
+            }
+        };
+
+        fetchFavoriteState();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [docId, token]);
+
+    const handleToggleFavorite = async () => {
+        if (!docId) return;
+        if (!currentUserId) {
+            alert("Vui lòng đăng nhập để lưu tài liệu yêu thích.");
+            return;
+        }
+
+        setFavoriteLoading(true);
+
+        try {
+            if (favoriteId) {
+                await removeFavorite(favoriteId);
+                setFavoriteId(null);
+            } else {
+                const response = await addFavorite({
+                    userId: currentUserId,
+                    documentId: docId,
+                });
+                const saved = response.result;
+                if (saved) {
+                    setFavoriteId(saved.id);
+                }
+            }
+        } catch (err) {
+            console.error("Lỗi khi cập nhật kho lưu", err);
+            alert("Không thể cập nhật kho lưu. Vui lòng thử lại.");
+        } finally {
+            setFavoriteLoading(false);
+        }
+    };
 
     // Meta info
     const meta = useMemo(() => {
@@ -167,6 +244,16 @@ const DocumentDetail: React.FC = () => {
                         )}
                     </button>
 
+                    <button
+                        type="button"
+                        onClick={handleToggleFavorite}
+                        className={`btn-outline favorite-toggle ${favoriteId ? "active" : ""}`}
+                        disabled={favoriteLoading}
+                    >
+                        <i className={`fa ${favoriteId ? "fa-heart" : "fa-heart-o"}`} />{" "}
+                        {favoriteId ? "Đã lưu" : "Lưu vào kho"}
+                    </button>
+
                     <button onClick={() => window.history.back()} className="btn-outline">
                         Quay lại thư viện
                     </button>
@@ -189,7 +276,7 @@ const DocumentDetail: React.FC = () => {
                 </div>
 
                 <div className="viewer-panel rail-pane">
-                    <PdfComp
+                    <CenterComp
                         docId={docId}
                         pageNumber={activeSlide}
                         onLoadPages={handlePdfLoadedPages}

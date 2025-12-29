@@ -1,70 +1,147 @@
-import { useNavigate } from "react-router-dom";
+import type { FormEvent } from "react";
 import { useState } from "react";
+
+import { useNavigate } from "react-router-dom";
 import { createCategory } from "../../../apis/CategoryApi";
 import type { CategoryRequest } from "../../../models/request/CategoryRequest";
+import "../../../styles/pages/_categories.css";
+
 const CategoryAdd: React.FC = () => {
     const navigate = useNavigate();
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
-    const [isErrorName, setIsErrorName] = useState<string>("");
-    const [isErrorDescription, setIsErrorDescription] = useState<string>("");
-    const handleSubmit = async () => {
-        let nameError = ""
-        let descriptionError = ""
+    const [nameError, setNameError] = useState<string>("");
+    const [descriptionError, setDescriptionError] = useState<string>("");
+    const [formError, setFormError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-        if (name.trim() === "") { nameError = "loi khong nhap"; }
-        if (description.trim() === "") { descriptionError = "loi khong nhap"; }
+    const validateForm = () => {
+        let isValid = true;
+        let localNameError = "";
+        let localDescriptionError = "";
 
-        setIsErrorName(nameError);
-        setIsErrorDescription(descriptionError);
+        if (name.trim() === "") {
+            localNameError = "Vui lòng nhập tên danh mục.";
+            isValid = false;
+        }
 
-        if (isErrorName !== "" || isErrorDescription !== "") {
+        if (description.trim() === "") {
+            localDescriptionError = "Mô tả không được bỏ trống.";
+            isValid = false;
+        }
+
+        setNameError(localNameError);
+        setDescriptionError(localDescriptionError);
+
+        return isValid;
+    };
+
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (!validateForm()) {
             return;
         }
 
-        const newCategory: CategoryRequest = { name: name, description: description, hide: false }
-        createCategory(newCategory);
-        navigate("/categories");
+        setFormError(null);
+        setIsSubmitting(true);
+
+        try {
+            const newCategory: CategoryRequest = {
+                name: name.trim(),
+                description: description.trim(),
+                hide: false
+            };
+            await createCategory(newCategory);
+            navigate("/categories");
+        } catch (error: any) {
+            const message =
+                error?.response?.data?.message ??
+                "Không thể tạo danh mục mới. Vui lòng thử lại.";
+            setFormError(message);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
-        <div>
-            <div className="p-6 max-w-md mx-auto">
-                <h1 className="text-2xl font-bold mb-4">Thêm danh mục</h1>
-                <form className="space-y-4">
-                    <div>
-                        <label className="block mb-1">Tên danh mục</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                            className="w-full border px-3 py-2 rounded"
-                            required
-                        />
-                        <div className="text-red-500">{isErrorName}</div>
+        <div className="admin-category-page">
+            <div className="category-container narrow">
+                <div className="category-form-card">
+                    <div className="category-form-header">
+                        <div>
+                            <p className="category-eyebrow">Quản lý danh mục</p>
+                            <h1>Thêm danh mục mới</h1>
+                            <p>Tạo chuyên mục để sắp xếp tài liệu và bài giảng khoa học hơn.</p>
+                        </div>
+                        <button
+                            type="button"
+                            className="category-btn ghost"
+                            onClick={() => navigate("/categories")}
+                        >
+                            Quay lại
+                        </button>
                     </div>
 
-                    <div>
-                        <label className="block mb-1">Mô tả</label>
-                        <textarea
-                            name="description"
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
-                            className="w-full border px-3 py-2 rounded"
-                        />
-                        <div className="text-red-500">{isErrorDescription}</div>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        className="bg-blue-500 text-black px-4 py-2 rounded hover:bg-blue-600"
-                    >
-                        Thêm
-                    </button>
-                </form>
+                    {formError && (
+                        <div className="category-alert error">
+                            <p>{formError}</p>
+                        </div>
+                    )}
+
+                    <form className="category-form" onSubmit={handleSubmit} noValidate>
+                        <label className="form-field">
+                            <span>Tên danh mục</span>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className={`category-input ${nameError ? "has-error" : ""}`}
+                                placeholder="Ví dụ: Công nghệ thông tin"
+                            />
+                            {nameError && <small className="field-error">{nameError}</small>}
+                        </label>
+
+                        <label className="form-field">
+                            <span>Mô tả</span>
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className={`category-textarea ${descriptionError ? "has-error" : ""}`}
+                                rows={5}
+                                placeholder="Ghi chú ngắn giúp người dùng hiểu nội dung danh mục."
+                            />
+                            {descriptionError && (
+                                <small className="field-error">{descriptionError}</small>
+                            )}
+                        </label>
+
+                        <div className="category-form-actions">
+                            <button
+                                type="submit"
+                                className="category-btn primary"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? "Đang lưu..." : "Thêm danh mục"}
+                            </button>
+                            <button
+                                type="button"
+                                className="category-btn subtle"
+                                onClick={() => {
+                                    setName("");
+                                    setDescription("");
+                                    setNameError("");
+                                    setDescriptionError("");
+                                    setFormError(null);
+                                }}
+                            >
+                                Xóa nội dung
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );
 };
+
 export default CategoryAdd;

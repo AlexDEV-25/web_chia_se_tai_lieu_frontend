@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { chatbot, getAllHistoryByUser } from "../../../apis/ChatGemini";
-import api from "../../../apis/HttpClient";
+import { getMyInfo } from "../../../apis/UserApi";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import type { ChatHistoryResponse } from "../../../models/response/ChatHistoryResponse";
 
@@ -31,8 +31,8 @@ const ChatGemini: React.FC = () => {
             return;
         }
         try {
-            const response = await api.get("/users/my-info");
-            setCurrentUser(response.data.result as UserResponse);
+            const user = await getMyInfo();
+            setCurrentUser(user?.result);
         } catch (err) {
             console.error("fetchCurrentUser error", err);
             setCurrentUser(null);

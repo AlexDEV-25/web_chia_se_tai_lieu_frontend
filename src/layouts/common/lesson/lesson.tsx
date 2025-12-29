@@ -3,9 +3,9 @@ import { getAllLesson } from "../../../apis/LessonApi";
 import { getAllCategory } from "../../../apis/CategoryApi";
 import type { LessonResponse } from "../../../models/response/LessonResponse";
 import type { CategoryResponse } from "../../../models/response/CategoryResponse";
-import HeroBlockComp from "../components/heroBlockComp";
-import CategoryBlockComp from "../components/categoryBlockComp";
-import MainBlockComp from "../components/mainBlockComp";
+import HeroBlockComp from "../components/HeroBlockComp";
+import CategoryBlockComp from "../components/CategoryBlockComp";
+import MainBlockComp from "../components/MainBlockComp";
 
 interface Props {
     keyWords: string

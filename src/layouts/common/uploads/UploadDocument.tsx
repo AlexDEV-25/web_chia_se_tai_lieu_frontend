@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import type { DocumentRequest } from "./../../../models/request/DocumentReques";
 import { getAllCategory } from "./../../../apis/CategoryApi";
 import { uploadDocument } from "./../../../apis/DocumentApi";
-import { Category } from "./../../../models/Category";
+import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
 import { useRef } from "react";
 const UploadDocument: React.FC = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [categoryId, setCategoryId] = useState(1);
     const [file, setFile] = useState<File | null>(null);
     const fileRef = useRef<HTMLInputElement | null>(null);

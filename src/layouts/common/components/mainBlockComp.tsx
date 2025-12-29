@@ -1,9 +1,8 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { FavoriteResponse } from "../../../models/response/FavoriteResponse";
-import type { UserResponse } from "../../../models/response/UserResponse";
 import { addFavorite, getFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
-import api from "../../../apis/HttpClient";
+import { getMyInfo } from "../../../apis/UserApi";
 
 interface BaseItem {
     id: number;
@@ -62,9 +61,8 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
 
         const fetchUserAndFavorites = async () => {
             try {
-                const userResponse = await api.get("/users/my-info");
-                const user = userResponse.data.result as UserResponse;
-                setCurrentUserId(user.id);
+                const user = await getMyInfo();
+                setCurrentUserId(user?.result?.id ?? null);
 
                 const favoritesResponse = await getFavoritesByUser();
                 const favorites = favoritesResponse.resultList ?? [];

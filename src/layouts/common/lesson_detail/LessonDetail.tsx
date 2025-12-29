@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import VideoComp from "./components/videoComp";
-import DocumentComp from "./components/documentComp";
+import VideoComp from "./components/VideoComp";
+import DocumentComp from "./components/DocumentComp";
 import { downloadDocument, downloadSubFile, getLessonById, increaseView } from "../../../apis/LessonApi";
 import type { LessonResponse } from "../../../models/response/LessonResponse";
-import LessonRightSidebar from "./components/lessonRightSidebar";
-import CarouselComp from "../components/carouselComp";
-import RatingComp from "../components/ratingComp";
-import CommentComp from "../components/commentComp";
+import LessonRightSidebar from "./components/LessonRightSidebar";
+import CarouselComp from "../components/CarouselComp";
+import RatingComp from "../components/MatingComp";
+import CommentComp from "../components/CommentComp";
+import { getMyInfo } from "../../../apis/UserApi";
+import { addFavorite, getFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 
 const LessonDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -18,6 +20,10 @@ const LessonDetail: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [downloadingDoc, setDownloadingDoc] = useState(false);
     const [downloadingSub, setDownloadingSub] = useState(false);
+    const [favoriteId, setFavoriteId] = useState<number | null>(null);
+    const [favoriteLoading, setFavoriteLoading] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
     useEffect(() => {
         if (!lessonId) {
@@ -52,6 +58,77 @@ const LessonDetail: React.FC = () => {
 
         return () => clearTimeout(timer);
     }, [lessonId]);
+
+    useEffect(() => {
+        if (!lessonId || !token) {
+            setFavoriteId(null);
+            setCurrentUserId(null);
+            return;
+        }
+
+        let isMounted = true;
+
+        const fetchFavoriteState = async () => {
+            try {
+                const user = await getMyInfo();
+                if (!isMounted) return;
+                const fetchedUserId = user?.result?.id ?? null;
+                setCurrentUserId(fetchedUserId);
+                if (!fetchedUserId) {
+                    setFavoriteId(null);
+                    return;
+                }
+
+                const favoritesResponse = await getFavoritesByUser();
+                if (!isMounted) return;
+                const favorites = favoritesResponse.resultList ?? [];
+                const existing = favorites.find((fav) => fav.documentId === lessonId);
+                setFavoriteId(existing ? existing.id : null);
+            } catch (err) {
+                console.error("Không thể tải kho lưu", err);
+                if (isMounted) {
+                    setFavoriteId(null);
+                }
+            }
+        };
+
+        fetchFavoriteState();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [lessonId, token]);
+
+    const handleToggleFavorite = async () => {
+        if (!lessonId) return;
+        if (!currentUserId) {
+            alert("Vui lòng đăng nhập để lưu tài liệu yêu thích.");
+            return;
+        }
+
+        setFavoriteLoading(true);
+
+        try {
+            if (favoriteId) {
+                await removeFavorite(favoriteId);
+                setFavoriteId(null);
+            } else {
+                const response = await addFavorite({
+                    userId: currentUserId,
+                    documentId: lessonId,
+                });
+                const saved = response.result;
+                if (saved) {
+                    setFavoriteId(saved.id);
+                }
+            }
+        } catch (err) {
+            console.error("Lỗi khi cập nhật kho lưu", err);
+            alert("Không thể cập nhật kho lưu. Vui lòng thử lại.");
+        } finally {
+            setFavoriteLoading(false);
+        }
+    };
 
     const meta = useMemo(() => {
         if (!lessonDetail) return [];
@@ -176,6 +253,15 @@ const LessonDetail: React.FC = () => {
                             )}
                         </button>
                     )}
+                    <button
+                        type="button"
+                        onClick={handleToggleFavorite}
+                        className={`btn-outline favorite-toggle ${favoriteId ? "active" : ""}`}
+                        disabled={favoriteLoading}
+                    >
+                        <i className={`fa ${favoriteId ? "fa-heart" : "fa-heart-o"}`} />{" "}
+                        {favoriteId ? "Đã lưu" : "Lưu vào kho"}
+                    </button>
                     <button onClick={() => window.history.back()} className="btn-outline">
                         Quay lại thư viện
                     </button>

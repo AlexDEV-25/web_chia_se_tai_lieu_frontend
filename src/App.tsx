@@ -1,7 +1,7 @@
 import './App.css'
-import Home from './layouts/common/home/home'
-import Header from './layouts/common/header_footer/header';
-import Footer from './layouts/common/header_footer/footer';
+import Home from './layouts/common/home/Home'
+import Header from './layouts/common/header_footer/Header';
+import Footer from './layouts/common/header_footer/Footer';
 import { useState, useEffect } from 'react';
 import type { AppContextType } from './AppContext';
 import { AppContext } from './AppContext';
@@ -16,13 +16,14 @@ import Login from './layouts/common/auth/Login';
 import Activate from './layouts/common/auth/Activate';
 import MyProfile from './layouts/user/profile/MyProfile';
 import FavoriteDocuments from './layouts/user/favorites/FavoriteDocuments';
-import LessonDetail from './layouts/common/lesson_detail/lesson_detail';
-import Lesson from './layouts/common/lesson/lesson';
+import LessonDetail from './layouts/common/Lesson_detail/LessonDetail';
+import Lesson from './layouts/common/lesson/Lesson';
 import ChatGemini from './layouts/common/chatbot/ChatGemini';
 import { pdfjs } from 'react-pdf';
 import { introspect, refreshToken } from './apis/AuthApi';
 import UploadLesson from './layouts/common/uploads/UploadLesson';
 import UploadHistory from './layouts/user/upload_history/UploadHistory';
+import type { UserResponse } from './models/response/UserResponse';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -30,7 +31,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 function App() {
   const [keyWords, setKeyWords] = useState("");
   const [token, setToken] = useState(localStorage.getItem("token"));
-
+  const [userCurrent, setUserCurrent] = useState<UserResponse | null>(null);
   const ctxValue: AppContextType = {
     keyWords, setKeyWords,
   };
@@ -62,7 +63,7 @@ function App() {
     <>
       <BrowserRouter>
         <AppContext.Provider value={ctxValue}>
-          <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} />
+          <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} userCurrent={userCurrent} setUserCurrent={setUserCurrent} />
           <Routes>
             <Route path="/" element={<Home keyWords={keyWords} />} />
             <Route path="/lesson" element={<Lesson keyWords={keyWords} />} />
@@ -74,7 +75,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/document/:id" element={<DocumentDetail />} />
             <Route path="/lesson/:id" element={<LessonDetail />} />
-            <Route path="/login" element={<Login setToken={setToken} />} />
+            <Route path="/login" element={<Login setToken={setToken} setUserCurrent={setUserCurrent} />} />
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/favorites" element={<FavoriteDocuments />} />
             <Route path="/uploadHistory" element={<UploadHistory />} />

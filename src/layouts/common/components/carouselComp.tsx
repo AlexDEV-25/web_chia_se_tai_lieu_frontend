@@ -4,7 +4,7 @@ import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import type { FavoriteResponse } from "../../../models/response/FavoriteResponse";
 import { addFavorite, getFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
-import api from "../../../apis/HttpClient";
+import { getMyInfo } from "../../../apis/UserApi";
 
 interface CarouselProps {
     categoryId: number;
@@ -54,9 +54,8 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
 
         const fetchFavorites = async () => {
             try {
-                const userResponse = await api.get("/users/my-info");
-                const user = userResponse.data.result;
-                setCurrentUserId(user.id);
+                const user = await getMyInfo();
+                setCurrentUserId(user?.result?.id ?? null);
 
                 const favoritesResponse = await getFavoritesByUser();
                 const map: FavoriteMap = {};

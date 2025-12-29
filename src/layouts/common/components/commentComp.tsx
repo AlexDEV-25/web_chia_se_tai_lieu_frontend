@@ -174,7 +174,7 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId }) => {
                         src={
                             comment.userAvatar
                                 ? `http://localhost:8080/api/images/avatar/${comment.userAvatar}`
-                                : "https://ui-avatars.com/api/?name=" + encodeURIComponent(comment.username)
+                                : "myAvatar.jpg"
                         }
                         alt={comment.username}
                         className="rounded-circle me-3"

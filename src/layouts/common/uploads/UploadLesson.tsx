@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import type { LessonRequest } from "./../../../models/request/LessonRequest";
 import { getAllCategory } from "./../../../apis/CategoryApi";
 import { uploadLesson } from "./../../../apis/LessonApi";
-import { Category } from "./../../../models/Category";
+import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
 import { useRef } from "react";
 
 const UploadLesson: React.FC = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [categoryId, setCategoryId] = useState(1);
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [documentFile, setDocumentFile] = useState<File | null>(null);

@@ -11,8 +11,8 @@ export const updateCategory = async (id: number, data: CategoryRequest) => {
     return await httpPut<APIResponse<CategoryResponse>>(`/categories/${id}`, data);
 }
 
-export const deleteCategory = async (id: number) => {
-    return await httpDelete<APIResponse<void>>(`/categories/${id}`);
+export const hideCategory = async (id: number, data: boolean) => {
+    return await httpPut<APIResponse<CategoryResponse>>(`/categories/${id}`, data);
 }
 
 export const getAllCategory = async () => {
@@ -22,3 +22,7 @@ export const getAllCategory = async () => {
 export const getCategoryById = async (id: number) => {
     return await httpGet<APIResponse<CategoryResponse>>(`/categories/${id}`);
 }
+
+// export const deleteCategory = async (id: number) => {
+//     return await httpDelete<APIResponse<void>>(`/categories/${id}`);
+// }

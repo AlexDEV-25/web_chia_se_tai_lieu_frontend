@@ -2,14 +2,17 @@ import { Link, NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import UploadDropdown from "./components/UploadDropdown";
+import type { UserResponse } from "../../../models/response/UserResponse";
 
 interface Props {
     token: string | null
     setToken: (value: string | null) => void
     keyWords: string
     setKeyWords: (value: string) => void
+    userCurrent: UserResponse | null
+    setUserCurrent: (value: UserResponse | null) => void
 }
-const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => {
+const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, userCurrent, setUserCurrent }) => {
     const navigate = useNavigate();
     const [valid, setValid] = useState<boolean>(false);
     const [TempKeyWords, setTempKeyWords] = useState("");
@@ -18,6 +21,7 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => 
     const handleLogout = () => {
         localStorage.removeItem("token");
         setToken(null);
+        setUserCurrent(null);
         navigate("/");
     };
     useEffect(() => {
@@ -104,6 +108,11 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => 
                                         <Link to="/uploadHistory">Lịch sử Upload</Link>
                                     </div>
                                 </details>
+                                {userCurrent?.roles.find((role) => role.name === "ADMIN") && (
+                                    <Link to="/admin" className="admin-link">
+                                        Trang Admin
+                                    </Link>
+                                )}
                                 <hr />
                                 <button type="button" onClick={handleLogout}>
                                     Đăng xuất
