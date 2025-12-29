@@ -16,7 +16,7 @@ import Login from './layouts/common/auth/Login';
 import Activate from './layouts/common/auth/Activate';
 import MyProfile from './layouts/user/profile/MyProfile';
 import FavoriteDocuments from './layouts/user/favorites/Favorites';
-import LessonDetail from './layouts/common/Lesson_detail/LessonDetail';
+import LessonDetail from './layouts/common/lesson_detail/LessonDetail';
 import Lesson from './layouts/common/lesson/Lesson';
 import ChatGemini from './layouts/common/chatbot/ChatGemini';
 import { pdfjs } from 'react-pdf';
