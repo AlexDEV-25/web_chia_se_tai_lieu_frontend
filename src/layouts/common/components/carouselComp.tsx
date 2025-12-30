@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
+
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import type { FavoriteDocumentResponse } from "../../../models/response/FavoriteDocumentResponse";
 import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import { getMyInfo } from "../../../apis/UserApi";
+import GrindItem from "./GrindItem";
 
 interface CarouselProps {
     categoryId: number;
@@ -142,35 +144,26 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
                     {documents.map((doc) => {
                         const isFavorite = Boolean(favoriteMap[doc.id]);
                         const isLoadingFavorite = favoriteLoadingId === doc.id;
+                        const thumbnailUrl = doc.thumbnailUrl
+                            ? `http://localhost:8080/api/images/thumbnail/${doc.thumbnailUrl}`
+                            : undefined;
+
                         return (
-                            <article key={doc.id} className="document-card">
-                                <div className="doc-thumbnail">
-                                    <img src={`http://localhost:8080/api/images/thumbnail/${doc.thumbnailUrl}`} alt={doc.title} />
-                                    <span className="doc-type">PDF</span>
-                                </div>
-                                <div className="doc-body">
-                                    <h3>{doc.title}</h3>
-                                    <p>{doc.description ?? "Tài liệu chưa có mô tả."}</p>
-                                    <div className="doc-meta">
-                                        <span><i className="fa fa-eye me-1" /> {doc.viewsCount}</span>
-                                        <span><i className="fa fa-download me-1" /> {doc.downloadsCount}</span>
-                                    </div>
-                                </div>
-                                <div className="doc-actions">
-                                    <Link to={`/document/${doc.id}`} className="btn-pill ghost">
-                                        Đọc ngay
-                                    </Link>
-                                    <button
-                                        type="button"
-                                        className={`btn-pill ${isFavorite ? "primary" : "ghost"} ms-2`}
-                                        onClick={() => handleToggleFavorite(doc)}
-                                        disabled={isLoadingFavorite}
-                                    >
-                                        <i className={`fa ${isFavorite ? "fa-heart" : "fa-heart-o"} me-1`} />
-                                        {isFavorite ? "Đã lưu" : "Lưu"}
-                                    </button>
-                                </div>
-                            </article>
+                            <GrindItem
+                                key={doc.id}
+                                itemType="document"
+                                link={`/document/${doc.id}`}
+                                title={doc.title}
+                                thumbnailUrl={thumbnailUrl}
+                                subtitle={<p>{doc.description ?? "Tài liệu chưa có mô tả."}</p>}
+                                viewsCount={doc.viewsCount}
+                                downloadsCount={doc.downloadsCount}
+                                showInlineFavorite
+                                isFavorite={isFavorite}
+                                favoriteDisabled={isLoadingFavorite}
+                                onToggleFavorite={() => handleToggleFavorite(doc)}
+                                showOverlayFavorite={Boolean(token)}
+                            />
                         );
                     })}
                 </div>

@@ -6,7 +6,7 @@ import { downloadDocument, downloadSubFile, getLessonById, increaseView } from "
 import type { LessonResponse } from "../../../models/response/LessonResponse";
 import LessonRightSidebar from "./components/LessonRightSidebar";
 import CarouselComp from "../components/CarouselComp";
-import RatingComp from "../components/MatingComp";
+import RatingComp from "../components/RatingComp";
 import CommentComp from "../components/CommentComp";
 import { getMyInfo } from "../../../apis/UserApi";
 import { addFavoriteLesson, getLessonFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";

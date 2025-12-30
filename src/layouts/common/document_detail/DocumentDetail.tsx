@@ -7,7 +7,7 @@ import CommentComp from "../components/CommentComp";
 import LeftSidebar from "./components/LeftSidebar";
 import RightSidebar from "./components/RightSidebar";
 import CarouselComp from "../components/CarouselComp";
-import RatingComp from "../components/MatingComp";
+import RatingComp from "../components/RatingComp";
 import { getMyInfo } from "../../../apis/UserApi";
 import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 

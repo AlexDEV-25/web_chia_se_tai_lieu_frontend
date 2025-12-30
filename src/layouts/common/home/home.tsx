@@ -58,16 +58,16 @@ const Home = ({ keyWords }: Props) => {
         });
     }, [documents, keyWords, selectedCategory]);
 
-    const topCategories = useMemo(() => categories.slice(0, 6), [categories]);
-    const displayedCategories = showAllCategories ? categories : topCategories;
-    const hasMoreCategories = categories.length > topCategories.length;
-    const selectedCategoryLabel = selectedCategory === "all"
+    const topCategories: CategoryResponse[] = useMemo(() => categories.slice(0, 6), [categories]);
+    const displayedCategories: CategoryResponse[] = showAllCategories ? categories : topCategories;
+    const hasMoreCategories: boolean = categories.length > topCategories.length;
+    const selectedCategoryLabel: string = selectedCategory === "all"
         ? "Trending tuần này"
         : `Danh mục: ${categories.find(cat => cat.id === selectedCategory)?.name ?? ""}`;
 
     const stats = useMemo(() => {
-        const totalDownloads = documents.reduce((sum, doc) => sum + (doc.downloadsCount ?? 0), 0);
-        const totalViews = documents.reduce((sum, doc) => sum + (doc.viewsCount ?? 0), 0);
+        const totalDownloads: number = documents.reduce((sum, doc) => sum + (doc.downloadsCount ?? 0), 0);
+        const totalViews: number = documents.reduce((sum, doc) => sum + (doc.viewsCount ?? 0), 0);
         return {
             totalDocuments: documents.length,
             totalDownloads,

@@ -11,6 +11,7 @@ import {
 } from "../../../apis/FavoriteApi";
 
 import { getMyInfo } from "../../../apis/UserApi";
+import GrindItem from "./GrindItem";
 
 interface BaseItem {
     id: number;
@@ -161,105 +162,10 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
         return itemType === "document" ? `/document/${item.id}` : `/lesson/${item.id}`;
     };
 
-    const renderThumbnail = (item: DocumentItem | LessonItem) => {
-        const imageUrl = item.thumbnailUrl
-            ? `http://localhost:8080/api/images/thumbnail/${item.thumbnailUrl}`
-            : '/images/video-placeholder.jpg';
-
-        if (itemType === "lesson") {
-            return (
-                <Link to={getItemLink(item)} className="doc-thumbnail">
-                    <img src={imageUrl} alt={item.title} />
-                    <div className="video-overlay">
-                        <i className="fa fa-play-circle" />
-                        <span className="duration">{formatDuration()}</span>
-                    </div>
-                    <span className="doc-type">Video</span>
-                    {token && (
-                        <button
-                            className="favorite-btn"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleToggleFavorite(item.id);
-                            }}
-                            disabled={favoriteLoadingId === item.id}
-                            aria-label={
-                                favoriteMap[item.id] ? "Bỏ yêu thích" : "Thêm vào yêu thích"
-                            }
-                        >
-                            <i
-                                className={`fa${favoriteMap[item.id] ? "s" : "r"
-                                    } fa-heart`}
-                            />
-                        </button>
-                    )}
-                </Link>
-            );
-        }
-
-        return (
-            <div className="doc-thumbnail">
-                <img src={imageUrl} alt={item.title} />
-                <span className="doc-type">{itemType === "document" ? "PDF" : "Video"}</span>
-            </div>
-        );
+    const resolveThumbnailUrl = (item: DocumentItem | LessonItem) => {
+        if (!item.thumbnailUrl) return undefined;
+        return `http://localhost:8080/api/images/thumbnail/${item.thumbnailUrl}`;
     };
-
-    const renderMeta = (item: DocumentItem | LessonItem) => {
-        const views = (
-            <span>
-                <i className="fa fa-eye me-1" /> {formatNumber(item.viewsCount)}
-            </span>
-        );
-
-
-        const isFavorite = Boolean(favoriteMap[item.id]);
-        const isLoadingFavorite = favoriteLoadingId === item.id;
-
-        return (
-            <div className="doc-meta">
-                <div className="meta-left">
-                    {views}
-                    {itemType === "document" && "downloadsCount" in item && (
-                        <span>
-                            <i className="fa fa-download me-1" /> {formatNumber(item.downloadsCount || 0)}
-                        </span>
-                    )}
-                </div>
-                <button
-                    type="button"
-                    className={`favorite-inline ${isFavorite ? "active" : ""}`}
-                    aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
-                    onClick={() => handleToggleFavorite(item.id)}
-                    disabled={isLoadingFavorite}
-                >
-                    <i className={`fa ${isFavorite ? "fa-heart" : "fa-heart-o"}`} />
-                </button>
-            </div>
-        );
-
-
-        return (
-            <div className="doc-meta">
-                <div className="meta-left">
-                    {views}
-                </div>
-                {token && (
-                    <button
-                        type="button"
-                        className={`favorite-inline ${favoriteMap[item.id] ? "active" : ""}`}
-                        aria-label={favoriteMap[item.id] ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
-                        onClick={() => handleToggleFavorite(item.id)}
-                        disabled={favoriteLoadingId === item.id}
-                    >
-                        <i className={`fa ${favoriteMap[item.id] ? "fa-heart" : "fa-heart-o"}`} />
-                    </button>
-                )}
-            </div>
-        );
-    };
-
-    const renderActions = () => null;
 
     return (
         <section className="documents-block">
@@ -286,22 +192,44 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                 </div>
             ) : (
                 <div className="document-grid">
-                    {items.map((item) => (
-                        <article key={item.id} className="document-card">
-                            {renderThumbnail(item)}
-                            <div className="doc-body">
-                                <Link to={getItemLink(item)}>
-                                    <h3>{item.title}</h3>
-                                </Link>
-                                <div>
-                                    <i>{item.description ? item.description : "Không có mô tả."}</i>
-                                    <div><strong style={{ fontWeight: 500, opacity: 0.7 }}>by:</strong> {item.userName}</div>
-                                </div>
-                                {renderMeta(item)}
-                            </div>
-                            {renderActions()}
-                        </article>
-                    ))}
+                    {items.map((item) => {
+                        const downloadsCount =
+                            itemType === "document" && "downloadsCount" in item
+                                ? item.downloadsCount ?? 0
+                                : undefined;
+                        const isFavorite = Boolean(favoriteMap[item.id]);
+                        const isLoadingFavorite = favoriteLoadingId === item.id;
+
+                        return (
+                            <GrindItem
+                                key={item.id}
+                                itemType={itemType}
+                                link={getItemLink(item)}
+                                title={item.title}
+                                thumbnailUrl={resolveThumbnailUrl(item)}
+                                subtitle={
+                                    <div>
+                                        <i>{item.description ? item.description : "Không có mô tả."}</i>
+                                        <div>
+                                            <strong style={{ fontWeight: 500, opacity: 0.7 }}>by:</strong>{" "}
+                                            <Link to={getItemLink(item)}>{item.userName ?? "Tác giả ẩn danh"}</Link>
+                                        </div>
+                                    </div>
+                                }
+                                viewsCount={item.viewsCount}
+                                downloadsCount={downloadsCount}
+                                variant="default"
+                                showVideoOverlay={itemType === "lesson"}
+                                videoDuration={itemType === "lesson" ? formatDuration() : undefined}
+                                showOverlayFavorite={itemType === "lesson" && Boolean(token)}
+                                showInlineFavorite
+                                isFavorite={isFavorite}
+                                favoriteDisabled={isLoadingFavorite}
+                                onToggleFavorite={() => handleToggleFavorite(item.id)}
+                                numberFormatter={formatNumber}
+                            />
+                        );
+                    })}
                 </div>
             )}
         </section>

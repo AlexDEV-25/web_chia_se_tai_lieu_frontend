@@ -1,17 +1,31 @@
-import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+
 import { getAllLessonByUser } from "../../../../apis/LessonApi";
+import {
+    addFavoriteLesson,
+    getLessonFavoritesByUser,
+    removeFavorite,
+} from "../../../../apis/FavoriteApi";
+import { getMyInfo } from "../../../../apis/UserApi";
 import type { LessonResponse } from "../../../../models/response/LessonResponse";
+import type { FavoriteLessonResponse } from "../../../../models/response/FavoriteLessonResponse";
+import GrindItem from "../../components/GrindItem";
 
 interface LessonRightSidebarProps {
     userId: number;
     currentLessonId: number;
 }
 
+type FavoriteMap = Record<number, { favoriteId: number }>;
+
 const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, currentLessonId }) => {
     const [lessons, setLessons] = useState<LessonResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
+    const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const token = localStorage.getItem("token");
 
     useEffect(() => {
         const fetchByUser = async () => {
@@ -36,7 +50,79 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
         }
     }, [userId, currentLessonId]);
 
-    const formatNumber = (value?: number) => {
+    useEffect(() => {
+        if (!token) {
+            setCurrentUserId(null);
+            setFavoriteMap({});
+            return;
+        }
+
+        const fetchFavorites = async () => {
+            try {
+                const user = await getMyInfo();
+                const fetchedUserId = user?.result?.id ?? null;
+                setCurrentUserId(fetchedUserId);
+
+                if (!fetchedUserId) {
+                    setFavoriteMap({});
+                    return;
+                }
+
+                const favoritesResponse = await getLessonFavoritesByUser();
+                const map: FavoriteMap = {};
+                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteLessonResponse) => {
+                    if (fav.lessonId) {
+                        map[fav.lessonId] = { favoriteId: fav.id };
+                    }
+                });
+                setFavoriteMap(map);
+            } catch (err) {
+                console.error("Không thể tải kho lưu video", err);
+                setFavoriteMap({});
+            }
+        };
+
+        fetchFavorites();
+    }, [token]);
+
+    const handleToggleFavorite = async (lesson: LessonResponse) => {
+        if (!currentUserId) {
+            alert("Vui lòng đăng nhập để lưu video yêu thích.");
+            return;
+        }
+
+        const existing = favoriteMap[lesson.id];
+        setFavoriteLoadingId(lesson.id);
+
+        try {
+            if (existing) {
+                await removeFavorite(existing.favoriteId);
+                setFavoriteMap((prev) => {
+                    const { [lesson.id]: _removed, ...rest } = prev;
+                    return rest;
+                });
+            } else {
+                const response = await addFavoriteLesson({
+                    userId: currentUserId,
+                    lessonId: lesson.id,
+                });
+                const saved = response.result;
+                if (saved) {
+                    setFavoriteMap((prev) => ({
+                        ...prev,
+                        [lesson.id]: { favoriteId: saved.id },
+                    }));
+                }
+            }
+        } catch (err) {
+            console.error("Không thể cập nhật kho lưu video", err);
+            alert("Không thể cập nhật kho lưu. Vui lòng thử lại.");
+        } finally {
+            setFavoriteLoadingId(null);
+        }
+    };
+
+    const formatNumber = (value?: number | null) => {
         if (!value) return "0";
         if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
         return value.toString();
@@ -63,31 +149,35 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
 
             <div className="document-grid two-col">
                 {lessons.map((lesson) => (
-                    <article key={lesson.id} className="document-card compact simple">
-                        <Link to={`/lesson/${lesson.id}`} className="doc-thumbnail">
-                            <img
-                                src={`http://localhost:8080/api/images/thumbnail/${lesson.thumbnailUrl}`}
-                                alt={lesson.title}
-                            />
-                            <span className="doc-type">Video</span>
-                        </Link>
-                        <div className="doc-body">
-                            <Link to={`/lesson/${lesson.id}`}>
-                                <h3>{lesson.title}</h3>
-                            </Link>
-                            <p>by: {lesson.userName ?? "Giảng viên ẩn danh"}</p>
-                            <div className="doc-meta">
+                    <GrindItem
+                        key={lesson.id}
+                        itemType="lesson"
+                        link={`/lesson/${lesson.id}`}
+                        title={lesson.title}
+                        thumbnailUrl={
+                            lesson.thumbnailUrl
+                                ? `http://localhost:8080/api/images/thumbnail/${lesson.thumbnailUrl}`
+                                : undefined
+                        }
+                        subtitle={<p>by: {lesson.userName ?? "Giảng viên ẩn danh"}</p>}
+                        viewsCount={lesson.viewsCount}
+                        variant="compact"
+                        simple
+                        showVideoOverlay
+                        showOverlayFavorite={Boolean(token)}
+                        showInlineFavorite
+                        isFavorite={Boolean(favoriteMap[lesson.id])}
+                        favoriteDisabled={favoriteLoadingId === lesson.id}
+                        onToggleFavorite={() => handleToggleFavorite(lesson)}
+                        metaExtras={
+                            lesson.documentUrl ? (
                                 <span>
-                                    <i className="fa fa-eye me-1" /> {formatNumber(lesson.viewsCount)}
+                                    <i className="fa fa-file-pdf-o me-1" /> Tài liệu
                                 </span>
-                                {lesson.documentUrl && (
-                                    <span>
-                                        <i className="fa fa-file-pdf-o me-1" /> Tài liệu
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </article>
+                            ) : undefined
+                        }
+                        numberFormatter={formatNumber}
+                    />
                 ))}
             </div>
         </section>
