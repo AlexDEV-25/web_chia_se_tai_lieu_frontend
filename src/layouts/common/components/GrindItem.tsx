@@ -39,7 +39,6 @@ const GrindItem: React.FC<GrindItemProps> = ({
     showDocTypeBadge = true,
     showVideoOverlay = false,
     videoDuration,
-    showOverlayFavorite = false,
     showInlineFavorite = false,
     isFavorite = false,
     favoriteDisabled = false,

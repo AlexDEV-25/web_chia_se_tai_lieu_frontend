@@ -221,7 +221,6 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                                 variant="default"
                                 showVideoOverlay={itemType === "lesson"}
                                 videoDuration={itemType === "lesson" ? formatDuration() : undefined}
-                                showOverlayFavorite={itemType === "lesson" && Boolean(token)}
                                 showInlineFavorite
                                 isFavorite={isFavorite}
                                 favoriteDisabled={isLoadingFavorite}

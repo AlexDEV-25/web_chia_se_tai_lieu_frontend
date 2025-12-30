@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
 
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
@@ -162,7 +161,6 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
                                 isFavorite={isFavorite}
                                 favoriteDisabled={isLoadingFavorite}
                                 onToggleFavorite={() => handleToggleFavorite(doc)}
-                                showOverlayFavorite={Boolean(token)}
                             />
                         );
                     })}
