@@ -24,6 +24,12 @@ import { introspect, refreshToken } from './apis/AuthApi';
 import UploadLesson from './layouts/common/uploads/UploadLesson';
 import UploadHistory from './layouts/user/upload_history/UploadHistory';
 import type { UserResponse } from './models/response/UserResponse';
+import DocumentList from './layouts/admin/contents/documents/DocumentList';
+import LessonList from './layouts/admin/contents/lessons/LessonList';
+import UserList from './layouts/admin/users/UserList';
+import DocumentEdit from './layouts/admin/contents/documents/DocumentEdit';
+import LessonEdit from './layouts/admin/contents/lessons/LessonEdit';
+import UserAdd from './layouts/admin/users/UserAdd';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -67,19 +73,29 @@ function App() {
           <Routes>
             <Route path="/" element={<Home keyWords={keyWords} />} />
             <Route path="/lesson" element={<Lesson keyWords={keyWords} />} />
+
+            {/* {auth} */}
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login setToken={setToken} setUserCurrent={setUserCurrent} />} />
+            <Route path="/activate/:email/:activationCode" element={<Activate />} />
+            {/* common */}
+            <Route path="/uploadDocument" element={<UploadDocument />} />
+            <Route path="/uploadLesson" element={<UploadLesson />} />
+            <Route path="/document/:id" element={<DocumentDetail />} />
+            <Route path="/lesson/:id" element={<LessonDetail />} />
+            <Route path="/favorites" element={<FavoriteDocuments />} />
+            <Route path="/profile" element={<MyProfile />} />
+            <Route path="/uploadHistory" element={<UploadHistory />} />
+            {/* {admin} */}
             <Route path="/categories" element={<CategoryList />} />
             <Route path="/categories/add" element={<CategoryAdd />} />
             <Route path="/categories/edit/:id" element={<CategoryEdit />} />
-            <Route path="/uploadDocument" element={<UploadDocument />} />
-            <Route path="/uploadLesson" element={<UploadLesson />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/document/:id" element={<DocumentDetail />} />
-            <Route path="/lesson/:id" element={<LessonDetail />} />
-            <Route path="/login" element={<Login setToken={setToken} setUserCurrent={setUserCurrent} />} />
-            <Route path="/profile" element={<MyProfile />} />
-            <Route path="/favorites" element={<FavoriteDocuments />} />
-            <Route path="/uploadHistory" element={<UploadHistory />} />
-            <Route path="/activate/:email/:activationCode" element={<Activate />} />
+            <Route path="/documents" element={<DocumentList />} />
+            <Route path="/documents/edit/:id" element={<DocumentEdit />} />
+            <Route path="/lessons" element={<LessonList />} />
+            <Route path="/lessons/edit/:id" element={<LessonEdit />} />
+            <Route path="/users" element={<UserList />} />
+            <Route path="/users/add" element={<UserAdd />} />
           </Routes>
         </AppContext.Provider>
         <ChatGemini />

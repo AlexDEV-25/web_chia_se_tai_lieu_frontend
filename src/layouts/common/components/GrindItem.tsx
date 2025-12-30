@@ -12,7 +12,6 @@ type GrindItemProps = {
     showDocTypeBadge?: boolean;
     showVideoOverlay?: boolean;
     videoDuration?: string;
-    showOverlayFavorite?: boolean;
     showInlineFavorite?: boolean;
     isFavorite?: boolean;
     favoriteDisabled?: boolean;

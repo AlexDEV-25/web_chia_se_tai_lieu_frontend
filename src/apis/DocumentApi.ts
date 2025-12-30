@@ -52,11 +52,6 @@ export const uploadDocument = async (file: File, documentData: DocumentRequest):
     return response.data;
 }
 
-export const updateDocument = async (id: number, documentData: DocumentRequest): Promise<APIResponse<DocumentResponse>> => {
-    const response = await api.put<APIResponse<DocumentResponse>>(`/documents/${id}`, documentData);
-    return response.data;
-}
-
 export const deleteDocument = async (id: number): Promise<APIResponse<void>> => {
     const response = await api.delete<APIResponse<void>>(`/documents/${id}`);
     return response.data;
@@ -73,5 +68,15 @@ export const updateMyDocument = async (id: number, documentData: DocumentRequest
 
 export const deleteMyDocument = async (id: number): Promise<APIResponse<void>> => {
     const response = await api.delete<APIResponse<void>>(`/documents/my-document/${id}`);
+    return response.data;
+}
+
+export const hideDocument = async (id: number, data: boolean): Promise<APIResponse<DocumentResponse>> => {
+    const response = await api.put<APIResponse<DocumentResponse>>(`/documents/${id}`, data);
+    return response.data;
+}
+
+export const updateDocument = async (id: number, documentData: DocumentRequest): Promise<APIResponse<DocumentResponse>> => {
+    const response = await api.put<APIResponse<DocumentResponse>>(`/documents/${id}`, documentData);
     return response.data;
 }

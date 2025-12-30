@@ -164,7 +164,6 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
                         variant="compact"
                         simple
                         showVideoOverlay
-                        showOverlayFavorite={Boolean(token)}
                         showInlineFavorite
                         isFavorite={Boolean(favoriteMap[lesson.id])}
                         favoriteDisabled={favoriteLoadingId === lesson.id}
