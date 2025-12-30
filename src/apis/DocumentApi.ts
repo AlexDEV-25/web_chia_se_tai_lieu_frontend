@@ -2,6 +2,7 @@ import type { APIResponse } from './../models/response/APIResponse';
 import api, { httpGet, httpPost } from "./HttpClient";
 import type { DocumentResponse } from "./../models/response/DocumentResponse";
 import type { DocumentRequest } from "./../models/request/DocumentReques";
+import type { HideRequest } from '../models/request/HideRequest';
 
 export const getAllDocumentByCategory = async (id: number) => {
     return await httpGet<APIResponse<DocumentResponse>>(`/documents/category/${id}`);
@@ -71,8 +72,8 @@ export const deleteMyDocument = async (id: number): Promise<APIResponse<void>> =
     return response.data;
 }
 
-export const hideDocument = async (id: number, data: boolean): Promise<APIResponse<DocumentResponse>> => {
-    const response = await api.put<APIResponse<DocumentResponse>>(`/documents/${id}`, data);
+export const hideDocument = async (id: number, data: HideRequest): Promise<APIResponse<DocumentResponse>> => {
+    const response = await api.put<APIResponse<DocumentResponse>>(`/documents/hide/${id}`, data);
     return response.data;
 }
 

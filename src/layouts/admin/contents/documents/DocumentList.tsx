@@ -1,6 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllDocument, updateDocument, deleteDocument } from '../../../../apis/DocumentApi';
+import { getAllDocument, deleteDocument, hideDocument } from '../../../../apis/DocumentApi';
+import PageHeader from '../components/PageHeader';
+import Stats from '../components/Stats';
+import Filter from '../components/Filter';
+import Table from '../components/Table';
+import LoadingState from '../components/LoadingState';
+import EmptyState from '../components/EmptyState';
+import ErrorAlert from '../components/ErrorAlert';
 
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
 // import '../../../../styles/pages/_documents.css';
@@ -45,10 +52,8 @@ const DocumentList: React.FC = () => {
 
         try {
             setUpdatingId(id);
-            await updateDocument(id, {
-                title,
-                description: document.description ?? '',
-                hide: !hide
+            await hideDocument(id, {
+                hide: !hide, updatedAt: new Date()
             });
             setDocuments((prev) =>
                 prev.map((item) =>
@@ -108,167 +113,111 @@ const DocumentList: React.FC = () => {
         </span>
     );
 
-    const renderTable = () => {
-        if (loading) {
-            return (
-                <div className="document-card">
-                    {[...Array(4)].map((_, idx) => (
-                        <div key={idx} className="document-loading-row" />
-                    ))}
+    const tableColumns = [
+        {
+            key: 'id',
+            header: 'Mã',
+            render: (doc: DocumentResponse) => <span className="muted-cell">#{doc.id}</span>
+        },
+        {
+            key: 'title',
+            header: 'Tiêu đề',
+            render: (doc: DocumentResponse) => (
+                <div>
+                    <p className="document-title">{doc.title}</p>
+                    <span className="document-meta">{doc.hide ? 'Ẩn khỏi công khai' : 'Công khai'}</span>
                 </div>
-            );
-        }
-
-        if (!loading && filteredDocuments.length === 0) {
-            return (
-                <div className="document-empty-state">
-                    <div className="empty-icon">📄</div>
-                    <p className="empty-title">Chưa có tài liệu phù hợp</p>
-                    <p className="empty-desc">
-                        Thử thay đổi bộ lọc hoặc tải lên một tài liệu mới để phong phú thư viện tài nguyên.
-                    </p>
+            )
+        },
+        {
+            key: 'description',
+            header: 'Mô tả',
+            render: (doc: DocumentResponse) => <span className="description-cell">{doc.description || '—'}</span>
+        },
+        {
+            key: 'categoryName',
+            header: 'Loại',
+            render: (doc: DocumentResponse) => <span>{doc.categoryName || 'Chưa phân loại'}</span>
+        },
+        {
+            key: 'hide',
+            header: 'Trạng thái',
+            render: (doc: DocumentResponse) => renderStatusPill(doc.hide)
+        },
+        {
+            key: 'actions',
+            header: 'Thao tác',
+            align: 'right' as const,
+            render: (doc: DocumentResponse) => (
+                <div className="document-row-actions">
+                    <Link to={`/documents/edit/${doc.id}`} className="document-btn subtle">
+                        Chỉnh sửa
+                    </Link>
+                    <button
+                        onClick={() => handleToggleVisibility(doc)}
+                        disabled={updatingId === doc.id}
+                        className={`document-btn ${doc.hide ? 'primary' : 'danger'}`}
+                    >
+                        {updatingId === doc.id ? 'Đang cập nhật...' : doc.hide ? 'Hiển thị' : 'Ẩn'}
+                    </button>
+                    <button
+                        onClick={() => handleDelete(doc)}
+                        disabled={updatingId === doc.id}
+                        className="document-btn danger"
+                    >
+                        {updatingId === doc.id ? 'Đang xóa...' : 'Xóa'}
+                    </button>
                 </div>
-            );
+            )
         }
-
-        return (
-            <div className="document-table-wrapper">
-                <table className="document-table">
-                    <thead>
-                        <tr>
-                            <th>Mã</th>
-                            <th>Tiêu đề</th>
-                            <th>Mô tả</th>
-                            <th>Loại</th>
-                            <th>Trạng thái</th>
-                            <th className="text-right">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredDocuments.map((doc) => (
-                            <tr key={doc.id}>
-                                <td className="muted-cell">#{doc.id}</td>
-                                <td>
-                                    <p className="document-title">{doc.title}</p>
-                                    <span className="document-meta">
-                                        {doc.hide ? 'Ẩn khỏi công khai' : 'Công khai'}
-                                    </span>
-                                </td>
-                                <td className="description-cell">{doc.description || '—'}</td>
-                                <td>{doc.categoryName || 'Chưa phân loại'}</td>
-                                <td>{renderStatusPill(doc.hide)}</td>
-                                <td>
-                                    <div className="document-row-actions">
-                                        <Link
-                                            to={`/documents/edit/${doc.id}`}
-                                            className="document-btn subtle"
-                                        >
-                                            Chỉnh sửa
-                                        </Link>
-                                        <button
-                                            onClick={() => handleToggleVisibility(doc)}
-                                            disabled={updatingId === doc.id}
-                                            className={`document-btn ${doc.hide ? 'primary' : 'danger'}`}
-                                        >
-                                            {updatingId === doc.id
-                                                ? 'Đang cập nhật...'
-                                                : doc.hide
-                                                    ? 'Hiển thị'
-                                                    : 'Ẩn'}
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(doc)}
-                                            disabled={updatingId === doc.id}
-                                            className="document-btn danger"
-                                        >
-                                            {updatingId === doc.id ? 'Đang xóa...' : 'Xóa'}
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        );
-    };
+    ];
 
     return (
         <div className="admin-document-page">
             <div className="document-container">
-                <div className="document-page-header">
-                    <div className="document-heading">
-                        <p className="document-eyebrow">Quản trị hệ thống</p>
-                        <h1>Quản lý tài liệu</h1>
-                        <p>Theo dõi và quản lý các tài liệu đã tải lên để đảm bảo chất lượng nội dung.</p>
-                    </div>
-                    <Link to="/documents/add" className="document-btn primary">
-                        Tải lên tài liệu
-                    </Link>
-                </div>
+                <PageHeader
+                    eyebrow="Quản trị hệ thống"
+                    title="Quản lý tài liệu"
+                    description="Theo dõi và quản lý các tài liệu đã tải lên để đảm bảo chất lượng nội dung."
+                    addButtonText="Tải lên tài liệu"
+                    addButtonLink="/documents/add"
+                    containerClass="document-page-header"
+                    headingClass="document-heading"
+                    eyebrowClass="document-eyebrow"
+                    buttonClass="document-btn primary"
+                />
 
                 {error && (
-                    <div className="document-alert error">
-                        <p>Lỗi: {error}</p>
-                        <button type="button" onClick={fetchDocuments} className="document-btn ghost">
-                            Thử lại
-                        </button>
-                    </div>
+                    <ErrorAlert message={error} onRetry={fetchDocuments} />
                 )}
 
-                <div className="document-stats">
-                    <div className="document-stat-card">
-                        <span className="stat-label">Tổng tài liệu</span>
-                        <strong className="stat-value">{stats.total}</strong>
-                        <p className="stat-desc">Tất cả tài liệu đang có</p>
-                    </div>
-                    <div className="document-stat-card positive">
-                        <span className="stat-label">Đang hiển thị</span>
-                        <strong className="stat-value">{stats.visible}</strong>
-                        <p className="stat-desc">Công khai cho người dùng</p>
-                    </div>
-                    <div className="document-stat-card warning">
-                        <span className="stat-label">Đang ẩn</span>
-                        <strong className="stat-value">{stats.hidden}</strong>
-                        <p className="stat-desc">Chờ được công bố</p>
-                    </div>
-                </div>
+                <Stats stats={stats} containerClass="document-stats" cardClass="document-stat-card" />
 
-                <div className="document-filters">
-                    <div className="document-search">
-                        <i className="fa fa-search" aria-hidden="true" />
-                        <input
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Tìm kiếm theo tiêu đề hoặc mô tả…"
-                        />
-                    </div>
-                    <div className="document-filter-actions">
-                        {(['all', 'visible', 'hidden'] as VisibilityFilter[]).map((filter) => (
-                            <button
-                                key={filter}
-                                type="button"
-                                onClick={() => setVisibilityFilter(filter)}
-                                className={`document-filter-chip ${visibilityFilter === filter ? 'is-active' : ''}`}
-                            >
-                                {filter === 'all'
-                                    ? 'Tất cả'
-                                    : filter === 'visible'
-                                        ? 'Đang hiển thị'
-                                        : 'Đang ẩn'}
-                            </button>
-                        ))}
-                        <button
-                            type="button"
-                            onClick={() => setRefreshKey((prev) => prev + 1)}
-                            className="document-btn ghost"
-                        >
-                            Làm mới
-                        </button>
-                    </div>
-                </div>
+                <Filter
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    filterValue={visibilityFilter}
+                    onFilterChange={setVisibilityFilter}
+                    onRefresh={() => setRefreshKey((prev) => prev + 1)}
+                    placeholder="Tìm kiếm theo tiêu đề hoặc mô tả…"
+                    containerClass="document-filters"
+                    searchClass="document-search"
+                    filterActionsClass="document-filter-actions"
+                    filterChipClass="document-filter-chip"
+                    buttonClass="document-btn ghost"
+                />
 
-                {renderTable()}
+                {loading && <LoadingState />}
+
+                {!loading && filteredDocuments.length === 0 && (
+                    <EmptyState icon="📄" title="Chưa có tài liệu phù hợp" description="Thử thay đổi bộ lọc hoặc tải lên một tài liệu mới để phong phú thư viện tài nguyên." />
+                )}
+
+                {!loading && filteredDocuments.length > 0 && (
+                    <div className="document-table-wrapper">
+                        <Table columns={tableColumns} data={filteredDocuments} keyField="id" />
+                    </div>
+                )}
             </div>
         </div>
     );

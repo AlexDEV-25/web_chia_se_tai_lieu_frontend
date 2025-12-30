@@ -3,8 +3,6 @@ export interface UserRequest {
     email: string;
     password: string;
     verified: boolean;
-    createdAt: string;
-    updatedAt: string;
     roles: string[];
     hide: boolean;
 }

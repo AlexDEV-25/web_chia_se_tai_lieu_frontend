@@ -1,6 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllLesson, updateLesson, deleteLesson } from '../../../../apis/LessonApi';
+import { getAllLesson, deleteLesson, hideLesson } from '../../../../apis/LessonApi';
+import PageHeader from '../components/PageHeader';
+import Stats from '../components/Stats';
+import Filter from '../components/Filter';
+import Table from '../components/Table';
+import LoadingState from '../components/LoadingState';
+import EmptyState from '../components/EmptyState';
+import ErrorAlert from '../components/ErrorAlert';
 
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
 // import '../../../../styles/pages/_lessons.css';
@@ -45,10 +52,9 @@ const LessonList: React.FC = () => {
 
         try {
             setUpdatingId(id);
-            await updateLesson(id, {
-                title,
-                description: lesson.description ?? '',
-                hide: !hide
+            await hideLesson(id, {
+                hide: !hide,
+                updatedAt: new Date()
             });
             setLessons((prev) =>
                 prev.map((item) =>
@@ -108,167 +114,115 @@ const LessonList: React.FC = () => {
         </span>
     );
 
-    const renderTable = () => {
-        if (loading) {
-            return (
-                <div className="lesson-card">
-                    {[...Array(4)].map((_, idx) => (
-                        <div key={idx} className="lesson-loading-row" />
-                    ))}
+    const tableColumns = [
+        {
+            key: 'id',
+            header: 'Mã',
+            render: (les: LessonResponse) => <span className="muted-cell">#{les.id}</span>
+        },
+        {
+            key: 'title',
+            header: 'Tiêu đề',
+            render: (les: LessonResponse) => (
+                <div>
+                    <p className="lesson-title">{les.title}</p>
+                    <span className="lesson-meta">{les.hide ? 'Ẩn khỏi công khai' : 'Công khai'}</span>
                 </div>
-            );
-        }
-
-        if (!loading && filteredLessons.length === 0) {
-            return (
-                <div className="lesson-empty-state">
-                    <div className="empty-icon">📚</div>
-                    <p className="empty-title">Chưa có bài học phù hợp</p>
-                    <p className="empty-desc">
-                        Thử thay đổi bộ lọc hoặc tạo một bài học mới để giúp học viên tiếp thu kiến thức.
-                    </p>
+            )
+        },
+        {
+            key: 'description',
+            header: 'Nội dung',
+            render: (les: LessonResponse) => (
+                <span className="description-cell">
+                    {les.description ? les.description.substring(0, 50) + '...' : '—'}
+                </span>
+            )
+        },
+        {
+            key: 'categoryName',
+            header: 'Danh mục',
+            render: (les: LessonResponse) => <span>{les.categoryName || 'Chưa phân loại'}</span>
+        },
+        {
+            key: 'hide',
+            header: 'Trạng thái',
+            render: (les: LessonResponse) => renderStatusPill(les.hide)
+        },
+        {
+            key: 'actions',
+            header: 'Thao tác',
+            align: 'right' as const,
+            render: (les: LessonResponse) => (
+                <div className="lesson-row-actions">
+                    <Link to={`/lessons/edit/${les.id}`} className="lesson-btn subtle">
+                        Chỉnh sửa
+                    </Link>
+                    <button
+                        onClick={() => handleToggleVisibility(les)}
+                        disabled={updatingId === les.id}
+                        className={`lesson-btn ${les.hide ? 'primary' : 'danger'}`}
+                    >
+                        {updatingId === les.id ? 'Đang cập nhật...' : les.hide ? 'Hiển thị' : 'Ẩn'}
+                    </button>
+                    <button
+                        onClick={() => handleDelete(les)}
+                        disabled={updatingId === les.id}
+                        className="lesson-btn danger"
+                    >
+                        {updatingId === les.id ? 'Đang xóa...' : 'Xóa'}
+                    </button>
                 </div>
-            );
+            )
         }
-
-        return (
-            <div className="lesson-table-wrapper">
-                <table className="lesson-table">
-                    <thead>
-                        <tr>
-                            <th>Mã</th>
-                            <th>Tiêu đề</th>
-                            <th>Nội dung</th>
-                            <th>Danh mục</th>
-                            <th>Trạng thái</th>
-                            <th className="text-right">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredLessons.map((les) => (
-                            <tr key={les.id}>
-                                <td className="muted-cell">#{les.id}</td>
-                                <td>
-                                    <p className="lesson-title">{les.title}</p>
-                                    <span className="lesson-meta">
-                                        {les.hide ? 'Ẩn khỏi công khai' : 'Công khai'}
-                                    </span>
-                                </td>
-                                <td className="description-cell">{les.description ? les.description.substring(0, 50) + '...' : '—'}</td>
-                                <td>{les.categoryName || 'Chưa phân loại'}</td>
-                                <td>{renderStatusPill(les.hide)}</td>
-                                <td>
-                                    <div className="lesson-row-actions">
-                                        <Link
-                                            to={`/lessons/edit/${les.id}`}
-                                            className="lesson-btn subtle"
-                                        >
-                                            Chỉnh sửa
-                                        </Link>
-                                        <button
-                                            onClick={() => handleToggleVisibility(les)}
-                                            disabled={updatingId === les.id}
-                                            className={`lesson-btn ${les.hide ? 'primary' : 'danger'}`}
-                                        >
-                                            {updatingId === les.id
-                                                ? 'Đang cập nhật...'
-                                                : les.hide
-                                                    ? 'Hiển thị'
-                                                    : 'Ẩn'}
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(les)}
-                                            disabled={updatingId === les.id}
-                                            className="lesson-btn danger"
-                                        >
-                                            {updatingId === les.id ? 'Đang xóa...' : 'Xóa'}
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        );
-    };
+    ];
 
     return (
         <div className="admin-lesson-page">
             <div className="lesson-container">
-                <div className="lesson-page-header">
-                    <div className="lesson-heading">
-                        <p className="lesson-eyebrow">Quản trị hệ thống</p>
-                        <h1>Quản lý bài học</h1>
-                        <p>Theo dõi và quản lý các bài học để đảm bảo chất lượng giáo dục.</p>
-                    </div>
-                    <Link to="/lessons/add" className="lesson-btn primary">
-                        Thêm bài học
-                    </Link>
-                </div>
+                <PageHeader
+                    eyebrow="Quản trị hệ thống"
+                    title="Quản lý bài học"
+                    description="Theo dõi và quản lý các bài học để đảm bảo chất lượng giáo dục."
+                    addButtonText="Thêm bài học"
+                    addButtonLink="/lessons/add"
+                    containerClass="lesson-page-header"
+                    headingClass="lesson-heading"
+                    eyebrowClass="lesson-eyebrow"
+                    buttonClass="lesson-btn primary"
+                />
 
                 {error && (
-                    <div className="lesson-alert error">
-                        <p>Lỗi: {error}</p>
-                        <button type="button" onClick={fetchLessons} className="lesson-btn ghost">
-                            Thử lại
-                        </button>
-                    </div>
+                    <ErrorAlert message={error} onRetry={fetchLessons} />
                 )}
 
-                <div className="lesson-stats">
-                    <div className="lesson-stat-card">
-                        <span className="stat-label">Tổng bài học</span>
-                        <strong className="stat-value">{stats.total}</strong>
-                        <p className="stat-desc">Tất cả bài học đang có</p>
-                    </div>
-                    <div className="lesson-stat-card positive">
-                        <span className="stat-label">Đang hiển thị</span>
-                        <strong className="stat-value">{stats.visible}</strong>
-                        <p className="stat-desc">Công khai cho học viên</p>
-                    </div>
-                    <div className="lesson-stat-card warning">
-                        <span className="stat-label">Đang ẩn</span>
-                        <strong className="stat-value">{stats.hidden}</strong>
-                        <p className="stat-desc">Chờ được duyệt</p>
-                    </div>
-                </div>
+                <Stats stats={stats} containerClass="lesson-stats" cardClass="lesson-stat-card" />
 
-                <div className="lesson-filters">
-                    <div className="lesson-search">
-                        <i className="fa fa-search" aria-hidden="true" />
-                        <input
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Tìm kiếm theo tiêu đề hoặc nội dung…"
-                        />
-                    </div>
-                    <div className="lesson-filter-actions">
-                        {(['all', 'visible', 'hidden'] as VisibilityFilter[]).map((filter) => (
-                            <button
-                                key={filter}
-                                type="button"
-                                onClick={() => setVisibilityFilter(filter)}
-                                className={`lesson-filter-chip ${visibilityFilter === filter ? 'is-active' : ''}`}
-                            >
-                                {filter === 'all'
-                                    ? 'Tất cả'
-                                    : filter === 'visible'
-                                        ? 'Đang hiển thị'
-                                        : 'Đang ẩn'}
-                            </button>
-                        ))}
-                        <button
-                            type="button"
-                            onClick={() => setRefreshKey((prev) => prev + 1)}
-                            className="lesson-btn ghost"
-                        >
-                            Làm mới
-                        </button>
-                    </div>
-                </div>
+                <Filter
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    filterValue={visibilityFilter}
+                    onFilterChange={setVisibilityFilter}
+                    onRefresh={() => setRefreshKey((prev) => prev + 1)}
+                    placeholder="Tìm kiếm theo tiêu đề hoặc nội dung…"
+                    containerClass="lesson-filters"
+                    searchClass="lesson-search"
+                    filterActionsClass="lesson-filter-actions"
+                    filterChipClass="lesson-filter-chip"
+                    buttonClass="lesson-btn ghost"
+                />
 
-                {renderTable()}
+                {loading && <LoadingState />}
+
+                {!loading && filteredLessons.length === 0 && (
+                    <EmptyState icon="📚" title="Chưa có bài học phù hợp" description="Thử thay đổi bộ lọc hoặc tạo một bài học mới để giúp học viên tiếp thu kiến thức." />
+                )}
+
+                {!loading && filteredLessons.length > 0 && (
+                    <div className="lesson-table-wrapper">
+                        <Table columns={tableColumns} data={filteredLessons} keyField="id" />
+                    </div>
+                )}
             </div>
         </div>
     );

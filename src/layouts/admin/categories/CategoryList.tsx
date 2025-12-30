@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { getAllCategory, updateCategory } from '../../../apis/CategoryApi';
+import { getAllCategory, hideCategory } from '../../../apis/CategoryApi';
+import PageHeader from '../contents/components/PageHeader';
+import Stats from '../contents/components/Stats';
+import Filter from '../contents/components/Filter';
+import Table from '../contents/components/Table';
+import LoadingState from '../contents/components/LoadingState';
+import EmptyState from '../contents/components/EmptyState';
+import ErrorAlert from '../contents/components/ErrorAlert';
 
 import type { CategoryResponse } from '../../../models/response/CategoryResponse';
 import '../../../styles/pages/_categories.css';
@@ -35,7 +41,7 @@ const CategoryList: React.FC = () => {
     }, [fetchCategories, refreshKey]);
 
     const handleToggleVisibility = useCallback(async (category: CategoryResponse) => {
-        const { id, name, description, hide } = category;
+        const { id, name, hide } = category;
         const confirmMessage = hide
             ? `Bạn có muốn hiển thị lại danh mục "${name}"?`
             : `Bạn có chắc chắn muốn ẩn danh mục "${name}"?`;
@@ -45,11 +51,7 @@ const CategoryList: React.FC = () => {
 
         try {
             setUpdatingId(id);
-            await updateCategory(id, {
-                name,
-                description: description ?? '',
-                hide: !hide
-            });
+            await hideCategory(id, { hide: !hide, updatedAt: new Date() });
             setCategories((prev) =>
                 prev.map((item) =>
                     item.id === id ? { ...item, hide: !hide } : item
@@ -91,156 +93,104 @@ const CategoryList: React.FC = () => {
         </span>
     );
 
+    const tableColumns = [
+        {
+            key: 'id',
+            header: 'Mã',
+            render: (cat: CategoryResponse) => <span className="muted-cell">#{cat.id}</span>
+        },
+        {
+            key: 'name',
+            header: 'Tên danh mục',
+            render: (cat: CategoryResponse) => (
+                <>
+                    <p className="category-name">{cat.name}</p>
+                    <span className="category-meta">
+                        {cat.hide ? 'Ẩn khỏi trang chủ' : 'Hiển thị cho học viên'}
+                    </span>
+                </>
+            )
+        },
+        {
+            key: 'description',
+            header: 'Mô tả',
+            render: (cat: CategoryResponse) => <span className="description-cell">{cat.description || '—'}</span>
+        },
+        {
+            key: 'hide',
+            header: 'Trạng thái',
+            render: (cat: CategoryResponse) => renderStatusPill(cat.hide)
+        },
+        {
+            key: 'actions',
+            header: 'Thao tác',
+            align: 'right' as const,
+            render: (cat: CategoryResponse) => (
+                <div className="category-row-actions">
+                    <a href={`/categories/edit/${cat.id}`} className="category-btn subtle">
+                        Chỉnh sửa
+                    </a>
+                    <button
+                        onClick={() => handleToggleVisibility(cat)}
+                        disabled={updatingId === cat.id}
+                        className={`category-btn ${cat.hide ? 'primary' : 'danger'}`}
+                    >
+                        {updatingId === cat.id ? 'Đang cập nhật...' : cat.hide ? 'Hiển thị' : 'Ẩn'}
+                    </button>
+                </div>
+            )
+        }
+    ];
+
     const renderTable = () => {
         if (loading) {
-            return (
-                <div className="category-card">
-                    {[...Array(4)].map((_, idx) => (
-                        <div key={idx} className="category-loading-row" />
-                    ))}
-                </div>
-            );
+            return <LoadingState rows={4} variant="card" />;
         }
 
         if (!loading && filteredCategories.length === 0) {
             return (
-                <div className="category-empty-state">
-                    <div className="empty-icon">📂</div>
-                    <p className="empty-title">Chưa có danh mục phù hợp</p>
-                    <p className="empty-desc">
-                        Thử thay đổi bộ lọc hoặc tạo mới một danh mục để giúp người dùng tìm kiếm tài liệu nhanh hơn.
-                    </p>
-                </div>
+                <EmptyState
+                    icon="📂"
+                    title="Chưa có danh mục phù hợp"
+                    description="Thử thay đổi bộ lọc hoặc tạo mới một danh mục để giúp người dùng tìm kiếm tài liệu nhanh hơn."
+                />
             );
         }
 
-        return (
-            <div className="category-table-wrapper">
-                <table className="category-table">
-                    <thead>
-                        <tr>
-                            <th>Mã</th>
-                            <th>Tên danh mục</th>
-                            <th>Mô tả</th>
-                            <th>Trạng thái</th>
-                            <th className="text-right">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredCategories.map((cat) => (
-                            <tr key={cat.id}>
-                                <td className="muted-cell">#{cat.id}</td>
-                                <td>
-                                    <p className="category-name">{cat.name}</p>
-                                    <span className="category-meta">
-                                        {cat.hide ? 'Ẩn khỏi trang chủ' : 'Hiển thị cho học viên'}
-                                    </span>
-                                </td>
-                                <td className="description-cell">{cat.description || '—'}</td>
-                                <td>{renderStatusPill(cat.hide)}</td>
-                                <td>
-                                    <div className="category-row-actions">
-                                        <Link
-                                            to={`/categories/edit/${cat.id}`}
-                                            className="category-btn subtle"
-                                        >
-                                            Chỉnh sửa
-                                        </Link>
-                                        <button
-                                            onClick={() => handleToggleVisibility(cat)}
-                                            disabled={updatingId === cat.id}
-                                            className={`category-btn ${cat.hide ? 'primary' : 'danger'}`}
-                                        >
-                                            {updatingId === cat.id
-                                                ? 'Đang cập nhật...'
-                                                : cat.hide
-                                                    ? 'Hiển thị'
-                                                    : 'Ẩn'}
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        );
+        return <Table data={filteredCategories} columns={tableColumns} keyField="id" className="category-table" />;
     };
 
     return (
         <div className="admin-category-page">
             <div className="category-container">
-                <div className="category-page-header">
-                    <div className="category-heading">
-                        <p className="category-eyebrow">Quản trị hệ thống</p>
-                        <h1>Danh mục tài liệu</h1>
-                        <p>Theo dõi và làm mới các nhóm tài liệu để đảm bảo thư viện luôn dễ tìm kiếm.</p>
-                    </div>
-                    <Link to="/categories/add" className="category-btn primary">
-                        Thêm danh mục
-                    </Link>
-                </div>
+                <PageHeader
+                    title="Danh mục tài liệu"
+                    description="Theo dõi và làm mới các nhóm tài liệu để đảm bảo thư viện luôn dễ tìm kiếm."
+                    addButtonText="Thêm danh mục"
+                    addButtonLink="/categories/add"
+                    containerClass="category-page-header"
+                    headingClass="category-heading"
+                    eyebrowClass="category-eyebrow"
+                    buttonClass="category-btn primary"
+                />
 
-                {error && (
-                    <div className="category-alert error">
-                        <p>Lỗi: {error}</p>
-                        <button type="button" onClick={fetchCategories} className="category-btn ghost">
-                            Thử lại
-                        </button>
-                    </div>
-                )}
+                {error && <ErrorAlert message={error} onRetry={fetchCategories} />}
 
-                <div className="category-stats">
-                    <div className="category-stat-card">
-                        <span className="stat-label">Tổng danh mục</span>
-                        <strong className="stat-value">{stats.total}</strong>
-                        <p className="stat-desc">Tất cả nhóm tài liệu đang có</p>
-                    </div>
-                    <div className="category-stat-card positive">
-                        <span className="stat-label">Đang hiển thị</span>
-                        <strong className="stat-value">{stats.visible}</strong>
-                        <p className="stat-desc">Xuất hiện trên trang người dùng</p>
-                    </div>
-                    <div className="category-stat-card warning">
-                        <span className="stat-label">Đang ẩn</span>
-                        <strong className="stat-value">{stats.hidden}</strong>
-                        <p className="stat-desc">Cần duyệt trước khi hiển thị</p>
-                    </div>
-                </div>
+                <Stats stats={stats} containerClass="category-stats" cardClass="category-stat-card" />
 
-                <div className="category-filters">
-                    <div className="category-search">
-                        <i className="fa fa-search" aria-hidden="true" />
-                        <input
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Tìm kiếm theo tên hoặc mô tả…"
-                        />
-                    </div>
-                    <div className="category-filter-actions">
-                        {(['all', 'visible', 'hidden'] as VisibilityFilter[]).map((filter) => (
-                            <button
-                                key={filter}
-                                type="button"
-                                onClick={() => setVisibilityFilter(filter)}
-                                className={`category-filter-chip ${visibilityFilter === filter ? 'is-active' : ''}`}
-                            >
-                                {filter === 'all'
-                                    ? 'Tất cả'
-                                    : filter === 'visible'
-                                        ? 'Đang hiển thị'
-                                        : 'Đang ẩn'}
-                            </button>
-                        ))}
-                        <button
-                            type="button"
-                            onClick={() => setRefreshKey((prev) => prev + 1)}
-                            className="category-btn ghost"
-                        >
-                            Làm mới
-                        </button>
-                    </div>
-                </div>
+                <Filter
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    filterValue={visibilityFilter}
+                    onFilterChange={setVisibilityFilter}
+                    onRefresh={() => setRefreshKey((prev) => prev + 1)}
+                    placeholder="Tìm kiếm theo tên hoặc mô tả…"
+                    containerClass="category-filters"
+                    searchClass="category-search"
+                    filterActionsClass="category-filter-actions"
+                    filterChipClass="category-filter-chip"
+                    buttonClass="category-btn ghost"
+                />
 
                 {renderTable()}
             </div>

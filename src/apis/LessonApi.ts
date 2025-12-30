@@ -2,6 +2,7 @@ import type { APIResponse } from './../models/response/APIResponse';
 import api, { httpGet, httpPost } from "./HttpClient";
 import type { LessonResponse } from "./../models/response/LessonResponse";
 import type { LessonRequest } from "./../models/request/LessonRequest";
+import type { HideRequest } from '../models/request/HideRequest';
 
 export const getAllLessonByCategory = async (id: number) => {
     return await httpGet<APIResponse<LessonResponse>>(`/lessons/category/${id}`);
@@ -93,8 +94,8 @@ export const deleteMyLesson = async (id: number): Promise<APIResponse<void>> => 
     return response.data;
 }
 
-export const hideLesson = async (id: number, data: boolean): Promise<APIResponse<LessonResponse>> => {
-    const response = await api.put<APIResponse<LessonResponse>>(`/lessons/${id}`, data);
+export const hideLesson = async (id: number, data: HideRequest): Promise<APIResponse<LessonResponse>> => {
+    const response = await api.put<APIResponse<LessonResponse>>(`/lessons/hide/${id}`, data);
     return response.data;
 }
 
