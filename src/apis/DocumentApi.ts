@@ -3,6 +3,7 @@ import api, { httpGet, httpPost } from "./HttpClient";
 import type { DocumentResponse } from "./../models/response/DocumentResponse";
 import type { DocumentRequest } from "./../models/request/DocumentReques";
 import type { HideRequest } from '../models/request/HideRequest';
+import type { StatusRequest } from '../models/request/StatusRequest';
 
 export const getAllDocumentByCategory = async (id: number) => {
     return await httpGet<APIResponse<DocumentResponse>>(`/documents/category/${id}`);
@@ -77,7 +78,12 @@ export const hideDocument = async (id: number, data: HideRequest): Promise<APIRe
     return response.data;
 }
 
-export const updateDocument = async (id: number, documentData: DocumentRequest): Promise<APIResponse<DocumentResponse>> => {
-    const response = await api.put<APIResponse<DocumentResponse>>(`/documents/${id}`, documentData);
+export const changeStatusDocument = async (id: number, data: StatusRequest): Promise<APIResponse<DocumentResponse>> => {
+    const response = await api.put<APIResponse<DocumentResponse>>(`/documents/status/${id}`, data);
     return response.data;
 }
+
+// export const updateDocument = async (id: number, documentData: DocumentRequest): Promise<APIResponse<DocumentResponse>> => {
+//     const response = await api.put<APIResponse<DocumentResponse>>(`/documents/${id}`, documentData);
+//     return response.data;
+// }

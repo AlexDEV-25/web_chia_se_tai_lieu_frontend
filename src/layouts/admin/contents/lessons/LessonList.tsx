@@ -156,7 +156,7 @@ const LessonList: React.FC = () => {
             render: (les: LessonResponse) => (
                 <div className="lesson-row-actions">
                     <Link to={`/lessons/edit/${les.id}`} className="lesson-btn subtle">
-                        Chỉnh sửa
+                        Chi tiết
                     </Link>
                     <button
                         onClick={() => handleToggleVisibility(les)}

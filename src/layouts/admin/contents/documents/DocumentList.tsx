@@ -151,7 +151,7 @@ const DocumentList: React.FC = () => {
             render: (doc: DocumentResponse) => (
                 <div className="document-row-actions">
                     <Link to={`/documents/edit/${doc.id}`} className="document-btn subtle">
-                        Chỉnh sửa
+                        Chi tiết
                     </Link>
                     <button
                         onClick={() => handleToggleVisibility(doc)}
