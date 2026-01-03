@@ -165,7 +165,7 @@ const RightProperties: React.FC<RightPropertiesProps> = ({
             {/* Actions */}
             <div className={actionsClass}>
                 <button onClick={onClose} className={`${btnClass} secondary`}>
-                    Đóng
+                    Lưu và quay lại
                 </button>
             </div>
         </div>

@@ -304,13 +304,13 @@ const LessonDetail: React.FC = () => {
 
             {lessonId && (
                 <section className="glass-card doc-feedback">
-                    <RatingComp docId={lessonId} />
+                    <RatingComp lessonId={lessonId} />
                 </section>
             )}
 
             {lessonId && (
                 <section className="glass-card doc-feedback">
-                    <CommentComp docId={lessonId} />
+                    <CommentComp lessonId={lessonId} />
                 </section>
             )}
         </div>

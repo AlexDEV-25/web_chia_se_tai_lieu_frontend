@@ -1,10 +1,8 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
-
 import { useNavigate } from "react-router-dom";
 import { createCategory } from "../../../apis/CategoryApi";
 import type { CategoryRequest } from "../../../models/request/CategoryRequest";
-import "../../../styles/pages/_categories.css";
 
 const CategoryAdd: React.FC = () => {
     const navigate = useNavigate();

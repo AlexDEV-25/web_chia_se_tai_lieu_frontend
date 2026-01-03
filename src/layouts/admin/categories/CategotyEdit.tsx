@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCategoryById, updateCategory } from "../../../apis/CategoryApi";
 import type { CategoryRequest } from "../../../models/request/CategoryRequest";
-import "../../../styles/pages/_categories.css";
 
 const CategoryEdit: React.FC = () => {
     const { id } = useParams<{ id: string | undefined }>();

@@ -1,4 +1,4 @@
-export interface CommentResponse {
+export interface CommentDocumentResponse {
     id: number;
     content: string;
     createdAt: string;

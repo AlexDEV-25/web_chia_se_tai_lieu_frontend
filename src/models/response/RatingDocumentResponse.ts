@@ -1,4 +1,4 @@
-export interface RatingResponse {
+export interface RatingDocumentResponse {
     id: number;
     rating: number;
     createdAt: string;

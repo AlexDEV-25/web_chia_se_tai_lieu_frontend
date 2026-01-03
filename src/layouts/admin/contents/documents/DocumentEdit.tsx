@@ -4,7 +4,6 @@ import { getDocumentById, hideDocument, changeStatusDocument } from '../../../..
 import DocumentViewComp from '../../../common/components/DocumentViewComp';
 import RightProperties from '../components/RightProperties';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
-import '../../../../styles/pages/_documents.css';
 
 const DocumentEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();

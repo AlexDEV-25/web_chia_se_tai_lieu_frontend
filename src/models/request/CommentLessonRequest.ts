@@ -1,7 +1,7 @@
-export interface CommentRequest {
+export interface CommentLessonRequest {
     content: string;
     idParent: number;
     hide?: boolean;
-    documentId: number;
+    lessonId: number;
     userId: number;
 }

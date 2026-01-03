@@ -1,18 +1,28 @@
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { getCommentsByDocument, createComment } from "../../../apis/CommentApi";
-import type { CommentRequest } from "../../../models/request/CommentRequest";
-import type { CommentResponse } from "../../../models/response/CommentResponse";
+import {
+    getCommentsByDocument,
+    createDocumentComment,
+    getCommentsByLesson,
+    createLessonComment,
+} from "../../../apis/CommentApi";
+import type { CommentDocumentRequest } from "../../../models/request/CommentDocumentRequest";
+import type { CommentDocumentResponse } from "../../../models/response/CommentDocumentResponse";
+import type { CommentLessonRequest } from "../../../models/request/CommentLessonRequest";
+import type { CommentLessonResponse } from "../../../models/response/CommentLessonResponse";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import api from "../../../apis/HttpClient";
 
 interface CommentCompProps {
-    docId: number;
+    docId?: number;
+    lessonId?: number;
 }
 
-const CommentComp: React.FC<CommentCompProps> = ({ docId }) => {
-    const [comments, setComments] = useState<CommentResponse[]>([]);
+type CommentItem = CommentDocumentResponse | CommentLessonResponse;
+
+const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
+    const [comments, setComments] = useState<CommentItem[]>([]);
     const [loadingComments, setLoadingComments] = useState(false);
     const [commentError, setCommentError] = useState<string | null>(null);
     const [commentContent, setCommentContent] = useState("");
@@ -22,6 +32,8 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId }) => {
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
 
     const isAuthenticated = Boolean(currentUser);
+    const isLessonMode = Boolean(lessonId);
+    const targetId = lessonId ?? docId;
 
     const nonHiddenComments = useMemo(
         () => comments.filter((c) => !c.hide),
@@ -29,7 +41,7 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId }) => {
     );
 
     const commentsByParent = useMemo(() => {
-        const grouped: Record<number, CommentResponse[]> = {};
+        const grouped: Record<number, CommentItem[]> = {};
         nonHiddenComments.forEach((comment) => {
             const parentKey =
                 comment.idParent && comment.idParent > 0 ? comment.idParent : 0;
@@ -63,11 +75,13 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId }) => {
     }, []);
 
     const fetchComments = useCallback(async () => {
-        if (!docId) return;
+        if (!targetId) return;
         setLoadingComments(true);
         setCommentError(null);
         try {
-            const response = await getCommentsByDocument(docId);
+            const response = isLessonMode
+                ? await getCommentsByLesson(targetId)
+                : await getCommentsByDocument(targetId);
             setComments(response.resultList ?? []);
         } catch (err) {
             console.error("fetchComments error", err);
@@ -75,7 +89,7 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId }) => {
         } finally {
             setLoadingComments(false);
         }
-    }, [docId]);
+    }, [isLessonMode, targetId]);
 
     useEffect(() => {
         fetchCurrentUser();
@@ -86,16 +100,28 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId }) => {
     }, [fetchComments]);
 
     const submitComment = async (content: string, idParent: number) => {
-        if (!currentUser || !docId) return;
+        if (!currentUser || !targetId) return;
 
-        const payload: CommentRequest = {
+        const basePayload = {
             content: content.trim(),
             idParent,
             hide: false,
-            documentId: docId,
             userId: currentUser.id,
         };
-        await createComment(payload);
+
+        if (isLessonMode) {
+            const payload: CommentLessonRequest = {
+                ...basePayload,
+                lessonId: targetId,
+            };
+            await createLessonComment(payload);
+        } else {
+            const payload: CommentDocumentRequest = {
+                ...basePayload,
+                documentId: targetId,
+            };
+            await createDocumentComment(payload);
+        }
         await fetchComments();
     };
 
@@ -163,7 +189,7 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId }) => {
         }
     };
 
-    const renderCommentThread = (comment: CommentResponse) => {
+    const renderCommentThread = (comment: CommentItem) => {
         const replies = commentsByParent[comment.id] ?? [];
         const isReplying = activeReplyId === comment.id;
 

@@ -1,16 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAllCategory, hideCategory } from '../../../apis/CategoryApi';
-import PageHeader from '../contents/components/PageHeader';
-import Stats from '../contents/components/Stats';
-import Filter from '../contents/components/Filter';
-import Table from '../contents/components/Table';
-import LoadingState from '../contents/components/LoadingState';
-import EmptyState from '../contents/components/EmptyState';
-import ErrorAlert from '../contents/components/ErrorAlert';
-
 import type { CategoryResponse } from '../../../models/response/CategoryResponse';
-import '../../../styles/pages/_categories.css';
-
+import PageHeader from '../components/PageHeader';
+import Stats from '../components/Stats';
+import Filter from '../components/Filter';
+import Table from '../components/Table';
+import LoadingState from '../components/LoadingState';
+import EmptyState from '../components/EmptyState';
+import ErrorAlert from '../components/ErrorAlert';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 
 const CategoryList: React.FC = () => {

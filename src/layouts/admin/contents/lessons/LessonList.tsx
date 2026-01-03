@@ -1,16 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getAllLesson, deleteLesson, hideLesson } from '../../../../apis/LessonApi';
-import PageHeader from '../components/PageHeader';
-import Stats from '../components/Stats';
-import Filter from '../components/Filter';
-import Table from '../components/Table';
-import LoadingState from '../components/LoadingState';
-import EmptyState from '../components/EmptyState';
-import ErrorAlert from '../components/ErrorAlert';
-
+import PageHeader from '../../components/PageHeader';
+import Stats from '../../components/Stats';
+import Filter from '../../components/Filter';
+import Table from '../../components/Table';
+import LoadingState from '../../components/LoadingState';
+import EmptyState from '../../components/EmptyState';
+import ErrorAlert from '../../components/ErrorAlert';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
-// import '../../../../styles/pages/_lessons.css';
 
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 

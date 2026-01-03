@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { getAllUser, hideUser } from '../../../apis/UserApi';
-import PageHeader from '../contents/components/PageHeader';
-import Stats from '../contents/components/Stats';
-import Filter from '../contents/components/Filter';
-import Table from '../contents/components/Table';
-import LoadingState from '../contents/components/LoadingState';
-import EmptyState from '../contents/components/EmptyState';
-import ErrorAlert from '../contents/components/ErrorAlert';
+import PageHeader from '../components/PageHeader';
+import Stats from '../components/Stats';
+import Filter from '../components/Filter';
+import Table from '../components/Table';
+import LoadingState from '../components/LoadingState';
+import EmptyState from '../components/EmptyState';
+import ErrorAlert from '../components/ErrorAlert';
 import type { UserResponse } from '../../../models/response/UserResponse';
 // import '../../../styles/pages/_users.css';
 
@@ -151,9 +150,6 @@ const UserList: React.FC = () => {
             align: 'right' as const,
             render: (usr: UserResponse) => (
                 <div className="user-row-actions">
-                    <Link to={`/users/edit/${usr.id}`} className="user-btn subtle">
-                        Chỉnh sửa
-                    </Link>
                     <button
                         onClick={() => handleToggleStatus(usr)}
                         disabled={updatingId === usr.id}

@@ -20,8 +20,10 @@ const VideoComp: React.FC<VideoCompProps> = ({ lessonId, thumbnailUrl }) => {
             <div className="lesson-video-frame">
                 <video
                     controls
+                    controlsList="nodownload"
                     poster={thumbnailUrl ? `http://localhost:8080/api/images/thumbnail/${thumbnailUrl}` : undefined}
                     preload="metadata"
+                    onContextMenu={(e) => e.preventDefault()}
                 >
                     <source src={videoSource} />
                     Trình duyệt của bạn không hỗ trợ video.

@@ -1,17 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
-import type { RatingResponse } from "../../../models/response/RatingResponse";
+import type { RatingDocumentResponse } from "../../../models/response/RatingDocumentResponse";
+import type { RatingLessonResponse } from "../../../models/response/RatingLessonResponse";
 import type { UserResponse } from "../../../models/response/UserResponse";
-import { getRatingsByDocument, createRating } from "../../../apis/RatingApi";
+import {
+    getRatingsByDocument,
+    createRatingDocument,
+    getRatingsByLesson,
+    createRatingLesson,
+} from "../../../apis/RatingApi";
 import api from "../../../apis/HttpClient";
 
 interface RatingCompProps {
-    docId: number;
+    docId?: number;
+    lessonId?: number;
 }
 
 const TOTAL_STARS = 5;
 
-const RatingComp: React.FC<RatingCompProps> = ({ docId }) => {
-    const [ratings, setRatings] = useState<RatingResponse[]>([]);
+type RatingItem = RatingDocumentResponse | RatingLessonResponse;
+
+const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
+    const [ratings, setRatings] = useState<RatingItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
@@ -19,12 +28,23 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId }) => {
     const [selectedStar, setSelectedStar] = useState<number | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
+    const isLessonMode = Boolean(lessonId);
+    const targetId = lessonId ?? docId;
+
     useEffect(() => {
         const fetchRatings = async () => {
+            if (!targetId) {
+                setRatings([]);
+                setLoading(false);
+                setError("Không xác định được nội dung để lấy đánh giá.");
+                return;
+            }
             setLoading(true);
             setError(null);
             try {
-                const response = await getRatingsByDocument(docId);
+                const response = isLessonMode
+                    ? await getRatingsByLesson(targetId)
+                    : await getRatingsByDocument(targetId);
                 setRatings(response.resultList ?? []);
             } catch (err) {
                 console.error("fetchRatings error", err);
@@ -34,7 +54,7 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId }) => {
             }
         };
         fetchRatings();
-    }, [docId]);
+    }, [isLessonMode, targetId]);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -82,17 +102,32 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId }) => {
             alert("Vui lòng chọn số sao trước khi xác nhận.");
             return;
         }
+        if (!targetId) {
+            alert("Không xác định được nội dung cần đánh giá.");
+            return;
+        }
         setSubmitting(true);
         try {
-            const payload = {
-                rating: selectedStar,
-                documentId: docId,
-                userId: currentUserId,
-            };
-            const response = await createRating(payload);
-            const created = response.result;
-            if (created) {
-                setRatings((prev) => [...prev, created]);
+            if (isLessonMode) {
+                const response = await createRatingLesson({
+                    rating: selectedStar,
+                    lessonId: targetId,
+                    userId: currentUserId,
+                });
+                const created = response.result;
+                if (created) {
+                    setRatings((prev) => [...prev, created]);
+                }
+            } else {
+                const response = await createRatingDocument({
+                    rating: selectedStar,
+                    documentId: targetId,
+                    userId: currentUserId,
+                });
+                const created = response.result;
+                if (created) {
+                    setRatings((prev) => [...prev, created]);
+                }
             }
         } catch (err) {
             console.error("createRating error", err);
