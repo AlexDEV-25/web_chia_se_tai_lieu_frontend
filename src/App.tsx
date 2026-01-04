@@ -30,6 +30,7 @@ import UserList from './layouts/admin/users/UserList';
 import DocumentEdit from './layouts/admin/contents/documents/DocumentEdit';
 import LessonEdit from './layouts/admin/contents/lessons/LessonEdit';
 import UserAdd from './layouts/admin/users/UserAdd';
+import Dashboard from './layouts/admin/dashboard/Dashboard';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -87,6 +88,7 @@ function App() {
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/uploadHistory" element={<UploadHistory />} />
             {/* {admin} */}
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/categories" element={<CategoryList />} />
             <Route path="/categories/add" element={<CategoryAdd />} />
             <Route path="/categories/edit/:id" element={<CategoryEdit />} />

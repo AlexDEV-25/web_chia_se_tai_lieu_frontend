@@ -8,6 +8,7 @@ import Table from '../components/Table';
 import LoadingState from '../components/LoadingState';
 import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
+import LeftSidebar from '../components/LeftSidebar';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 
 const CategoryList: React.FC = () => {
@@ -158,38 +159,41 @@ const CategoryList: React.FC = () => {
     };
 
     return (
-        <div className="admin-category-page">
-            <div className="category-container">
-                <PageHeader
-                    title="Danh mục tài liệu"
-                    description="Theo dõi và làm mới các nhóm tài liệu để đảm bảo thư viện luôn dễ tìm kiếm."
-                    addButtonText="Thêm danh mục"
-                    addButtonLink="/categories/add"
-                    containerClass="category-page-header"
-                    headingClass="category-heading"
-                    eyebrowClass="category-eyebrow"
-                    buttonClass="category-btn primary"
-                />
+        <div className="admin-page-layout">
+            <LeftSidebar />
+            <div className="admin-category-page">
+                <div className="category-container">
+                    <PageHeader
+                        title="Danh mục tài liệu"
+                        description="Theo dõi và làm mới các nhóm tài liệu để đảm bảo thư viện luôn dễ tìm kiếm."
+                        addButtonText="Thêm danh mục"
+                        addButtonLink="/categories/add"
+                        containerClass="category-page-header"
+                        headingClass="category-heading"
+                        eyebrowClass="category-eyebrow"
+                        buttonClass="category-btn primary"
+                    />
 
-                {error && <ErrorAlert message={error} onRetry={fetchCategories} />}
+                    {error && <ErrorAlert message={error} onRetry={fetchCategories} />}
 
-                <Stats stats={stats} containerClass="category-stats" cardClass="category-stat-card" />
+                    <Stats stats={stats} containerClass="category-stats" cardClass="category-stat-card" />
 
-                <Filter
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    filterValue={visibilityFilter}
-                    onFilterChange={setVisibilityFilter}
-                    onRefresh={() => setRefreshKey((prev) => prev + 1)}
-                    placeholder="Tìm kiếm theo tên hoặc mô tả…"
-                    containerClass="category-filters"
-                    searchClass="category-search"
-                    filterActionsClass="category-filter-actions"
-                    filterChipClass="category-filter-chip"
-                    buttonClass="category-btn ghost"
-                />
+                    <Filter
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                        filterValue={visibilityFilter}
+                        onFilterChange={setVisibilityFilter}
+                        onRefresh={() => setRefreshKey((prev) => prev + 1)}
+                        placeholder="Tìm kiếm theo tên hoặc mô tả…"
+                        containerClass="category-filters"
+                        searchClass="category-search"
+                        filterActionsClass="category-filter-actions"
+                        filterChipClass="category-filter-chip"
+                        buttonClass="category-btn ghost"
+                    />
 
-                {renderTable()}
+                    {renderTable()}
+                </div>
             </div>
         </div>
     );

@@ -7,8 +7,8 @@ import Table from '../components/Table';
 import LoadingState from '../components/LoadingState';
 import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
+import LeftSidebar from '../components/LeftSidebar';
 import type { UserResponse } from '../../../models/response/UserResponse';
-// import '../../../styles/pages/_users.css';
 
 type StatusFilter = 'all' | 'visible' | 'hidden';
 
@@ -163,50 +163,53 @@ const UserList: React.FC = () => {
     ];
 
     return (
-        <div className="admin-user-page">
-            <div className="user-container">
-                <PageHeader
-                    eyebrow="Quản trị hệ thống"
-                    title="Quản lý người dùng"
-                    description="Theo dõi và quản lý tài khoản người dùng để đảm bảo an toàn hệ thống."
-                    addButtonText="Thêm người dùng"
-                    addButtonLink="/users/add"
-                    containerClass="user-page-header"
-                    headingClass="user-heading"
-                    eyebrowClass="user-eyebrow"
-                    buttonClass="user-btn primary"
-                />
+        <div className="admin-page-layout">
+            <LeftSidebar />
+            <div className="admin-user-page">
+                <div className="user-container">
+                    <PageHeader
+                        eyebrow="Quản trị hệ thống"
+                        title="Quản lý người dùng"
+                        description="Theo dõi và quản lý tài khoản người dùng để đảm bảo an toàn hệ thống."
+                        addButtonText="Thêm người dùng"
+                        addButtonLink="/users/add"
+                        containerClass="user-page-header"
+                        headingClass="user-heading"
+                        eyebrowClass="user-eyebrow"
+                        buttonClass="user-btn primary"
+                    />
 
-                {error && (
-                    <ErrorAlert message={error} onRetry={fetchUsers} />
-                )}
+                    {error && (
+                        <ErrorAlert message={error} onRetry={fetchUsers} />
+                    )}
 
-                <Stats stats={stats} containerClass="user-stats" cardClass="user-stat-card" />
+                    <Stats stats={stats} containerClass="user-stats" cardClass="user-stat-card" />
 
-                <Filter
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    filterValue={statusFilter}
-                    onFilterChange={setStatusFilter}
-                    onRefresh={() => setRefreshKey((prev) => prev + 1)}
-                    placeholder="Tìm kiếm theo tên hoặc email…"
-                    containerClass="user-filters"
-                    searchClass="user-search"
-                    filterActionsClass="user-filter-actions"
-                    filterChipClass="user-filter-chip"
-                    buttonClass="user-btn ghost"
-                />
-                {loading && <LoadingState />}
+                    <Filter
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                        filterValue={statusFilter}
+                        onFilterChange={setStatusFilter}
+                        onRefresh={() => setRefreshKey((prev) => prev + 1)}
+                        placeholder="Tìm kiếm theo tên hoặc email…"
+                        containerClass="user-filters"
+                        searchClass="user-search"
+                        filterActionsClass="user-filter-actions"
+                        filterChipClass="user-filter-chip"
+                        buttonClass="user-btn ghost"
+                    />
+                    {loading && <LoadingState />}
 
-                {!loading && filteredUsers.length === 0 && (
-                    <EmptyState icon="👥" title="Chưa có người dùng phù hợp" description="Thử thay đổi bộ lọc hoặc mời người dùng mới tham gia nền tảng." />
-                )}
+                    {!loading && filteredUsers.length === 0 && (
+                        <EmptyState icon="👥" title="Chưa có người dùng phù hợp" description="Thử thay đổi bộ lọc hoặc mời người dùng mới tham gia nền tảng." />
+                    )}
 
-                {!loading && filteredUsers.length > 0 && (
-                    <div className="user-table-wrapper">
-                        <Table columns={tableColumns} data={filteredUsers} keyField="id" />
-                    </div>
-                )}
+                    {!loading && filteredUsers.length > 0 && (
+                        <div className="user-table-wrapper">
+                            <Table columns={tableColumns} data={filteredUsers} keyField="id" />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

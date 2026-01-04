@@ -1,17 +1,21 @@
 /* ========================================
-   GLOBAL & COMPONENT IMPORTS
+   GLOBAL FOUNDATION
    ======================================== */
 @import './styles/_variables.css';
 @import './styles/_base.css';
 
-/* ---------- COMPONENTS ---------- */
+/* ========================================
+   SHARED COMPONENTS
+   ======================================== */
 @import './styles/components/_header.css';
 @import './styles/components/_footer.css';
 @import './styles/components/_chatbot.css';
 @import './styles/components/_document-meta.css';
 @import './styles/components/_modal.css';
 
-/* ---------- PAGE STYLES ---------- */
+/* ========================================
+   USER-FACING PAGES
+   ======================================== */
 @import './styles/pages/_common.css';
 @import './styles/pages/_auth.css';
 @import './styles/pages/_document-detail.css';
@@ -20,4 +24,13 @@
 @import './styles/pages/_upload-history.css';
 @import './styles/pages/_favorites.css';
 @import './styles/pages/_profile.css';
-/* @import './styles/pages/_categories.css'; */
+
+/* ========================================
+   ADMIN CONSOLE PAGES
+   ======================================== */
+@import './styles/pages/_admin-shared.css';
+@import './styles/pages/_admin-dashboard.css';
+@import './styles/pages/_admin-categories.css';
+@import './styles/pages/_admin-documents.css';
+@import './styles/pages/_admin-lessons.css';
+@import './styles/pages/_admin-users.css';

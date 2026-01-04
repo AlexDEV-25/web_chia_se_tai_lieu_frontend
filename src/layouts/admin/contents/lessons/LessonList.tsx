@@ -8,6 +8,7 @@ import Table from '../../components/Table';
 import LoadingState from '../../components/LoadingState';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
+import LeftSidebar from '../../components/LeftSidebar';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
 
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -106,11 +107,14 @@ const LessonList: React.FC = () => {
         return { total, visible, hidden };
     }, [lessons]);
 
-    const renderStatusPill = (isHidden: boolean) => (
-        <span className={`lesson-status-pill ${isHidden ? 'is-hidden' : 'is-visible'}`}>
-            {isHidden ? 'Đang ẩn' : 'Đang hiển thị'}
-        </span>
-    );
+    const renderStatusPill = (status?: 'PENDING' | 'PUBLISHED') => {
+        const isPublished = status === 'PUBLISHED';
+        return (
+            <span className={`lesson-status-pill ${isPublished ? 'is-published' : 'is-pending'}`}>
+                {isPublished ? 'Đã duyệt' : 'Chờ duyệt'}
+            </span>
+        );
+    };
 
     const tableColumns = [
         {
@@ -143,9 +147,9 @@ const LessonList: React.FC = () => {
             render: (les: LessonResponse) => <span>{les.categoryName || 'Chưa phân loại'}</span>
         },
         {
-            key: 'hide',
+            key: 'status',
             header: 'Trạng thái',
-            render: (les: LessonResponse) => renderStatusPill(les.hide)
+            render: (les: LessonResponse) => renderStatusPill(les.status)
         },
         {
             key: 'actions',
@@ -176,51 +180,54 @@ const LessonList: React.FC = () => {
     ];
 
     return (
-        <div className="admin-lesson-page">
-            <div className="lesson-container">
-                <PageHeader
-                    eyebrow="Quản trị hệ thống"
-                    title="Quản lý bài học"
-                    description="Theo dõi và quản lý các bài học để đảm bảo chất lượng giáo dục."
-                    addButtonText="Thêm bài học"
-                    addButtonLink="/lessons/add"
-                    containerClass="lesson-page-header"
-                    headingClass="lesson-heading"
-                    eyebrowClass="lesson-eyebrow"
-                    buttonClass="lesson-btn primary"
-                />
+        <div className="admin-page-layout">
+            <LeftSidebar />
+            <div className="admin-lesson-page">
+                <div className="lesson-container">
+                    <PageHeader
+                        eyebrow="Quản trị hệ thống"
+                        title="Quản lý bài học"
+                        description="Theo dõi và quản lý các bài học để đảm bảo chất lượng giáo dục."
+                        addButtonText="Thêm bài học"
+                        addButtonLink="/lessons/add"
+                        containerClass="lesson-page-header"
+                        headingClass="lesson-heading"
+                        eyebrowClass="lesson-eyebrow"
+                        buttonClass="lesson-btn primary"
+                    />
 
-                {error && (
-                    <ErrorAlert message={error} onRetry={fetchLessons} />
-                )}
+                    {error && (
+                        <ErrorAlert message={error} onRetry={fetchLessons} />
+                    )}
 
-                <Stats stats={stats} containerClass="lesson-stats" cardClass="lesson-stat-card" />
+                    <Stats stats={stats} containerClass="lesson-stats" cardClass="lesson-stat-card" />
 
-                <Filter
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    filterValue={visibilityFilter}
-                    onFilterChange={setVisibilityFilter}
-                    onRefresh={() => setRefreshKey((prev) => prev + 1)}
-                    placeholder="Tìm kiếm theo tiêu đề hoặc nội dung…"
-                    containerClass="lesson-filters"
-                    searchClass="lesson-search"
-                    filterActionsClass="lesson-filter-actions"
-                    filterChipClass="lesson-filter-chip"
-                    buttonClass="lesson-btn ghost"
-                />
+                    <Filter
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                        filterValue={visibilityFilter}
+                        onFilterChange={setVisibilityFilter}
+                        onRefresh={() => setRefreshKey((prev) => prev + 1)}
+                        placeholder="Tìm kiếm theo tiêu đề hoặc nội dung…"
+                        containerClass="lesson-filters"
+                        searchClass="lesson-search"
+                        filterActionsClass="lesson-filter-actions"
+                        filterChipClass="lesson-filter-chip"
+                        buttonClass="lesson-btn ghost"
+                    />
 
-                {loading && <LoadingState />}
+                    {loading && <LoadingState />}
 
-                {!loading && filteredLessons.length === 0 && (
-                    <EmptyState icon="📚" title="Chưa có bài học phù hợp" description="Thử thay đổi bộ lọc hoặc tạo một bài học mới để giúp học viên tiếp thu kiến thức." />
-                )}
+                    {!loading && filteredLessons.length === 0 && (
+                        <EmptyState icon="📚" title="Chưa có bài học phù hợp" description="Thử thay đổi bộ lọc hoặc tạo một bài học mới để giúp học viên tiếp thu kiến thức." />
+                    )}
 
-                {!loading && filteredLessons.length > 0 && (
-                    <div className="lesson-table-wrapper">
-                        <Table columns={tableColumns} data={filteredLessons} keyField="id" />
-                    </div>
-                )}
+                    {!loading && filteredLessons.length > 0 && (
+                        <div className="lesson-table-wrapper">
+                            <Table columns={tableColumns} data={filteredLessons} keyField="id" />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

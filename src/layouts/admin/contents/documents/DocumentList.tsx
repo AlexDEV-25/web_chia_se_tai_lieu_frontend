@@ -8,6 +8,7 @@ import Table from '../../components/Table';
 import LoadingState from '../../components/LoadingState';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
+import LeftSidebar from '../../components/LeftSidebar';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
 
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -105,11 +106,14 @@ const DocumentList: React.FC = () => {
         return { total, visible, hidden };
     }, [documents]);
 
-    const renderStatusPill = (isHidden: boolean) => (
-        <span className={`document-status-pill ${isHidden ? 'is-hidden' : 'is-visible'}`}>
-            {isHidden ? 'Đang ẩn' : 'Đang hiển thị'}
-        </span>
-    );
+    const renderStatusPill = (status?: 'PENDING' | 'PUBLISHED') => {
+        const isPublished = status === 'PUBLISHED';
+        return (
+            <span className={`document-status-pill ${isPublished ? 'is-published' : 'is-pending'}`}>
+                {isPublished ? 'Đã duyệt' : 'Chờ duyệt'}
+            </span>
+        );
+    };
 
     const tableColumns = [
         {
@@ -138,9 +142,9 @@ const DocumentList: React.FC = () => {
             render: (doc: DocumentResponse) => <span>{doc.categoryName || 'Chưa phân loại'}</span>
         },
         {
-            key: 'hide',
+            key: 'status',
             header: 'Trạng thái',
-            render: (doc: DocumentResponse) => renderStatusPill(doc.hide)
+            render: (doc: DocumentResponse) => renderStatusPill(doc.status)
         },
         {
             key: 'actions',
@@ -171,51 +175,54 @@ const DocumentList: React.FC = () => {
     ];
 
     return (
-        <div className="admin-document-page">
-            <div className="document-container">
-                <PageHeader
-                    eyebrow="Quản trị hệ thống"
-                    title="Quản lý tài liệu"
-                    description="Theo dõi và quản lý các tài liệu đã tải lên để đảm bảo chất lượng nội dung."
-                    addButtonText="Tải lên tài liệu"
-                    addButtonLink="/documents/add"
-                    containerClass="document-page-header"
-                    headingClass="document-heading"
-                    eyebrowClass="document-eyebrow"
-                    buttonClass="document-btn primary"
-                />
+        <div className="admin-page-layout">
+            <LeftSidebar />
+            <div className="admin-document-page">
+                <div className="document-container">
+                    <PageHeader
+                        eyebrow="Quản trị hệ thống"
+                        title="Quản lý tài liệu"
+                        description="Theo dõi và quản lý các tài liệu đã tải lên để đảm bảo chất lượng nội dung."
+                        addButtonText="Tải lên tài liệu"
+                        addButtonLink="/documents/add"
+                        containerClass="document-page-header"
+                        headingClass="document-heading"
+                        eyebrowClass="document-eyebrow"
+                        buttonClass="document-btn primary"
+                    />
 
-                {error && (
-                    <ErrorAlert message={error} onRetry={fetchDocuments} />
-                )}
+                    {error && (
+                        <ErrorAlert message={error} onRetry={fetchDocuments} />
+                    )}
 
-                <Stats stats={stats} containerClass="document-stats" cardClass="document-stat-card" />
+                    <Stats stats={stats} containerClass="document-stats" cardClass="document-stat-card" />
 
-                <Filter
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    filterValue={visibilityFilter}
-                    onFilterChange={setVisibilityFilter}
-                    onRefresh={() => setRefreshKey((prev) => prev + 1)}
-                    placeholder="Tìm kiếm theo tiêu đề hoặc mô tả…"
-                    containerClass="document-filters"
-                    searchClass="document-search"
-                    filterActionsClass="document-filter-actions"
-                    filterChipClass="document-filter-chip"
-                    buttonClass="document-btn ghost"
-                />
+                    <Filter
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                        filterValue={visibilityFilter}
+                        onFilterChange={setVisibilityFilter}
+                        onRefresh={() => setRefreshKey((prev) => prev + 1)}
+                        placeholder="Tìm kiếm theo tiêu đề hoặc mô tả…"
+                        containerClass="document-filters"
+                        searchClass="document-search"
+                        filterActionsClass="document-filter-actions"
+                        filterChipClass="document-filter-chip"
+                        buttonClass="document-btn ghost"
+                    />
 
-                {loading && <LoadingState />}
+                    {loading && <LoadingState />}
 
-                {!loading && filteredDocuments.length === 0 && (
-                    <EmptyState icon="📄" title="Chưa có tài liệu phù hợp" description="Thử thay đổi bộ lọc hoặc tải lên một tài liệu mới để phong phú thư viện tài nguyên." />
-                )}
+                    {!loading && filteredDocuments.length === 0 && (
+                        <EmptyState icon="📄" title="Chưa có tài liệu phù hợp" description="Thử thay đổi bộ lọc hoặc tải lên một tài liệu mới để phong phú thư viện tài nguyên." />
+                    )}
 
-                {!loading && filteredDocuments.length > 0 && (
-                    <div className="document-table-wrapper">
-                        <Table columns={tableColumns} data={filteredDocuments} keyField="id" />
-                    </div>
-                )}
+                    {!loading && filteredDocuments.length > 0 && (
+                        <div className="document-table-wrapper">
+                            <Table columns={tableColumns} data={filteredDocuments} keyField="id" />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

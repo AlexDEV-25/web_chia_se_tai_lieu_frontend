@@ -109,7 +109,7 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, userC
                                     </div>
                                 </details>
                                 {userCurrent?.roles.find((role) => role.name === "ADMIN") && (
-                                    <Link to="/admin" className="admin-link">
+                                    <Link to="/dashboard" className="admin-link">
                                         Trang Admin
                                     </Link>
                                 )}

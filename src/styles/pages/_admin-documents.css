@@ -1,0 +1,140 @@
+/* ========================================
+   ADMIN DOCUMENT MANAGEMENT
+   ======================================== */
+.admin-document-page {
+    background: transparent;
+}
+
+.document-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.document-page-header h1 {
+    margin: 0;
+}
+
+.document-btn.primary i,
+.lesson-btn.primary i {
+    font-size: 0.95rem;
+}
+
+/* ---------- Document Table Enhancements ---------- */
+.document-table-wrapper {
+    margin-top: 0.5rem;
+}
+
+.document-title {
+    font-weight: 700;
+    margin: 0;
+    color: #0f172a;
+}
+
+.document-meta {
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.document-row-actions .document-btn {
+    min-width: 122px;
+    justify-content: center;
+}
+
+.document-status-pill i {
+    font-size: 0.9rem;
+}
+
+/* ---------- Document Edit Layout ---------- */
+.admin-document-edit-page {
+    background: transparent;
+}
+
+.document-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.document-header-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.document-back-btn {
+    border: none;
+    border-radius: 14px;
+    padding: 0.65rem 1.2rem;
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--brand-primary);
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.document-header-info h1 {
+    margin: 0;
+}
+
+.document-edit-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.document-preview-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.document-preview-card {
+    border-radius: 24px;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.document-section-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.document-empty-preview {
+    border-radius: 18px;
+    padding: 2rem;
+    background: rgba(248, 250, 252, 0.9);
+    text-align: center;
+    color: #475569;
+}
+
+.document-alert {
+    border-radius: 18px;
+    padding: 1rem 1.25rem;
+    background: rgba(248, 113, 113, 0.12);
+    border: 1px solid rgba(248, 113, 113, 0.35);
+    color: #b91c1c;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.document-alert .document-btn {
+    align-self: flex-start;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1200px) {
+    .document-edit-grid {
+        grid-template-columns: 1fr;
+    }
+}
