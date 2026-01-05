@@ -72,7 +72,10 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, userC
 
                 <button
                     type="button"
-                    onClick={() => setKeyWords(TempKeyWords)}
+                    onClick={() => {
+                        setKeyWords(TempKeyWords);
+                        navigate("/");
+                    }}
                 >
                     Tìm kiếm
                 </button>
