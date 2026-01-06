@@ -296,7 +296,8 @@ const DocumentDetail: React.FC = () => {
                 <section className="glass-card doc-related">
                     <CarouselComp
                         categoryId={documentDetail.categoryId}
-                        currentDocumentId={documentDetail.id}
+                        currentItemId={documentDetail.id}
+                        type="document"
                     />
                 </section>
             )}

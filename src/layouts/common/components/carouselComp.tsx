@@ -1,21 +1,25 @@
 import { useEffect, useState } from "react";
 import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
+import { getAllLessonByCategory } from "../../../apis/LessonApi";
 
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
-import type { FavoriteDocumentResponse } from "../../../models/response/FavoriteDocumentResponse";
+import type { LessonResponse } from "../../../models/response/LessonResponse";
 import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
+import { addFavoriteLesson, getLessonFavoritesByUser } from "../../../apis/FavoriteApi";
 import { getMyInfo } from "../../../apis/UserApi";
 import GrindItem from "./GrindItem";
 
 interface CarouselProps {
     categoryId: number;
-    currentDocumentId: number;
+    currentItemId: number;
+    type: 'document' | 'lesson';
 }
 
+type Item = DocumentResponse | LessonResponse;
 type FavoriteMap = Record<number, { favoriteId: number }>;
 
-const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }) => {
-    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
+const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type }) => {
+    const [items, setItems] = useState<Item[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
@@ -28,14 +32,20 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
             setLoading(true);
             setError(null);
             try {
-                const response = await getAllDocumentByCategory(categoryId);
+                let response;
+                if (type === 'document') {
+                    response = await getAllDocumentByCategory(categoryId);
+                } else {
+                    response = await getAllLessonByCategory(categoryId);
+                }
+
                 const list = (response.resultList ?? []).filter(
-                    (doc) => doc.id !== currentDocumentId && doc.status === "PUBLISHED"
+                    (item: Item) => item.id !== currentItemId && item.status === "PUBLISHED"
                 );
-                setDocuments(list.slice(0, 8));
+                setItems(list.slice(0, 8));
             } catch (err) {
-                console.error("DocumentCarousel error", err);
-                setError("Không thể tải tài liệu cùng danh mục.");
+                console.error("Carousel error", err);
+                setError(`Không thể tải ${type === 'document' ? 'tài liệu' : 'bài giảng'} cùng danh mục.`);
             } finally {
                 setLoading(false);
             }
@@ -44,7 +54,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
         if (categoryId) {
             fetchByCategory();
         }
-    }, [categoryId, currentDocumentId]);
+    }, [categoryId, currentItemId, type]);
 
     useEffect(() => {
         if (!token) {
@@ -63,11 +73,18 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
                     return;
                 }
 
-                const favoritesResponse = await getDocumentFavoritesByUser();
+                let favoritesResponse;
+                if (type === 'document') {
+                    favoritesResponse = await getDocumentFavoritesByUser();
+                } else {
+                    favoritesResponse = await getLessonFavoritesByUser();
+                }
+
                 const map: FavoriteMap = {};
-                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteDocumentResponse) => {
-                    if (fav.documentId) {
-                        map[fav.documentId] = { favoriteId: fav.id };
+                (favoritesResponse.resultList ?? []).forEach((fav: any) => {
+                    const itemId = type === 'document' ? fav.documentId : fav.lessonId;
+                    if (itemId) {
+                        map[itemId] = { favoriteId: fav.id };
                     }
                 });
                 setFavoriteMap(map);
@@ -78,35 +95,43 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
         };
 
         fetchFavorites();
-    }, [token]);
+    }, [token, type]);
 
-    const handleToggleFavorite = async (doc: DocumentResponse) => {
+    const handleToggleFavorite = async (item: Item) => {
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để lưu tài liệu yêu thích.");
+            alert(`Vui lòng đăng nhập để lưu ${type === 'document' ? 'tài liệu' : 'bài giảng'} yêu thích.`);
             return;
         }
 
-        const existing = favoriteMap[doc.id];
-        setFavoriteLoadingId(doc.id);
+        const existing = favoriteMap[item.id];
+        setFavoriteLoadingId(item.id);
 
         try {
             if (existing) {
                 await removeFavorite(existing.favoriteId);
                 setFavoriteMap((prev) => {
-                    const { [doc.id]: _removed, ...rest } = prev;
+                    const { [item.id]: _removed, ...rest } = prev;
                     return rest;
                 });
             } else {
-                const response = await addFavoriteDocument({
-                    userId: currentUserId,
-                    documentId: doc.id,
-                });
+                let response;
+                if (type === 'document') {
+                    response = await addFavoriteDocument({
+                        userId: currentUserId,
+                        documentId: item.id,
+                    });
+                } else {
+                    response = await addFavoriteLesson({
+                        userId: currentUserId,
+                        lessonId: item.id,
+                    });
+                }
 
                 const saved = response.result;
                 if (saved) {
                     setFavoriteMap((prev) => ({
                         ...prev,
-                        [doc.id]: { favoriteId: saved.id },
+                        [item.id]: { favoriteId: saved.id },
                     }));
                 }
             }
@@ -118,7 +143,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
         }
     };
 
-    const hasDocuments = documents.length > 0;
+    const hasItems = items.length > 0;
 
     if (!categoryId) return null;
 
@@ -127,40 +152,42 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentDocumentId }
             <div className="section-heading">
                 <div>
                     <p className="eyebrow">Đề xuất thêm</p>
-                    <h2>Tài liệu cùng danh mục</h2>
+                    <h2>{type === 'document' ? 'Tài liệu' : 'Bài giảng'} cùng danh mục</h2>
                 </div>
             </div>
 
             {loading && <div className="empty-state">Đang tải...</div>}
             {error && <div className="alert alert-danger">{error}</div>}
 
-            {!loading && !hasDocuments && (
-                <div className="empty-state">Chưa có tài liệu phù hợp.</div>
+            {!loading && !hasItems && (
+                <div className="empty-state">Chưa có {type === 'document' ? 'tài liệu' : 'bài giảng'} phù hợp.</div>
             )}
 
-            {hasDocuments && (
+            {hasItems && (
                 <div className="document-grid">
-                    {documents.map((doc) => {
-                        const isFavorite = Boolean(favoriteMap[doc.id]);
-                        const isLoadingFavorite = favoriteLoadingId === doc.id;
-                        const thumbnailUrl = doc.thumbnailUrl
-                            ? `http://localhost:8080/api/images/thumbnail/${doc.thumbnailUrl}`
+                    {items.map((item) => {
+                        const isFavorite = Boolean(favoriteMap[item.id]);
+                        const isLoadingFavorite = favoriteLoadingId === item.id;
+                        const thumbnailUrl = 'thumbnailUrl' in item && item.thumbnailUrl
+                            ? `http://localhost:8080/api/images/thumbnail/${item.thumbnailUrl}`
                             : undefined;
+                        const link = type === 'document' ? `/document/${item.id}` : `/lesson/${item.id}`;
+                        const description = 'description' in item ? item.description : '';
 
                         return (
                             <GrindItem
-                                key={doc.id}
-                                itemType="document"
-                                link={`/document/${doc.id}`}
-                                title={doc.title}
+                                key={item.id}
+                                itemType={type}
+                                link={link}
+                                title={item.title}
                                 thumbnailUrl={thumbnailUrl}
-                                subtitle={<p>{doc.description ?? "Tài liệu chưa có mô tả."}</p>}
-                                viewsCount={doc.viewsCount}
-                                downloadsCount={doc.downloadsCount}
+                                subtitle={<p>{description ?? `${type === 'document' ? 'Tài liệu' : 'Bài giảng'} chưa có mô tả.`}</p>}
+                                viewsCount={item.viewsCount}
+                                downloadsCount={'downloadsCount' in item ? item.downloadsCount : undefined}
                                 showInlineFavorite
                                 isFavorite={isFavorite}
                                 favoriteDisabled={isLoadingFavorite}
-                                onToggleFavorite={() => handleToggleFavorite(doc)}
+                                onToggleFavorite={() => handleToggleFavorite(item)}
                             />
                         );
                     })}

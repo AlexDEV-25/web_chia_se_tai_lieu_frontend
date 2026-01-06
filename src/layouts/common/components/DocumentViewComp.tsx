@@ -27,9 +27,15 @@ const DocumentViewComp: React.FC<Props> = ({
     const [numPages, setNumPages] = useState<number>();
     const [internalPage, setInternalPage] = useState<number>(page ?? 1);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [zoomLevel, setZoomLevel] = useState<number>(100);
+    const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState<boolean>(false);
+    const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+    const [activePointer, setActivePointer] = useState<number | null>(null);
 
-    const containerRef = useRef<HTMLDivElement | null>(null);
+    const stageRef = useRef<HTMLDivElement | null>(null);
     const [renderWidth, setRenderWidth] = useState<number>();
+    const [pageDimensions, setPageDimensions] = useState<{ width: number; height: number } | null>(null);
 
     const isControlled = page !== undefined;
     const currentPage = isControlled ? page! : internalPage;
@@ -43,16 +49,61 @@ const DocumentViewComp: React.FC<Props> = ({
 
     /* resize observer */
     useEffect(() => {
-        if (!containerRef.current || typeof ResizeObserver === "undefined") return;
+        if (!stageRef.current || typeof ResizeObserver === "undefined") return;
         const observer = new ResizeObserver((entries) => {
             const entry = entries[0];
             if (entry) {
                 setRenderWidth(entry.contentRect.width);
             }
         });
-        observer.observe(containerRef.current);
+        observer.observe(stageRef.current);
         return () => observer.disconnect();
     }, []);
+
+    const clampOffsets = (x: number, y: number) => {
+        if (!stageRef.current || !pageDimensions) {
+            return { x, y };
+        }
+
+        const { width: stageWidth, height: stageHeight } = stageRef.current.getBoundingClientRect();
+        const scale = zoomLevel / 100;
+        const contentWidth = pageDimensions.width * scale;
+        const contentHeight = pageDimensions.height * scale;
+
+        const maxOffsetX = Math.max(0, (contentWidth - stageWidth) / 2);
+        const maxOffsetY = Math.max(0, (contentHeight - stageHeight) / 2);
+
+        if (maxOffsetX === 0) {
+            x = 0;
+        } else {
+            x = Math.min(maxOffsetX, Math.max(-maxOffsetX, x));
+        }
+
+        if (maxOffsetY === 0) {
+            y = 0;
+        } else {
+            y = Math.min(maxOffsetY, Math.max(-maxOffsetY, y));
+        }
+
+        return { x, y };
+    };
+
+    const applyOffset = (x: number, y: number) => {
+        setOffset(clampOffsets(x, y));
+    };
+
+    const clampZoom = (value: number) => Math.min(200, Math.max(50, value));
+
+    const handleZoomChange = (nextZoom: number) => {
+        const clamped = clampZoom(nextZoom);
+        if (clamped === zoomLevel) return;
+        setZoomLevel(clamped);
+        if (clamped <= 100) {
+            setOffset({ x: 0, y: 0 });
+        } else {
+            setOffset((prev) => clampOffsets(prev.x, prev.y));
+        }
+    };
 
     if (!fileUrl) {
         return <>{emptyFallback ?? null}</>;
@@ -70,6 +121,62 @@ const DocumentViewComp: React.FC<Props> = ({
     const nextPage = () => goToPage(currentPage + 1);
     const prevPage = () => goToPage(currentPage - 1);
 
+    const handleZoomIn = () => handleZoomChange(zoomLevel + 10);
+
+    const handleZoomOut = () => handleZoomChange(zoomLevel - 10);
+
+    const resetZoom = () => {
+        setZoomLevel(100);
+        setOffset({ x: 0, y: 0 });
+    };
+
+    const handlePointerDown = (e: React.PointerEvent) => {
+        if (e.button !== 0) return;
+        if (zoomLevel <= 100 || !stageRef.current) return;
+        if (activePointer !== null) return;
+        e.preventDefault();
+        const stageNode = stageRef.current;
+        stageNode.setPointerCapture(e.pointerId);
+        setIsDragging(true);
+        setActivePointer(e.pointerId);
+        dragStartRef.current = {
+            x: e.clientX - offset.x,
+            y: e.clientY - offset.y,
+        };
+    };
+
+    const handlePointerMove = (e: React.PointerEvent) => {
+        if (!isDragging || activePointer !== e.pointerId || !dragStartRef.current) return;
+
+        const newX = e.clientX - dragStartRef.current.x;
+        const newY = e.clientY - dragStartRef.current.y;
+
+        applyOffset(newX, newY);
+    };
+
+    const endPointerInteraction = (e: React.PointerEvent) => {
+        if (activePointer !== e.pointerId) return;
+        const stageNode = stageRef.current;
+        if (stageNode?.hasPointerCapture?.(e.pointerId)) {
+            stageNode.releasePointerCapture(e.pointerId);
+        }
+        setIsDragging(false);
+        dragStartRef.current = null;
+        setActivePointer(null);
+    };
+
+    const handleWheel = (e: React.WheelEvent) => {
+        if (!stageRef.current) return;
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -5 : 5;
+        handleZoomChange(zoomLevel + delta);
+    };
+
+    const handlePageRenderSuccess = (page: any) => {
+        setPageDimensions({ width: page.width, height: page.height });
+        setOffset({ x: 0, y: 0 });
+    };
+
     function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
         setNumPages(numPages);
         setErrorMessage(null);
@@ -83,21 +190,63 @@ const DocumentViewComp: React.FC<Props> = ({
 
     return (
         <div className="pdf-viewer-shell">
-            <div className="pdf-stage" ref={containerRef}>
-                <Document
-                    file={fileUrl}
-                    onLoadSuccess={onDocumentLoadSuccess}
-                    onLoadError={onDocumentLoadError}
-                    loading="Đang tải PDF..."
-                    error="Không thể mở tài liệu PDF."
+            <div className="pdf-stage">
+                <div
+                    className="pdf-stage-canvas"
+                    ref={stageRef}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={endPointerInteraction}
+                    onPointerLeave={endPointerInteraction}
+                    onPointerCancel={endPointerInteraction}
+                    onWheel={handleWheel}
+                    data-drag-state={isDragging ? "dragging" : zoomLevel > 100 ? "ready" : "disabled"}
+                    style={{
+                        touchAction: zoomLevel > 100 ? "none" : "pan-y",
+                        cursor: isDragging ? "grabbing" : zoomLevel > 100 ? "grab" : "default",
+                    }}
                 >
-                    <Page
-                        pageNumber={currentPage}
-                        width={renderWidth ? Math.min(renderWidth, maxRenderWidth) : undefined}
-                        renderAnnotationLayer={false}
-                        renderTextLayer={false}
-                    />
-                </Document>
+                    <div
+                        className="pdf-stage-content"
+                        style={{
+                            transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoomLevel / 100})`,
+                            transition: isDragging ? "none" : "transform 0.2s ease-out",
+                        }}
+                    >
+                        <Document
+                            file={fileUrl}
+                            onLoadSuccess={onDocumentLoadSuccess}
+                            onLoadError={onDocumentLoadError}
+                            loading="Đang tải PDF..."
+                            error="Không thể mở tài liệu PDF."
+                        >
+                            <Page
+                                pageNumber={currentPage}
+                                width={renderWidth ? Math.min(renderWidth, maxRenderWidth) : undefined}
+                                renderAnnotationLayer={false}
+                                renderTextLayer={false}
+                                onRenderSuccess={handlePageRenderSuccess}
+                            />
+                        </Document>
+                    </div>
+                </div>
+
+                {/* Floating Zoom Controls */}
+                <div className="pdf-zoom-controls-floating">
+                    <button onClick={handleZoomOut} title="Zoom out" className="pdf-zoom-btn">
+                        <i className="fa fa-minus" />
+                    </button>
+
+                    <span className="pdf-zoom-indicator">{zoomLevel}%</span>
+
+                    <button onClick={handleZoomIn} title="Zoom in" className="pdf-zoom-btn">
+                        <i className="fa fa-plus" />
+                    </button>
+
+                    <button onClick={resetZoom} title="Reset zoom" className="pdf-zoom-btn">
+                        <i className="fa fa-undo" />
+                    </button>
+                </div>
             </div>
 
             {errorMessage && <div className="error-text text-center">{errorMessage}</div>}
@@ -133,5 +282,6 @@ const DocumentViewComp: React.FC<Props> = ({
         </div>
     );
 };
+
 
 export default DocumentViewComp;
