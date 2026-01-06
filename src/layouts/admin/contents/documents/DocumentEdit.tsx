@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getDocumentById, hideDocument, changeStatusDocument } from '../../../../apis/DocumentApi';
+import { getDocumentById, updateDocument } from '../../../../apis/DocumentApi';
 import DocumentViewComp from '../../../common/components/DocumentViewComp';
 import RightProperties from '../components/RightProperties';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
+import type { DocumentRequest } from '../../../../models/request/DocumentReques';
 
 const DocumentEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -14,9 +15,12 @@ const DocumentEdit: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState<boolean>(false);
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<DocumentRequest>({
+        title: '',
+        description: '',
         status: 'PENDING' as 'PENDING' | 'PUBLISHED',
-        hide: false
+        hide: false,
+        categoryId: undefined
     });
 
     useEffect(() => {
@@ -33,8 +37,11 @@ const DocumentEdit: React.FC = () => {
                 const doc = data.result;
                 setDocument(doc);
                 setFormData({
+                    title: doc.title || '',
+                    description: doc.description || '',
                     status: doc.status || 'PENDING',
-                    hide: doc.hide || false
+                    hide: doc.hide || false,
+                    categoryId: doc.categoryId
                 });
             }
         } catch (err) {
@@ -45,50 +52,45 @@ const DocumentEdit: React.FC = () => {
         }
     }, [id]);
 
-    const handleStatusChange = useCallback(async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleStatusChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         const newStatus = e.target.value as 'PENDING' | 'PUBLISHED';
         setFormData(prev => ({ ...prev, status: newStatus }));
+    }, []);
 
-        if (!document?.id) return;
-
-        setSaving(true);
-        try {
-            const response = await changeStatusDocument(document.id, {
-                status: newStatus,
-                updatedAt: new Date()
-            });
-
-            if (response?.resultList?.[0]) {
-                setDocument(response.resultList[0]);
-            }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể cập nhật trạng thái';
-            setError(message);
-        } finally {
-            setSaving(false);
-        }
-    }, [document?.id]);
-
-    const handleHideChange = useCallback(async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleHideChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         const newHide = e.target.value === 'true';
         setFormData(prev => ({ ...prev, hide: newHide }));
+    }, []);
 
+    const handleTitleChange = useCallback((value: string | number | undefined) => {
+        setFormData(prev => ({ ...prev, title: String(value || '') }));
+    }, []);
+
+    const handleDescriptionChange = useCallback((value: string | number | undefined) => {
+        setFormData(prev => ({ ...prev, description: String(value || '') }));
+    }, []);
+
+    const handleCategoryIdChange = useCallback((value: string | number | undefined) => {
+        setFormData(prev => ({ ...prev, categoryId: value ? Number(value) : undefined }));
+    }, []);
+
+    const handleSave = useCallback(async () => {
         if (!document?.id) return;
 
         setSaving(true);
         try {
-            const response = await hideDocument(document.id, { hide: newHide, updatedAt: new Date() });
-
-            if (response?.resultList?.[0]) {
-                setDocument(response.resultList[0]);
+            const response = await updateDocument(document.id, formData);
+            if (response?.result) {
+                setDocument(response.result);
+                setError(null);
             }
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể cập nhật tính hiển thị';
+            const message = err instanceof Error ? err.message : 'Không thể cập nhật tài liệu';
             setError(message);
         } finally {
             setSaving(false);
         }
-    }, [document?.id]);
+    }, [document?.id, formData]);
 
     if (loading) {
         return (
@@ -163,23 +165,24 @@ const DocumentEdit: React.FC = () => {
                     {/* Right: Document Properties */}
                     <RightProperties
                         basicInfo={[
-                            { label: 'ID', value: document.id },
-                            { label: 'Tiêu đề', value: document.title },
-                            { label: 'Mô tả', value: document.description || '—' },
-                            { label: 'Danh mục', value: document.categoryName || 'Chưa phân loại' },
-                            { label: 'Người tải lên', value: document.userName }
+                            { label: 'ID', value: document.id, editable: false },
+                            { label: 'Tiêu đề', value: formData.title, editable: true, onChange: handleTitleChange },
+                            { label: 'Mô tả', value: formData.description, editable: true, onChange: handleDescriptionChange },
+                            { label: 'Danh mục', value: formData.categoryId || document.categoryName, editable: true, onChange: handleCategoryIdChange, isCategory: true, currentCategoryName: document.categoryName },
+                            { label: 'Người tải lên', value: document.userName, editable: false }
                         ]}
                         stats={[
                             { label: 'Lượt xem', value: document.viewsCount ?? 0 },
                             { label: 'Lượt tải', value: document.downloadsCount ?? 0 }
                         ]}
-                        status={formData.status}
+                        status={formData.status as 'PENDING' | 'PUBLISHED'}
                         onStatusChange={handleStatusChange}
                         hide={formData.hide}
                         onHideChange={handleHideChange}
                         createdAt={document.createdAt}
                         updatedAt={document.updatedAt}
                         onClose={() => navigate('/documents')}
+                        onSave={handleSave}
                         saving={saving}
                         classPrefix="document"
                     />

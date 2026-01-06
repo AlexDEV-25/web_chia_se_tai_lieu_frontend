@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getLessonById, hideLesson, changeStatusLesson } from '../../../../apis/LessonApi';
+import { getLessonById, updateLesson } from '../../../../apis/LessonApi';
 import VideoComp from '../../../common/lesson_detail/components/VideoComp';
 import DocumentViewComp from '../../../common/components/DocumentViewComp';
 import RightProperties from '../components/RightProperties';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
+import type { LessonRequest } from '../../../../models/request/LessonRequest';
 
 const LessonEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -15,9 +16,12 @@ const LessonEdit: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState<boolean>(false);
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<LessonRequest>({
+        title: '',
+        description: '',
         status: 'PENDING' as 'PENDING' | 'PUBLISHED',
-        hide: false
+        hide: false,
+        categoryId: undefined
     });
 
     useEffect(() => {
@@ -34,8 +38,11 @@ const LessonEdit: React.FC = () => {
                 const les = data.result;
                 setLesson(les);
                 setFormData({
+                    title: les.title || '',
+                    description: les.description || '',
                     status: les.status || 'PENDING',
-                    hide: les.hide || false
+                    hide: les.hide || false,
+                    categoryId: les.categoryId
                 });
             }
         } catch (err) {
@@ -46,50 +53,45 @@ const LessonEdit: React.FC = () => {
         }
     }, [id]);
 
-    const handleStatusChange = useCallback(async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleStatusChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         const newStatus = e.target.value as 'PENDING' | 'PUBLISHED';
         setFormData(prev => ({ ...prev, status: newStatus }));
+    }, []);
 
-        if (!lesson?.id) return;
-
-        setSaving(true);
-        try {
-            const response = await changeStatusLesson(lesson.id, {
-                status: newStatus,
-                updatedAt: new Date()
-            });
-
-            if (response?.result) {
-                setLesson(response.result);
-            }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể cập nhật trạng thái';
-            setError(message);
-        } finally {
-            setSaving(false);
-        }
-    }, [lesson?.id]);
-
-    const handleHideChange = useCallback(async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleHideChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         const newHide = e.target.value === 'true';
         setFormData(prev => ({ ...prev, hide: newHide }));
+    }, []);
 
+    const handleTitleChange = useCallback((value: string | number | undefined) => {
+        setFormData(prev => ({ ...prev, title: String(value || '') }));
+    }, []);
+
+    const handleDescriptionChange = useCallback((value: string | number | undefined) => {
+        setFormData(prev => ({ ...prev, description: String(value || '') }));
+    }, []);
+
+    const handleCategoryIdChange = useCallback((value: string | number | undefined) => {
+        setFormData(prev => ({ ...prev, categoryId: value ? Number(value) : undefined }));
+    }, []);
+
+    const handleSave = useCallback(async () => {
         if (!lesson?.id) return;
 
         setSaving(true);
         try {
-            const response = await hideLesson(lesson.id, { hide: newHide, updatedAt: new Date() });
-
+            const response = await updateLesson(lesson.id, formData);
             if (response?.result) {
                 setLesson(response.result);
+                setError(null);
             }
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể cập nhật tính hiển thị';
+            const message = err instanceof Error ? err.message : 'Không thể cập nhật bài học';
             setError(message);
         } finally {
             setSaving(false);
         }
-    }, [lesson?.id]);
+    }, [lesson?.id, formData]);
 
     if (loading) {
         return (
@@ -176,22 +178,23 @@ const LessonEdit: React.FC = () => {
                     {/* Right: Lesson Properties */}
                     <RightProperties
                         basicInfo={[
-                            { label: 'ID', value: lesson.id },
-                            { label: 'Tiêu đề', value: lesson.title },
-                            { label: 'Mô tả', value: lesson.description || '—' },
-                            { label: 'Danh mục', value: lesson.categoryName || 'Chưa phân loại' },
-                            { label: 'Người dạy', value: lesson.userName }
+                            { label: 'ID', value: lesson.id, editable: false },
+                            { label: 'Tiêu đề', value: formData.title, editable: true, onChange: handleTitleChange },
+                            { label: 'Mô tả', value: formData.description, editable: true, onChange: handleDescriptionChange },
+                            { label: 'Danh mục', value: formData.categoryId || lesson.categoryName, editable: true, onChange: handleCategoryIdChange, isCategory: true, currentCategoryName: lesson.categoryName },
+                            { label: 'Người dạy', value: lesson.userName, editable: false }
                         ]}
                         stats={[
                             { label: 'Lượt xem', value: lesson.viewsCount ?? 0 }
                         ]}
-                        status={formData.status}
+                        status={formData.status as 'PENDING' | 'PUBLISHED'}
                         onStatusChange={handleStatusChange}
                         hide={formData.hide}
                         onHideChange={handleHideChange}
                         createdAt={lesson.createdAt}
                         updatedAt={lesson.updatedAt}
                         onClose={() => navigate('/lessons')}
+                        onSave={handleSave}
                         saving={saving}
                         classPrefix="document"
                     />

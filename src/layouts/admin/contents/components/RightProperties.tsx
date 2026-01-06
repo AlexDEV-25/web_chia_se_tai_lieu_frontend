@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { getAllCategory } from '../../../../apis/CategoryApi';
+import type { CategoryResponse } from '../../../../models/response/CategoryResponse';
 
 interface Stats {
     label: string;
@@ -9,6 +11,10 @@ interface Stats {
 interface PropertyItem {
     label: string;
     value: string | number | React.ReactNode;
+    editable?: boolean;
+    onChange?: (value: string | number | undefined) => void;
+    isCategory?: boolean;
+    currentCategoryName?: string;
 }
 
 interface RightPropertiesProps {
@@ -31,6 +37,7 @@ interface RightPropertiesProps {
 
     // Actions
     onClose: () => void;
+    onSave?: () => void;
 
     // Disabled state
     saving?: boolean;
@@ -49,9 +56,30 @@ const RightProperties: React.FC<RightPropertiesProps> = ({
     createdAt,
     updatedAt,
     onClose,
+    onSave,
     saving = false,
     classPrefix = 'document'
 }) => {
+    const [categories, setCategories] = useState<CategoryResponse[]>([]);
+    const [loadingCategories, setLoadingCategories] = useState(false);
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = useCallback(async () => {
+        setLoadingCategories(true);
+        try {
+            const response = await getAllCategory();
+            if (response?.resultList) {
+                setCategories(response.resultList);
+            }
+        } catch (error) {
+            console.error('Lỗi tải danh mục:', error);
+        } finally {
+            setLoadingCategories(false);
+        }
+    }, []);
     const btnClass = `${classPrefix}-btn`;
     const propertyCardClass = `${classPrefix}-property-card`;
     const sectionTitleClass = `${classPrefix}-section-title`;
@@ -76,9 +104,35 @@ const RightProperties: React.FC<RightPropertiesProps> = ({
                     {basicInfo.map((item, index) => (
                         <div key={index} className={propertyItemClass}>
                             <label className={propertyLabelClass}>{item.label}</label>
-                            <p className={propertyValueClass + (item.label === 'Mô tả' ? ' description-text' : '')}>
-                                {item.value || '—'}
-                            </p>
+                            {item.editable ? (
+                                item.isCategory ? (
+                                    <select
+                                        value={String(item.value || '')}
+                                        onChange={(e) => item.onChange?.(e.target.value ? Number(e.target.value) : undefined)}
+                                        disabled={saving || loadingCategories}
+                                        className={selectClass}
+                                    >
+                                        <option value="">-- Chọn danh mục --</option>
+                                        {categories.map((cat) => (cat.hide ? null : (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name}
+                                            </option>
+                                        )))}
+                                    </select>
+                                ) : (
+                                    <textarea
+                                        value={String(item.value || '')}
+                                        onChange={(e) => item.onChange?.(e.target.value)}
+                                        disabled={saving}
+                                        className={selectClass}
+                                        style={{ minHeight: item.label === 'Mô tả' ? '80px' : '40px', resize: 'vertical' }}
+                                    />
+                                )
+                            ) : (
+                                <p className={propertyValueClass + (item.label === 'Mô tả' ? ' description-text' : '')}>
+                                    {item.value || '—'}
+                                </p>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -164,9 +218,20 @@ const RightProperties: React.FC<RightPropertiesProps> = ({
 
             {/* Actions */}
             <div className={actionsClass}>
-                <button onClick={onClose} className={`${btnClass} secondary`}>
-                    Lưu và quay lại
-                </button>
+                {onSave ? (
+                    <>
+                        <button onClick={onSave} className={`${btnClass} primary`} disabled={saving}>
+                            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                        </button>
+                        <button onClick={onClose} className={`${btnClass} secondary`} disabled={saving}>
+                            Hủy
+                        </button>
+                    </>
+                ) : (
+                    <button onClick={onClose} className={`${btnClass} secondary`}>
+                        Lưu và quay lại
+                    </button>
+                )}
             </div>
         </div>
     );

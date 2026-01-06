@@ -3,7 +3,6 @@ import api, { httpGet, httpPost } from "./HttpClient";
 import type { LessonResponse } from "./../models/response/LessonResponse";
 import type { LessonRequest } from "./../models/request/LessonRequest";
 import type { HideRequest } from '../models/request/HideRequest';
-import type { StatusRequest } from '../models/request/StatusRequest';
 
 export const getAllLessonByCategory = async (id: number) => {
     return await httpGet<APIResponse<LessonResponse>>(`/lessons/category/${id}`);
@@ -98,13 +97,7 @@ export const hideLesson = async (id: number, data: HideRequest): Promise<APIResp
     return response.data;
 }
 
-export const changeStatusLesson = async (id: number, data: StatusRequest): Promise<APIResponse<LessonResponse>> => {
-    const response = await api.put<APIResponse<LessonResponse>>(`/lessons/status/${id}`, data);
+export const updateLesson = async (id: number, lessonData: LessonRequest): Promise<APIResponse<LessonResponse>> => {
+    const response = await api.put<APIResponse<LessonResponse>>(`/lessons/${id}`, lessonData);
     return response.data;
 }
-
-
-// export const updateLesson = async (id: number, lessonData: LessonRequest): Promise<APIResponse<LessonResponse>> => {
-//     const response = await api.put<APIResponse<LessonResponse>>(`/lessons/${id}`, lessonData);
-//     return response.data;
-// }
