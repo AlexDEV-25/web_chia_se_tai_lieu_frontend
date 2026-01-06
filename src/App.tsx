@@ -38,7 +38,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 function App() {
   const [keyWords, setKeyWords] = useState("");
   const [token, setToken] = useState(localStorage.getItem("token"));
-  const [userCurrent, setUserCurrent] = useState<UserResponse | null>(null);
   const ctxValue: AppContextType = {
     keyWords, setKeyWords,
   };
@@ -70,14 +69,14 @@ function App() {
     <>
       <BrowserRouter>
         <AppContext.Provider value={ctxValue}>
-          <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} userCurrent={userCurrent} setUserCurrent={setUserCurrent} />
+          <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} />
           <Routes>
             <Route path="/" element={<Home keyWords={keyWords} />} />
             <Route path="/lesson" element={<Lesson keyWords={keyWords} />} />
 
             {/* {auth} */}
             <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login setToken={setToken} setUserCurrent={setUserCurrent} />} />
+            <Route path="/login" element={<Login setToken={setToken} />} />
             <Route path="/activate/:email/:activationCode" element={<Activate />} />
             {/* common */}
             <Route path="/uploadDocument" element={<UploadDocument />} />

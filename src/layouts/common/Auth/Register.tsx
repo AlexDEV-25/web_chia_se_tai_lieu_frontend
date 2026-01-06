@@ -81,11 +81,13 @@ const Register: React.FC = () => {
         }
 
         // ================= CREATE REQUEST OBJECT =================
-        const now = new Date().toISOString();
-
         const newUser: UserRequest = {
-            username: username, email: email, password: password, verified: false,
-            createdAt: now, updatedAt: now, roles: ["USER"], hide: false
+            username: username,
+            email: email,
+            password: password,
+            verified: false,
+            roles: ["USER"],
+            hide: false
         };
 
         try {

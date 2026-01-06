@@ -19,7 +19,6 @@ const UploadLesson: React.FC = () => {
 
     // Error states
     const [errTitle, setErrTitle] = useState("");
-    const [errDescription, setErrDescription] = useState("");
     const [errVideo, setErrVideo] = useState("");
 
     const [successMsg, setSuccessMsg] = useState("");
@@ -40,20 +39,17 @@ const UploadLesson: React.FC = () => {
         setIsLoading(true);
 
         let tErr = "";
-        let dErr = "";
         let vErr = "";
 
         if (title.trim() === "") tErr = "Tiêu đề không được để trống";
-        if (description.trim() === "") dErr = "Mô tả không được để trống";
         if (!videoFile) vErr = "Vui lòng chọn file video";
 
         // Set errors
         setErrTitle(tErr);
-        setErrDescription(dErr);
         setErrVideo(vErr);
 
         // Stop
-        if (tErr || dErr || vErr) {
+        if (tErr || vErr) {
             setIsLoading(false);
             return;
         }
@@ -62,10 +58,9 @@ const UploadLesson: React.FC = () => {
         const lesson: LessonRequest = {
             title,
             description,
-            viewsCount: 0,
             status,
             hide: false,
-            categoryId
+            categoryId: categoryId === -1 ? undefined : categoryId
         };
 
         try {
@@ -127,7 +122,6 @@ const UploadLesson: React.FC = () => {
                                 placeholder="Mô tả nội dung bài giảng"
                                 rows={4}
                             />
-                            {errDescription && <span className="error-text">{errDescription}</span>}
                         </div>
 
                         <div className="input-field">
@@ -142,6 +136,7 @@ const UploadLesson: React.FC = () => {
                                         {cat.name}
                                     </option>
                                 ))}
+                                <option key="-1" value="-1">Danh mục khác</option>
                             </select>
                         </div>
                     </div>

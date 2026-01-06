@@ -14,7 +14,6 @@ const UploadDocument: React.FC = () => {
 
     // Error states
     const [errTitle, setErrTitle] = useState("");
-    const [errDescription, setErrDescription] = useState("");
     const [errFile, setErrFile] = useState("");
 
 
@@ -36,26 +35,28 @@ const UploadDocument: React.FC = () => {
         setIsLoading(true);
 
         let tErr = "";
-        let dErr = "";
         let fErr = "";
 
 
         if (title.trim() === "") tErr = "Tiêu đề không được để trống";
-        if (description.trim() === "") dErr = "Mô tả không được để trống";
         if (!file) fErr = "Vui lòng chọn file";
 
         // Set errors
         setErrTitle(tErr);
-        setErrDescription(dErr);
         setErrFile(fErr);
 
         // Stop
-        if (tErr || dErr || fErr) {
+        if (tErr || fErr) {
             setIsLoading(false);
             return;
         }
         const status: string = "PENDING";
-        const doc: DocumentRequest = { title, description, viewsCount: 0, downloadsCount: 0, status, hide: false, categoryId, };
+        const doc: DocumentRequest = {
+            title,
+            description,
+            status, hide: false,
+            categoryId: categoryId === -1 ? undefined : categoryId
+        };
 
         try {
             const res = await uploadDocument(file!, doc);
@@ -66,10 +67,10 @@ const UploadDocument: React.FC = () => {
             // Reset form
             setTitle("");
             setDescription("");
-            // 👉 Reset input file
-            if (fileRef.current) {
-                fileRef.current.value = "";
-            }
+            setFile(null);
+
+            // Reset input file
+            if (fileRef.current) { fileRef.current.value = ""; }
 
         } catch (err) {
             console.error(err);
@@ -112,7 +113,6 @@ const UploadDocument: React.FC = () => {
                                 placeholder="Mô tả nội dung tài liệu"
                                 rows={4}
                             />
-                            {errDescription && <span className="error-text">{errDescription}</span>}
                         </div>
 
                         <div className="input-field">
@@ -127,6 +127,7 @@ const UploadDocument: React.FC = () => {
                                         {cat.name}
                                     </option>
                                 ))}
+                                <option key="-1" value="-1">Danh mục khác</option>
                             </select>
                         </div>
                     </div>

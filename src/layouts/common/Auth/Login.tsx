@@ -10,9 +10,8 @@ import type { UserResponse } from "../../../models/response/UserResponse";
 import { getMyInfo } from "../../../apis/UserApi";
 interface Props {
     setToken: (value: string | null) => void
-    setUserCurrent: (value: UserResponse | null) => void
 }
-const Login: React.FC<Props> = ({ setToken, setUserCurrent }) => {
+const Login: React.FC<Props> = ({ setToken }) => {
     const navigate = useNavigate();
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -58,17 +57,17 @@ const Login: React.FC<Props> = ({ setToken, setUserCurrent }) => {
             setToken(token);
             try {
                 const data = await getMyInfo();
-                const user = data.result;
+                const user: UserResponse | null = data.result;
+                const roles: string[] | undefined = user?.roles?.map((role) => role.name);
+                localStorage.setItem("roles", JSON.stringify(roles));
                 if (!user) {
                     setLoginError("Đăng nhập thất bại!");
                     return;
                 }
-                setUserCurrent(user);
             } catch (error: any) {
                 const msg =
                     error.response?.data?.message ||
                     "Đăng nhập thất bại. Vui lòng kiểm tra lại!";
-
                 setLoginError(msg);
             }
             setLoginError("");
@@ -118,13 +117,13 @@ const Login: React.FC<Props> = ({ setToken, setUserCurrent }) => {
                     setToken(token);
                     try {
                         const data = await getMyInfo();
-                        const user = data.result;
-
+                        const user: UserResponse | null = data.result;
+                        const roles: string[] | undefined = user?.roles?.map((role) => role.name);
+                        localStorage.setItem("roles", JSON.stringify(roles));
                         if (!user) {
                             setLoginError("Đăng nhập thất bại!");
                             return;
                         }
-                        setUserCurrent(user);
                     } catch (error: any) {
                         const msg =
                             error.response?.data?.message ||

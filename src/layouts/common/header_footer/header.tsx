@@ -2,17 +2,14 @@ import { Link, NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import UploadDropdown from "./components/UploadDropdown";
-import type { UserResponse } from "../../../models/response/UserResponse";
 
 interface Props {
     token: string | null
     setToken: (value: string | null) => void
     keyWords: string
     setKeyWords: (value: string) => void
-    userCurrent: UserResponse | null
-    setUserCurrent: (value: UserResponse | null) => void
 }
-const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, userCurrent, setUserCurrent }) => {
+const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => {
     const navigate = useNavigate();
     const [valid, setValid] = useState<boolean>(false);
     const [TempKeyWords, setTempKeyWords] = useState("");
@@ -21,7 +18,6 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, userC
     const handleLogout = () => {
         localStorage.removeItem("token");
         setToken(null);
-        setUserCurrent(null);
         navigate("/");
     };
     useEffect(() => {
@@ -111,7 +107,7 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, userC
                                         <Link to="/uploadHistory">Lịch sử Upload</Link>
                                     </div>
                                 </details>
-                                {userCurrent?.roles.find((role) => role.name === "ADMIN") && (
+                                {JSON.parse(localStorage.getItem("roles") ?? "[]").find((role: string) => role === "ADMIN") && (
                                     <Link to="/dashboard" className="admin-link">
                                         Trang Admin
                                     </Link>
