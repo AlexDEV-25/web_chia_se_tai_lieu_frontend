@@ -13,6 +13,7 @@ import type { CommentLessonRequest } from "../../../models/request/CommentLesson
 import type { CommentLessonResponse } from "../../../models/response/CommentLessonResponse";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import api from "../../../apis/HttpClient";
+import axios from "axios";
 
 interface CommentCompProps {
     docId?: number;
@@ -68,8 +69,15 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
         try {
             const response = await api.get("/users/my-info");
             setCurrentUser(response.data.result as UserResponse);
-        } catch (err) {
-            console.error("fetchCurrentUser error", err);
+        } catch (err: any) {
+            let message = "Không thể lấy thông tin người dùng. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
             setCurrentUser(null);
         }
     }, []);
@@ -83,9 +91,15 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
                 ? await getCommentsByLesson(targetId)
                 : await getCommentsByDocument(targetId);
             setComments(response.resultList ?? []);
-        } catch (err) {
-            console.error("fetchComments error", err);
-            setCommentError("Không thể tải bình luận. Vui lòng thử lại sau.");
+        } catch (err: any) {
+            let message = "Không thể tải bình luận. Vui lòng thử lại sau";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setCommentError(message);
         } finally {
             setLoadingComments(false);
         }
@@ -141,8 +155,14 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
             await submitComment(commentContent, 0);
             setCommentContent("");
         } catch (err) {
-            console.error("handleCommentSubmit error", err);
-            setCommentError("Không thể gửi bình luận. Vui lòng thử lại.");
+            let message = "Không thể gửi bình luận. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setCommentError(message);
         } finally {
             setSubmittingTarget(null);
         }
@@ -181,9 +201,15 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
             await submitComment(content, parentId);
             setReplyContent((prev) => ({ ...prev, [parentId]: "" }));
             setActiveReplyId(null);
-        } catch (err) {
-            console.error("handleReplySubmit error", err);
-            setCommentError("Không thể gửi trả lời. Vui lòng thử lại.");
+        } catch (err: any) {
+            let message = "Không thể gửi trả lời. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setCommentError(message);
         } finally {
             setSubmittingTarget(null);
         }

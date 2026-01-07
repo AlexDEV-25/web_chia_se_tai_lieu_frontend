@@ -5,6 +5,7 @@ import DocumentViewComp from '../../../common/components/DocumentViewComp';
 import RightProperties from '../components/RightProperties';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
 import type { DocumentRequest } from '../../../../models/request/DocumentReques';
+import axios from 'axios';
 
 const DocumentEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -32,20 +33,24 @@ const DocumentEdit: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await getDocumentById(parseInt(id));
-            if (data?.result) {
-                const doc = data.result;
-                setDocument(doc);
-                setFormData({
-                    title: doc.title || '',
-                    description: doc.description || '',
-                    status: doc.status || 'PENDING',
-                    hide: doc.hide || false,
-                    categoryId: doc.categoryId
-                });
+            const response = await getDocumentById(parseInt(id));
+            const doc = response.result;
+            setDocument(doc);
+            setFormData({
+                title: doc?.title || '',
+                description: doc?.description || '',
+                status: doc?.status || 'PENDING',
+                hide: doc?.hide || false,
+                categoryId: doc?.categoryId
+            });
+        } catch (err: any) {
+            let message = "Không thể tải tài liệu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
             }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể tải tài liệu';
             setError(message);
         } finally {
             setLoading(false);
@@ -80,12 +85,16 @@ const DocumentEdit: React.FC = () => {
         setSaving(true);
         try {
             const response = await updateDocument(document.id, formData);
-            if (response?.result) {
-                setDocument(response.result);
-                setError(null);
+            setDocument(response.result);
+            setError(null);
+        } catch (err: any) {
+            let message = "Không thể cập nhật tài liệu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
             }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể cập nhật tài liệu';
             setError(message);
         } finally {
             setSaving(false);

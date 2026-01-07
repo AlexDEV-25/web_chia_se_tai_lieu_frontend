@@ -8,6 +8,7 @@ import PieChart from './child_components/PieChart';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
 import type { UserResponse } from '../../../../models/response/UserResponse';
+import axios from 'axios';
 const AnalysisChartComp: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [documents, setDocuments] = useState<DocumentResponse[]>([]);
@@ -23,12 +24,18 @@ const AnalysisChartComp: React.FC = () => {
                     getAllLesson(),
                     getAllUser(),
                 ]);
-
                 setDocuments(docsData?.resultList ?? []);
                 setLessons(lessonsData?.resultList ?? []);
                 setUsers(usersData?.resultList ?? []);
-            } catch (error) {
-                console.error('Error fetching analysis data:', error);
+            } catch (err: any) {
+                let message = "Không thể tải tài liệu, bài giảng, người dùng. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.error(message);
             } finally {
                 setLoading(false);
             }

@@ -6,6 +6,7 @@ import type { CategoryResponse } from "../../../models/response/CategoryResponse
 import HeroBlockComp from "../components/HeroBlockComp";
 import CategoryBlockComp from "../components/CategoryBlockComp";
 import MainBlockComp from "../components/MainBlockComp";
+import axios from "axios";
 
 interface Props {
     keyWords: string
@@ -23,10 +24,17 @@ const Lesson = ({ keyWords }: Props) => {
     useEffect(() => {
         const fetchLessons = async () => {
             try {
-                const data = await getAllLesson();
-                setLessons(data?.resultList ?? []);
-            } catch (err) {
-                setError("Không thể tải video bài giảng. Vui lòng thử lại.");
+                const response = await getAllLesson();
+                setLessons(response?.resultList ?? []);
+            } catch (err: any) {
+                let message = "Không thể tải bài giảng. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                setError(message);
             } finally {
                 setLoadingLessons(false);
             }
@@ -37,10 +45,17 @@ const Lesson = ({ keyWords }: Props) => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const data = await getAllCategory();
-                setCategories((data?.resultList ?? []).filter(cat => !cat.hide));
-            } catch (err) {
-                setError("Không thể tải danh mục. Vui lòng thử lại.");
+                const response = await getAllCategory();
+                setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
+            } catch (err: any) {
+                let message = "Không thể tải danh mục. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                setError(message);
             } finally {
                 setLoadingCats(false);
             }

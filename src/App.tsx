@@ -23,7 +23,6 @@ import { pdfjs } from 'react-pdf';
 import { introspect, refreshToken } from './apis/AuthApi';
 import UploadLesson from './layouts/common/uploads/UploadLesson';
 import UploadHistory from './layouts/user/upload_history/UploadHistory';
-import type { UserResponse } from './models/response/UserResponse';
 import DocumentList from './layouts/admin/contents/documents/DocumentList';
 import LessonList from './layouts/admin/contents/lessons/LessonList';
 import UserList from './layouts/admin/users/UserList';
@@ -37,7 +36,8 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 function App() {
   const [keyWords, setKeyWords] = useState("");
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+  const [roles, setRoles] = useState<string[]>(JSON.parse(localStorage.getItem("roles") || "[]"));
   const ctxValue: AppContextType = {
     keyWords, setKeyWords,
   };
@@ -69,14 +69,14 @@ function App() {
     <>
       <BrowserRouter>
         <AppContext.Provider value={ctxValue}>
-          <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} />
+          <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} roles={roles} setRoles={setRoles} />
           <Routes>
             <Route path="/" element={<Home keyWords={keyWords} />} />
             <Route path="/lesson" element={<Lesson keyWords={keyWords} />} />
 
             {/* {auth} */}
             <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login setToken={setToken} />} />
+            <Route path="/login" element={<Login setToken={setToken} setRoles={setRoles} />} />
             <Route path="/activate/:email/:activationCode" element={<Activate />} />
             {/* common */}
             <Route path="/uploadDocument" element={<UploadDocument />} />

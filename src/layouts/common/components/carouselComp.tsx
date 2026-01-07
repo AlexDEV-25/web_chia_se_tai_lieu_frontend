@@ -8,6 +8,7 @@ import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from 
 import { addFavoriteLesson, getLessonFavoritesByUser } from "../../../apis/FavoriteApi";
 import { getMyInfo } from "../../../apis/UserApi";
 import GrindItem from "./GrindItem";
+import axios from "axios";
 
 interface CarouselProps {
     categoryId: number;
@@ -38,13 +39,18 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                 } else {
                     response = await getAllLessonByCategory(categoryId);
                 }
-
                 const list = (response.resultList ?? []).filter(
                     (item: Item) => item.id !== currentItemId && item.status === "PUBLISHED"
                 );
                 setItems(list.slice(0, 8));
-            } catch (err) {
-                console.error("Carousel error", err);
+            } catch (err: any) {
+                let message = "Không thể lấy thông tin cùng danh mục. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
                 setError(`Không thể tải ${type === 'document' ? 'tài liệu' : 'bài giảng'} cùng danh mục.`);
             } finally {
                 setLoading(false);
@@ -65,8 +71,8 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
 
         const fetchFavorites = async () => {
             try {
-                const user = await getMyInfo();
-                const fetchedUserId = user?.result?.id ?? null;
+                const userResponse = await getMyInfo();
+                const fetchedUserId = userResponse?.result?.id ?? null;
                 setCurrentUserId(fetchedUserId);
                 if (!fetchedUserId) {
                     setFavoriteMap({});
@@ -88,8 +94,15 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                     }
                 });
                 setFavoriteMap(map);
-            } catch (err) {
-                console.error("Không thể tải kho lưu", err);
+            } catch (err: any) {
+                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.error(message);
                 setFavoriteMap({});
             }
         };
@@ -135,9 +148,15 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                     }));
                 }
             }
-        } catch (err) {
-            console.error("Favorite toggle error", err);
-            alert("Không thể cập nhật kho lưu. Vui lòng thử lại.");
+        } catch (err: any) {
+            let message = "Không thể cập nhật kho lưu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            alert(message);
         } finally {
             setFavoriteLoadingId(null);
         }

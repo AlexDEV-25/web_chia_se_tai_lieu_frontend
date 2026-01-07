@@ -9,6 +9,7 @@ import LoadingState from '../components/LoadingState';
 import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
 import LeftSidebar from '../components/LeftSidebar';
+import axios from 'axios';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 
 const CategoryList: React.FC = () => {
@@ -24,10 +25,16 @@ const CategoryList: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await getAllCategory();
-            setCategories(data?.resultList ?? []);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Đã xảy ra lỗi khi tải danh mục';
+            const response = await getAllCategory();
+            setCategories(response?.resultList ?? []);
+        } catch (err: any) {
+            let message = "Đã xảy ra lỗi khi tải danh mục. Vui lòng thử lại";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setError(message);
         } finally {
             setLoading(false);
@@ -55,8 +62,15 @@ const CategoryList: React.FC = () => {
                     item.id === id ? { ...item, hide: !hide } : item
                 )
             );
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể cập nhật trạng thái danh mục.';
+
+        } catch (err: any) {
+            let message = "Không thể cập nhật trạng thái danh mục. Vui lòng thử lại";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setError(message);
         } finally {
             setUpdatingId(null);

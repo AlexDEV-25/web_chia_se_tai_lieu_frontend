@@ -10,6 +10,7 @@ import { getMyInfo } from "../../../../apis/UserApi";
 import type { LessonResponse } from "../../../../models/response/LessonResponse";
 import type { FavoriteLessonResponse } from "../../../../models/response/FavoriteLessonResponse";
 import GrindItem from "../../components/GrindItem";
+import axios from "axios";
 
 interface LessonRightSidebarProps {
     userId: number;
@@ -37,9 +38,15 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
                     (lesson) => lesson.id !== currentLessonId && lesson.status === "PUBLISHED" && !lesson.hide
                 );
                 setLessons(list.slice(0, 6));
-            } catch (err) {
-                console.error("LessonRightSidebar error", err);
-                setError("Không thể tải thêm video của giảng viên này.");
+            } catch (err: any) {
+                let message = "Không thể tải thêm bài giảng của giảng viên này. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                setError(message);
             } finally {
                 setLoading(false);
             }
@@ -59,8 +66,8 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
 
         const fetchFavorites = async () => {
             try {
-                const user = await getMyInfo();
-                const fetchedUserId = user?.result?.id ?? null;
+                const userResponae = await getMyInfo();
+                const fetchedUserId = userResponae?.result?.id ?? null;
                 setCurrentUserId(fetchedUserId);
 
                 if (!fetchedUserId) {
@@ -76,8 +83,15 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
                     }
                 });
                 setFavoriteMap(map);
-            } catch (err) {
-                console.error("Không thể tải kho lưu video", err);
+            } catch (err: any) {
+                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.error(message);
                 setFavoriteMap({});
             }
         };
@@ -114,9 +128,15 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
                     }));
                 }
             }
-        } catch (err) {
-            console.error("Không thể cập nhật kho lưu video", err);
-            alert("Không thể cập nhật kho lưu. Vui lòng thử lại.");
+        } catch (err: any) {
+            let message = "Không thể cập nhật kho lưu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            alert(message);
         } finally {
             setFavoriteLoadingId(null);
         }

@@ -3,6 +3,7 @@ import { chatbot, getAllHistoryByUser } from "../../../apis/ChatGemini";
 import { getMyInfo } from "../../../apis/UserApi";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import type { ChatHistoryResponse } from "../../../models/response/ChatHistoryResponse";
+import axios from "axios";
 
 interface Message {
     id: string;
@@ -31,10 +32,17 @@ const ChatGemini: React.FC = () => {
             return;
         }
         try {
-            const user = await getMyInfo();
-            setCurrentUser(user?.result);
-        } catch (err) {
-            console.error("fetchCurrentUser error", err);
+            const response = await getMyInfo();
+            setCurrentUser(response?.result);
+        } catch (err: any) {
+            let message = "Không thể lấy thông tin người dùng. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
             setCurrentUser(null);
         }
     };
@@ -49,8 +57,15 @@ const ChatGemini: React.FC = () => {
                 sender: item.role === "USER" ? "user" as const : "bot" as const,
             })) || [];
             setMessages(historyMessages);
-        } catch (error) {
-            console.error("Error loading chat history:", error);
+        } catch (err: any) {
+            let message = "Không thể lấy thông tin lịch sử chat. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
         } finally {
             setIsLoadingHistory(false);
         }
@@ -123,8 +138,15 @@ const ChatGemini: React.FC = () => {
             };
 
             setMessages(prev => [...prev, botMessage]);
-        } catch (error) {
-            console.error("Chat error:", error);
+        } catch (err: any) {
+            let message = "Đã xảy ra lỗi khi gửi tin nhắn. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error("Chat error:", message);
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 text: "Đã xảy ra lỗi khi gửi tin nhắn. Vui lòng thử lại.",

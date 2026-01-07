@@ -4,6 +4,7 @@ import { getAllCategory } from "./../../../apis/CategoryApi";
 import { uploadLesson } from "./../../../apis/LessonApi";
 import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
 import { useRef } from "react";
+import axios from "axios";
 
 const UploadLesson: React.FC = () => {
     const [title, setTitle] = useState("");
@@ -21,17 +22,26 @@ const UploadLesson: React.FC = () => {
     const [errTitle, setErrTitle] = useState("");
     const [errVideo, setErrVideo] = useState("");
 
-    const [successMsg, setSuccessMsg] = useState("");
+    const [uploadMessage, setUploadMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const fetchCategories = async () => {
-            const data = await getAllCategory();
-            setCategories(data?.resultList ?? []);
+            try {
+                const response = await getAllCategory();
+                setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
+            } catch (err: any) {
+                let message = "Không thể tải danh mục. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.log(message);;
+            }
         };
-        fetchCategories().catch(error => {
-            console.log(error);
-        });
+        fetchCategories();
     }, []);
 
     const handleUpload = async () => {
@@ -64,10 +74,10 @@ const UploadLesson: React.FC = () => {
         };
 
         try {
-            const res = await uploadLesson(videoFile!, lesson, documentFile || undefined, subFile || undefined);
+            const response = await uploadLesson(videoFile!, lesson, documentFile || undefined, subFile || undefined);
 
-            console.log(res);
-            setSuccessMsg("Upload bài giảng thành công!");
+            console.log(response);
+            setUploadMessage("Upload thành công!");
 
             // Reset form
             setTitle("");
@@ -81,9 +91,15 @@ const UploadLesson: React.FC = () => {
             if (documentRef.current) documentRef.current.value = "";
             if (subFileRef.current) subFileRef.current.value = "";
 
-        } catch (err) {
-            console.error(err);
-            setSuccessMsg("Upload bài giảng thất bại!");
+        } catch (err: any) {
+            let message = "Upload thất bại!";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setUploadMessage(message);
         } finally {
             setIsLoading(false);
         }
@@ -187,9 +203,9 @@ const UploadLesson: React.FC = () => {
                             </div>
                         </div>
 
-                        {successMsg && (
-                            <div className={successMsg.includes("thành công") ? "success-text" : "error-text"}>
-                                {successMsg}
+                        {uploadMessage && (
+                            <div className={uploadMessage.includes("thành công") ? "success-text" : "error-text"}>
+                                {uploadMessage}
                             </div>
                         )}
 

@@ -5,6 +5,7 @@ import type { FavoriteLessonResponse } from "../../../models/response/FavoriteLe
 import { getDocumentFavoritesByUser, getLessonFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import DocumentFavoritesComp from "./components/DocumentFavoritesComp";
 import LessonFavoritesComp from "./components/LessonFavoritesComp";
+import axios from "axios";
 
 type TabKey = "document" | "lesson";
 
@@ -39,15 +40,21 @@ const FavoriteDocuments: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const [docsRes, lessonsRes] = await Promise.all([
+                const [docsResponse, lessonsResponse] = await Promise.all([
                     getDocumentFavoritesByUser(),
                     getLessonFavoritesByUser(),
                 ]);
-                setDocumentFavorites(docsRes.resultList ?? []);
-                setLessonFavorites(lessonsRes.resultList ?? []);
-            } catch (err) {
-                console.error("fetchFavorites error", err);
-                setError("Không thể tải kho lưu. Vui lòng thử lại.");
+                setDocumentFavorites(docsResponse.resultList ?? []);
+                setLessonFavorites(lessonsResponse.resultList ?? []);
+            } catch (err: any) {
+                let message = "Không thể tải kho lưu. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                setError(message);
             } finally {
                 setLoading(false);
             }
@@ -65,9 +72,15 @@ const FavoriteDocuments: React.FC = () => {
             } else {
                 setLessonFavorites((prev) => prev.filter((fav) => fav.id !== favoriteId));
             }
-        } catch (err) {
-            console.error("removeFavorite error", err);
-            alert("Không thể xóa mục khỏi kho lưu. Vui lòng thử lại.");
+        } catch (err: any) {
+            let message = "Không thể xóa mục khỏi kho lưu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            alert(message);
         } finally {
             setRemovingId(null);
         }

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { checkEmailExist, checkUsernameExist } from "../../../apis/UserApi";
 import { register } from "../../../apis/AuthApi";
 import type { UserRequest } from "../../../models/request/UserRequest";
+import axios from "axios";
 
 const Register: React.FC = () => {
     const [username, setUsername] = useState<string>("");
@@ -91,16 +92,21 @@ const Register: React.FC = () => {
         };
 
         try {
-            const data = await register(newUser);
-            console.log(data);
-
+            await register(newUser);
             setUsername("");
             setEmail("");
             setPassword("");
             setRePassword("");
             setIsSuccess("Đăng ký thành công vui lòng vào Email để kích hoạt tài khoản!");
-        } catch (error) {
-            console.log(error);
+        } catch (err: any) {
+            let message = "Không thể đăng ký tài khoản. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.log(message);
         } finally {
             setIsLoading(false);
         }

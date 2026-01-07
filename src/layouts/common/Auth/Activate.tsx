@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { activateUser } from "../../../apis/AuthApi";
 import { useParams } from "react-router-dom";
+import axios from "axios";
 const Activate: React.FC = () => {
     const { email } = useParams();
     const { activationCode } = useParams();
@@ -19,13 +20,20 @@ const Activate: React.FC = () => {
     const activate = async () => {
         try {
             const response = await activateUser(email + "", activationCode + "");
-            if (response.code == 1000) {
+            if (response.code === 1000) {
                 setActivated(true);
             } else {
                 setNotification(response.message);
             }
-        } catch (error) {
-            console.log(error);
+        } catch (err: any) {
+            let message = "Không thể kích hoạt tài khoản. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.log(message);
         }
     }
     return (

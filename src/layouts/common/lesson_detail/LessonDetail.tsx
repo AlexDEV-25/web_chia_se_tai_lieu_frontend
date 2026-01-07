@@ -10,6 +10,7 @@ import RatingComp from "../components/RatingComp";
 import CommentComp from "../components/CommentComp";
 import { getMyInfo } from "../../../apis/UserApi";
 import { addFavoriteLesson, getLessonFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
+import axios from "axios";
 
 const LessonDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -34,10 +35,17 @@ const LessonDetail: React.FC = () => {
 
         const fetchDetail = async () => {
             try {
-                const data = await getLessonById(lessonId);
-                setLessonDetail(data?.result ?? null);
-            } catch (err) {
-                setError("Không thể tải chi tiết bài giảng.");
+                const response = await getLessonById(lessonId);
+                setLessonDetail(response?.result ?? null);
+            } catch (err: any) {
+                let message = "Không thể tải chi tiết bài giảng. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                setError(message);
             } finally {
                 setLoading(false);
             }
@@ -51,8 +59,15 @@ const LessonDetail: React.FC = () => {
         const timer = setTimeout(async () => {
             try {
                 await increaseView(lessonId);
-            } catch (error) {
-                console.error("Failed to increase view count:", error);
+            } catch (err: any) {
+                let message = "Không thể tăng lượt xem";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.error(message);
             }
         }, 30000); // 30 seconds
 
@@ -70,9 +85,9 @@ const LessonDetail: React.FC = () => {
 
         const fetchFavoriteState = async () => {
             try {
-                const user = await getMyInfo();
+                const userResponse = await getMyInfo();
                 if (!isMounted) return;
-                const fetchedUserId = user?.result?.id ?? null;
+                const fetchedUserId = userResponse?.result?.id ?? null;
                 setCurrentUserId(fetchedUserId);
                 if (!fetchedUserId) {
                     setFavoriteId(null);
@@ -84,8 +99,15 @@ const LessonDetail: React.FC = () => {
                 const favorites = favoritesResponse.resultList ?? [];
                 const existing = favorites.find((fav) => fav.lessonId === lessonId);
                 setFavoriteId(existing ? existing.id : null);
-            } catch (err) {
-                console.error("Không thể tải kho lưu", err);
+            } catch (err: any) {
+                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.error(message);
                 if (isMounted) {
                     setFavoriteId(null);
                 }
@@ -123,9 +145,16 @@ const LessonDetail: React.FC = () => {
                     setFavoriteId(saved.id);
                 }
             }
-        } catch (err) {
-            console.error("Lỗi khi cập nhật kho lưu", err);
-            alert("Không thể cập nhật kho lưu. Vui lòng thử lại.");
+        } catch (err: any) {
+            let message = "Không thể cập nhật kho lưu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
+            alert(message);
         } finally {
             setFavoriteLoading(false);
         }
@@ -156,9 +185,15 @@ const LessonDetail: React.FC = () => {
             link.download = lessonDetail.title ? `${lessonDetail.title}.pdf` : "document.pdf";
             link.click();
             window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error(error);
-            alert("Vui lòng đăng nhập để tải tài liệu");
+        } catch (err: any) {
+            let message = "Vui lòng đăng nhập để tải tài liệu";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            alert(message);
         } finally {
             setDownloadingDoc(false);
         }
@@ -175,9 +210,15 @@ const LessonDetail: React.FC = () => {
             link.download = lessonDetail.title ? `${lessonDetail.title}.rar` : "subfile.rar";
             link.click();
             window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error(error);
-            alert("Vui lòng đăng nhập để tải file bổ sung");
+        } catch (err: any) {
+            let message = "Vui lòng đăng nhập để tải file bổ sung";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            alert(message);
         } finally {
             setDownloadingSub(false);
         }

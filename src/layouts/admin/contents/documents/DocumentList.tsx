@@ -10,6 +10,7 @@ import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
 import LeftSidebar from '../../components/LeftSidebar';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
+import axios from 'axios';
 
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 
@@ -26,10 +27,16 @@ const DocumentList: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await getAllDocument();
-            setDocuments(data?.resultList ?? []);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Đã xảy ra lỗi khi tải tài liệu';
+            const response = await getAllDocument();
+            setDocuments(response?.resultList ?? []);
+        } catch (err: any) {
+            let message = "Không thể tải tài liệu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setError(message);
         } finally {
             setLoading(false);
@@ -54,13 +61,20 @@ const DocumentList: React.FC = () => {
             await hideDocument(id, {
                 hide: !hide, updatedAt: new Date()
             });
+
             setDocuments((prev) =>
                 prev.map((item) =>
                     item.id === id ? { ...item, hide: !hide } : item
                 )
             );
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể cập nhật trạng thái tài liệu.';
+        } catch (err: any) {
+            let message = "Không thể cập nhật trạng thái tài liệu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setError(message);
         } finally {
             setUpdatingId(null);
@@ -76,8 +90,14 @@ const DocumentList: React.FC = () => {
             setUpdatingId(id);
             await deleteDocument(id);
             setDocuments((prev) => prev.filter((item) => item.id !== id));
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể xóa tài liệu.';
+        } catch (err: any) {
+            let message = "Không thể xóa tài liệu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setError(message);
         } finally {
             setUpdatingId(null);

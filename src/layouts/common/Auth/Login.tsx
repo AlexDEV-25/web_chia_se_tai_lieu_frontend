@@ -8,10 +8,12 @@ import { exchangeToken } from "../../../apis/GoogleApi";
 import { useSearchParams } from "react-router-dom";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import { getMyInfo } from "../../../apis/UserApi";
+import axios from "axios";
 interface Props {
     setToken: (value: string | null) => void
+    setRoles: (value: string[]) => void
 }
-const Login: React.FC<Props> = ({ setToken }) => {
+const Login: React.FC<Props> = ({ setToken, setRoles }) => {
     const navigate = useNavigate();
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -45,8 +47,8 @@ const Login: React.FC<Props> = ({ setToken }) => {
 
         const authenticationRequest: AuthenticationRequest = { email: email, password: password };
         try {
-            const data = await login(authenticationRequest);
-            const token = data.result?.token;
+            const response = await login(authenticationRequest);
+            const token = response.result?.token;
 
             if (!token) {
                 setLoginError("Đăng nhập thất bại!");
@@ -56,28 +58,36 @@ const Login: React.FC<Props> = ({ setToken }) => {
             localStorage.setItem("token", token);
             setToken(token);
             try {
-                const data = await getMyInfo();
-                const user: UserResponse | null = data.result;
+                const response = await getMyInfo();
+                const user: UserResponse | null = response.result;
                 const roles: string[] | undefined = user?.roles?.map((role) => role.name);
                 localStorage.setItem("roles", JSON.stringify(roles));
                 if (!user) {
                     setLoginError("Đăng nhập thất bại!");
                     return;
                 }
-            } catch (error: any) {
-                const msg =
-                    error.response?.data?.message ||
-                    "Đăng nhập thất bại. Vui lòng kiểm tra lại!";
-                setLoginError(msg);
+                setRoles(roles!);
+            } catch (err: any) {
+                let message = "Đăng nhập thất bại. Vui lòng thử lại!";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                setLoginError(message);
             }
             setLoginError("");
             navigate("/");
-        } catch (error: any) {
-            const msg =
-                error.response?.data?.message ||
-                "Đăng nhập thất bại. Vui lòng kiểm tra lại!";
-
-            setLoginError(msg);
+        } catch (err: any) {
+            let message = "Đăng nhập thất bại. Vui lòng thử lại!";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setLoginError(message);
         }
     };
 
@@ -98,7 +108,6 @@ const Login: React.FC<Props> = ({ setToken }) => {
         calledRef.current = true;
         const codeURL = searchParams.get("code");
         if (!codeURL) return;
-        console.log(codeURL);
         setCode(codeURL);
 
     }, []);
@@ -120,24 +129,31 @@ const Login: React.FC<Props> = ({ setToken }) => {
                         const user: UserResponse | null = data.result;
                         const roles: string[] | undefined = user?.roles?.map((role) => role.name);
                         localStorage.setItem("roles", JSON.stringify(roles));
+                        setRoles(roles!);
                         if (!user) {
                             setLoginError("Đăng nhập thất bại!");
                             return;
                         }
-                    } catch (error: any) {
-                        const msg =
-                            error.response?.data?.message ||
-                            "Đăng nhập thất bại. Vui lòng kiểm tra lại!";
-
-                        setLoginError(msg);
+                    } catch (err: any) {
+                        let message = "Đăng nhập thất bại. Vui lòng thử lại!";
+                        if (axios.isAxiosError(err)) {
+                            message =
+                                err.response?.data?.message ??
+                                err.message ??
+                                message;
+                        }
+                        setLoginError(message);
                     }
                     navigate("/");
-                } catch (error: any) {
-                    const msg =
-                        error.response?.data?.message ||
-                        "Đăng nhập thất bại. Vui lòng kiểm tra lại!";
-
-                    setLoginError(msg);
+                } catch (err: any) {
+                    let message = "Đăng nhập thất bại. Vui lòng thử lại!";
+                    if (axios.isAxiosError(err)) {
+                        message =
+                            err.response?.data?.message ??
+                            err.message ??
+                            message;
+                    }
+                    setLoginError(message);
                 }
             }
             fetchExchangeToken();

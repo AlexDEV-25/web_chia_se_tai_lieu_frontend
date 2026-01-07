@@ -4,6 +4,7 @@ import type { LessonResponse } from "../../../../models/response/LessonResponse"
 import type { LessonRequest } from "../../../../models/request/LessonRequest";
 import FormUpdate, { type FormDataType } from "./FormUpdate";
 import DeleteAlert from "./DeleteAlert";
+import axios from "axios";
 
 interface Props {
     lessons: LessonResponse[];
@@ -30,9 +31,15 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
             setShowEditForm(false);
             setEditingLesson(null);
             onUpdate();
-        } catch (error) {
-            console.error("Error updating lesson:", error);
-            throw error;
+        } catch (err: any) {
+            let message = "Update thất bại. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
         }
     };
 
@@ -50,11 +57,18 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
         if (!deletingLesson) return;
 
         try {
-            await onDelete(deletingLesson.id);
+            onDelete(deletingLesson.id);
             setShowDeleteAlert(false);
             setDeletingLesson(null);
-        } catch (error) {
-            console.error("Error deleting lesson:", error);
+        } catch (err: any) {
+            let message = "Xóa thất bại. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
             setShowDeleteAlert(false);
             setDeletingLesson(null);
         }

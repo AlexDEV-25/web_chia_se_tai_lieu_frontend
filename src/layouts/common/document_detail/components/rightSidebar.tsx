@@ -10,6 +10,7 @@ import { getMyInfo } from "../../../../apis/UserApi";
 import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
 import type { FavoriteDocumentResponse } from "../../../../models/response/FavoriteDocumentResponse";
 import GrindItem from "../../components/GrindItem";
+import axios from "axios";
 
 interface RightSidebarProps {
     userId: number;
@@ -37,9 +38,15 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                     (doc) => doc.id !== currentDocumentId && doc.status === "PUBLISHED"
                 );
                 setDocuments(list.slice(0, 6));
-            } catch (err) {
-                console.error("RightSidebar error", err);
-                setError("Không thể tải thêm slide của tác giả này.");
+            } catch (err: any) {
+                let message = "Không thể tải thêm tài liệu của tác giả này. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                setError(message);
             } finally {
                 setLoading(false);
             }
@@ -59,8 +66,8 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
 
         const fetchFavorites = async () => {
             try {
-                const user = await getMyInfo();
-                const fetchedUserId = user?.result?.id ?? null;
+                const userResponse = await getMyInfo();
+                const fetchedUserId = userResponse?.result?.id ?? null;
                 setCurrentUserId(fetchedUserId);
 
                 if (!fetchedUserId) {
@@ -76,8 +83,15 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                     }
                 });
                 setFavoriteMap(map);
-            } catch (err) {
-                console.error("Không thể tải kho lưu tài liệu", err);
+            } catch (err: any) {
+                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.error(message)
                 setFavoriteMap({});
             }
         };
@@ -114,9 +128,15 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                     }));
                 }
             }
-        } catch (err) {
-            console.error("Lỗi khi cập nhật kho lưu", err);
-            alert("Không thể cập nhật kho lưu. Vui lòng thử lại.");
+        } catch (err: any) {
+            let message = "Không thể cập nhật kho lưu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            alert(message);
         } finally {
             setFavoriteLoadingId(null);
         }

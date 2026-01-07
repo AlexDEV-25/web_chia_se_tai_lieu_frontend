@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUser } from "../../../apis/UserApi";
 import type { UserRequest } from "../../../models/request/UserRequest";
+import axios from "axios";
 
 const UserAdd: React.FC = () => {
     const navigate = useNavigate();
@@ -90,10 +91,14 @@ const UserAdd: React.FC = () => {
             };
             await createUser(newUser);
             navigate("/users");
-        } catch (error: any) {
-            const message =
-                error?.response?.data?.message ??
-                "Không thể tạo người dùng mới. Vui lòng thử lại.";
+        } catch (err: any) {
+            let message = "Không thể tạo người dùng mới. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setFormError(message);
         } finally {
             setIsSubmitting(false);

@@ -5,6 +5,7 @@ import type { DocumentRequest } from "../../../../models/request/DocumentReques"
 import type { LessonRequest } from "../../../../models/request/LessonRequest";
 import { getAllCategory } from "../../../../apis/CategoryApi";
 import type { CategoryResponse } from "../../../../models/response/CategoryResponse";
+import axios from "axios";
 
 export type FormDataType = DocumentRequest | LessonRequest;
 export type ItemType = "document" | "lesson";
@@ -35,8 +36,15 @@ const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSav
             try {
                 const response = await getAllCategory();
                 setCategories(response?.resultList ?? []);
-            } catch (error) {
-                console.error("Failed to fetch categories:", error);
+            } catch (err: any) {
+                let message = "Lấy danh sách danh mục thất bại. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.error(message);
             }
         };
 
@@ -75,9 +83,15 @@ const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSav
         try {
             await onSave(formData);
             onClose();
-        } catch (error) {
-            console.error(error);
-            setErrors({ submit: "Cập nhật thất bại. Vui lòng thử lại." });
+        } catch (err: any) {
+            let message = "Cập nhật thất bại. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setErrors({ submit: message });
         } finally {
             setIsSubmitting(false);
         }

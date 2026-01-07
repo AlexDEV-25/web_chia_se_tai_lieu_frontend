@@ -8,8 +8,10 @@ interface Props {
     setToken: (value: string | null) => void
     keyWords: string
     setKeyWords: (value: string) => void
+    roles: string[]
+    setRoles: (value: string[]) => void
 }
-const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => {
+const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, roles, setRoles }) => {
     const navigate = useNavigate();
     const [valid, setValid] = useState<boolean>(false);
     const [TempKeyWords, setTempKeyWords] = useState("");
@@ -17,16 +19,18 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => 
 
     const handleLogout = () => {
         localStorage.removeItem("token");
+        localStorage.removeItem("roles")
         setToken(null);
+        setRoles([]);
         navigate("/");
     };
     useEffect(() => {
-        if (token === null) {
+        if (token === null || roles.length === 0) {
             setValid(false);
         } else {
             setValid(true);
         }
-    }, [token]);
+    }, [token, roles]);
 
     useEffect(() => {
         setKeyWords(keyWords);
@@ -107,7 +111,7 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords }) => 
                                         <Link to="/uploadHistory">Lịch sử Upload</Link>
                                     </div>
                                 </details>
-                                {JSON.parse(localStorage.getItem("roles") ?? "[]").find((role: string) => role === "ADMIN") && (
+                                {roles.length > 0 && roles.find((role: string) => role === "ADMIN") && (
                                     <Link to="/dashboard" className="admin-link">
                                         Trang Admin
                                     </Link>

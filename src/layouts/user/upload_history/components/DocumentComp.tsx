@@ -4,6 +4,7 @@ import type { DocumentResponse } from "../../../../models/response/DocumentRespo
 import type { DocumentRequest } from "../../../../models/request/DocumentReques";
 import FormUpdate, { type FormDataType } from "./FormUpdate";
 import DeleteAlert from "./DeleteAlert";
+import axios from "axios";
 
 interface Props {
     documents: DocumentResponse[];
@@ -30,9 +31,15 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
             setShowEditForm(false);
             setEditingDocument(null);
             onUpdate();
-        } catch (error) {
-            console.error("Error updating document:", error);
-            throw error;
+        } catch (err: any) {
+            let message = "Update thất bại!";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
         }
     };
 
@@ -50,11 +57,18 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
         if (!deletingDocument) return;
 
         try {
-            await onDelete(deletingDocument.id);
+            onDelete(deletingDocument.id);
             setShowDeleteAlert(false);
             setDeletingDocument(null);
-        } catch (error) {
-            console.error("Error deleting document:", error);
+        } catch (err: any) {
+            let message = "Xóa thất bại!";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
             setShowDeleteAlert(false);
             setDeletingDocument(null);
         }

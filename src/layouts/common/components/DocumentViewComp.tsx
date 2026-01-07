@@ -165,13 +165,6 @@ const DocumentViewComp: React.FC<Props> = ({
         setActivePointer(null);
     };
 
-    const handleWheel = (e: React.WheelEvent) => {
-        if (!stageRef.current) return;
-        e.preventDefault();
-        const delta = e.deltaY > 0 ? -5 : 5;
-        handleZoomChange(zoomLevel + delta);
-    };
-
     const handlePageRenderSuccess = (page: any) => {
         setPageDimensions({ width: page.width, height: page.height });
         setOffset({ x: 0, y: 0 });
@@ -199,7 +192,6 @@ const DocumentViewComp: React.FC<Props> = ({
                     onPointerUp={endPointerInteraction}
                     onPointerLeave={endPointerInteraction}
                     onPointerCancel={endPointerInteraction}
-                    onWheel={handleWheel}
                     data-drag-state={isDragging ? "dragging" : zoomLevel > 100 ? "ready" : "disabled"}
                     style={{
                         touchAction: zoomLevel > 100 ? "none" : "pan-y",

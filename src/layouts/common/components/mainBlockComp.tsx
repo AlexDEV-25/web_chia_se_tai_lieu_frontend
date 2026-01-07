@@ -12,6 +12,7 @@ import {
 
 import { getMyInfo } from "../../../apis/UserApi";
 import GrindItem from "./GrindItem";
+import axios from "axios";
 
 interface BaseItem {
     id: number;
@@ -70,8 +71,8 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
 
         const fetchUserAndFavorites = async () => {
             try {
-                const user = await getMyInfo();
-                const fetchedUserId = user?.result?.id ?? null;
+                const userResponse = await getMyInfo();
+                const fetchedUserId = userResponse?.result?.id ?? null;
                 setCurrentUserId(fetchedUserId);
 
                 if (!fetchedUserId) {
@@ -96,8 +97,15 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                     });
                 }
                 setFavoriteMap(map);
-            } catch (err) {
-                console.error("Không thể tải dữ liệu người dùng hoặc yêu thích", err);
+            } catch (err: any) {
+                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.error(message);
                 setFavoriteMap({});
             }
         };
@@ -141,9 +149,16 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                     }));
                 }
             }
-        } catch (err) {
-            console.error("Lỗi khi cập nhật yêu thích", err);
-            alert("Không thể cập nhật yêu thích. Vui lòng thử lại.");
+        } catch (err: any) {
+            let message = "Không thể cập nhật kho yêu thích. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
+            alert(message);
         } finally {
             setFavoriteLoadingId(null);
         }

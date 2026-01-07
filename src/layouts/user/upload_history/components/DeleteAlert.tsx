@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 
 interface Props {
@@ -21,8 +22,15 @@ const DeleteAlert: React.FC<Props> = ({
         setIsDeleting(true);
         try {
             await onConfirm();
-        } catch (error) {
-            console.error("Error deleting item:", error);
+        } catch (err: any) {
+            let message = "Xóa thất bại!";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
             setIsDeleting(false);
         }
     };

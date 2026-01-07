@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getAllCategory } from '../../../../apis/CategoryApi';
 import type { CategoryResponse } from '../../../../models/response/CategoryResponse';
+import axios from 'axios';
 
 interface Stats {
     label: string;
@@ -74,8 +75,15 @@ const RightProperties: React.FC<RightPropertiesProps> = ({
             if (response?.resultList) {
                 setCategories(response.resultList);
             }
-        } catch (error) {
-            console.error('Lỗi tải danh mục:', error);
+        } catch (err: any) {
+            let message = "Lỗi tải danh mục. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            console.error(message);
         } finally {
             setLoadingCategories(false);
         }

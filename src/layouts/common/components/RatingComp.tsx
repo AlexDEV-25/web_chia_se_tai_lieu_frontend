@@ -9,6 +9,7 @@ import {
     createRatingLesson,
 } from "../../../apis/RatingApi";
 import api from "../../../apis/HttpClient";
+import axios from "axios";
 
 interface RatingCompProps {
     docId?: number;
@@ -46,9 +47,15 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
                     ? await getRatingsByLesson(targetId)
                     : await getRatingsByDocument(targetId);
                 setRatings(response.resultList ?? []);
-            } catch (err) {
-                console.error("fetchRatings error", err);
-                setError("Không thể tải đánh giá. Vui lòng thử lại.");
+            } catch (err: any) {
+                let message = "Không thể tải đánh giá. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                setError(message);
             } finally {
                 setLoading(false);
             }
@@ -67,8 +74,15 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
                 const response = await api.get("/users/my-info");
                 const user = response.data.result as UserResponse;
                 setCurrentUserId(user.id);
-            } catch (err) {
-                console.error("fetchCurrentUser error", err);
+            } catch (err: any) {
+                let message = "Không thể lấy thông tin người dùng. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.error(message);
                 setCurrentUserId(null);
             }
         };
@@ -129,9 +143,15 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
                     setRatings((prev) => [...prev, created]);
                 }
             }
-        } catch (err) {
-            console.error("createRating error", err);
-            alert("Không thể gửi đánh giá. Vui lòng thử lại.");
+        } catch (err: any) {
+            let message = "Không thể gửi đánh giá. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            alert(message);
         } finally {
             setSubmitting(false);
         }

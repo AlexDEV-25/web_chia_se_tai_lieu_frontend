@@ -3,34 +3,26 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createCategory } from "../../../apis/CategoryApi";
 import type { CategoryRequest } from "../../../models/request/CategoryRequest";
+import axios from "axios";
 
 const CategoryAdd: React.FC = () => {
     const navigate = useNavigate();
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [nameError, setNameError] = useState<string>("");
-    const [descriptionError, setDescriptionError] = useState<string>("");
     const [formError, setFormError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const validateForm = () => {
         let isValid = true;
         let localNameError = "";
-        let localDescriptionError = "";
 
         if (name.trim() === "") {
             localNameError = "Vui lòng nhập tên danh mục.";
             isValid = false;
         }
 
-        if (description.trim() === "") {
-            localDescriptionError = "Mô tả không được bỏ trống.";
-            isValid = false;
-        }
-
         setNameError(localNameError);
-        setDescriptionError(localDescriptionError);
-
         return isValid;
     };
 
@@ -51,10 +43,14 @@ const CategoryAdd: React.FC = () => {
             };
             await createCategory(newCategory);
             navigate("/categories");
-        } catch (error: any) {
-            const message =
-                error?.response?.data?.message ??
-                "Không thể tạo danh mục mới. Vui lòng thử lại.";
+        } catch (err: any) {
+            let message = "Không thể tạo danh mục mới. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setFormError(message);
         } finally {
             setIsSubmitting(false);
@@ -104,13 +100,10 @@ const CategoryAdd: React.FC = () => {
                             <textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                className={`category-textarea ${descriptionError ? "has-error" : ""}`}
+                                className="category-textarea"
                                 rows={5}
                                 placeholder="Ghi chú ngắn giúp người dùng hiểu nội dung danh mục."
                             />
-                            {descriptionError && (
-                                <small className="field-error">{descriptionError}</small>
-                            )}
                         </label>
 
                         <div className="category-form-actions">
@@ -128,7 +121,6 @@ const CategoryAdd: React.FC = () => {
                                     setName("");
                                     setDescription("");
                                     setNameError("");
-                                    setDescriptionError("");
                                     setFormError(null);
                                 }}
                             >

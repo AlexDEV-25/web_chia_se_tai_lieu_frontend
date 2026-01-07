@@ -10,6 +10,7 @@ import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
 import LeftSidebar from '../../components/LeftSidebar';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
+import axios from 'axios';
 
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 
@@ -26,10 +27,16 @@ const LessonList: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await getAllLesson();
-            setLessons(data?.resultList ?? []);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Đã xảy ra lỗi khi tải bài học';
+            const response = await getAllLesson();
+            setLessons(response?.resultList ?? []);
+        } catch (err: any) {
+            let message = "Không thể tải bài giảng. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setError(message);
         } finally {
             setLoading(false);
@@ -55,13 +62,20 @@ const LessonList: React.FC = () => {
                 hide: !hide,
                 updatedAt: new Date()
             });
+
             setLessons((prev) =>
                 prev.map((item) =>
                     item.id === id ? { ...item, hide: !hide } : item
                 )
             );
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể cập nhật trạng thái bài học.';
+        } catch (err: any) {
+            let message = "Không thể cập nhật trạng thái bài giảng. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setError(message);
         } finally {
             setUpdatingId(null);
@@ -77,8 +91,14 @@ const LessonList: React.FC = () => {
             setUpdatingId(id);
             await deleteLesson(id);
             setLessons((prev) => prev.filter((item) => item.id !== id));
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể xóa bài học.';
+        } catch (err: any) {
+            let message = "Không thể xóa bài giảng. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setError(message);
         } finally {
             setUpdatingId(null);

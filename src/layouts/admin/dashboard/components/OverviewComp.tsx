@@ -6,6 +6,7 @@ import OverviewCard from './child_components/OverviewCard';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
 import type { UserResponse } from '../../../../models/response/UserResponse';
+import axios from 'axios';
 
 const OverviewComp: React.FC = () => {
     const [loading, setLoading] = useState(true);
@@ -22,12 +23,18 @@ const OverviewComp: React.FC = () => {
                     getAllLesson(),
                     getAllUser()
                 ]);
-
                 setDocuments(docsData?.resultList ?? []);
                 setLessons(lessonsData?.resultList ?? []);
                 setUsers(usersData?.resultList ?? []);
-            } catch (error) {
-                console.error('Error fetching overview data:', error);
+            } catch (err: any) {
+                let message = "Không thể tải tài liệu, bài giảng, người dùng. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.error(message);
             } finally {
                 setLoading(false);
             }

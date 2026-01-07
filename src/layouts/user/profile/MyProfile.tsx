@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../../apis/HttpClient";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import { getMyInfo } from "../../../apis/UserApi";
+import axios from "axios";
 
 const MyProfile: React.FC = () => {
     const [user, setUser] = useState<UserResponse | null>(null);
@@ -20,18 +21,25 @@ const MyProfile: React.FC = () => {
     const [errNewPassword, setErrNewPassword] = useState("");
     const [errConfirmPassword, setErrConfirmPassword] = useState("");
 
-    const [successMsg, setSuccessMsg] = useState("");
+    const [infoMessage, setInfoMessage] = useState("");
 
 
     // ================= GET MY INFO =================
     const fetchMyInfo = async () => {
         try {
-            const res = await getMyInfo();
-            setUser(res.result);
-            setUsername(res?.result?.username || "");
-            setEmail(res?.result?.email || "");
-        } catch (err) {
-            console.error(err);
+            const response = await getMyInfo();
+            setUser(response.result);
+            setUsername(response?.result?.username || "");
+            setEmail(response?.result?.email || "");
+        } catch (err: any) {
+            let message = "Không thể tải thông tin cá nhân. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setInfoMessage(message)
         }
     };
 
@@ -89,7 +97,7 @@ const MyProfile: React.FC = () => {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
-            setSuccessMsg("Cập nhật thành công!");
+            setInfoMessage("Cập nhật thành công!");
             fetchMyInfo();
 
             // reset nếu tắt đổi mật khẩu
@@ -97,9 +105,15 @@ const MyProfile: React.FC = () => {
             setConfirmPassword("");
             setShowChangePassword(false);
 
-        } catch (err) {
-            console.error(err);
-            setSuccessMsg("Cập nhật thất bại!");
+        } catch (err: any) {
+            let message = "Cập nhật thất bại!";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setInfoMessage(message);
         }
     };
 
@@ -127,7 +141,9 @@ const MyProfile: React.FC = () => {
                     />
                 </div>
 
-                <div style={{ color: "green", marginBottom: 10 }}>{successMsg}</div>
+                <div style={{ marginBottom: 10 }} className={infoMessage.includes("thành công") ? "success-text" : "error-text"}>
+                    {infoMessage}
+                </div>
 
                 {/* USERNAME */}
                 <div className="mb-3">

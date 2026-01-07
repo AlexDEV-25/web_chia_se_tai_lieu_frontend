@@ -6,6 +6,7 @@ import type { CategoryResponse } from "../../../models/response/CategoryResponse
 import HeroBlockComp from "../components/HeroBlockComp";
 import CategoryBlockComp from "../components/CategoryBlockComp";
 import MainBlockComp from "../components/MainBlockComp";
+import axios from "axios";
 interface Props {
     keyWords: string
 }
@@ -21,10 +22,17 @@ const Home = ({ keyWords }: Props) => {
     useEffect(() => {
         const fetchDocuments = async () => {
             try {
-                const data = await getAllDocument();
-                setDocuments(data?.resultList ?? []);
-            } catch (err) {
-                setError("Không thể tải tài liệu. Vui lòng thử lại.");
+                const response = await getAllDocument();
+                setDocuments(response?.resultList ?? []);
+            } catch (err: any) {
+                let message = "Không thể tải tài liệu. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                setError(message);
             } finally {
                 setLoadingDocs(false);
             }
@@ -35,10 +43,17 @@ const Home = ({ keyWords }: Props) => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const data = await getAllCategory();
-                setCategories((data?.resultList ?? []).filter(cat => !cat.hide));
-            } catch (err) {
-                setError("Không thể tải danh mục. Vui lòng thử lại.");
+                const response = await getAllCategory();
+                setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
+            } catch (err: any) {
+                let message = "Không thể tải danh mục. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                setError(message);
             } finally {
                 setLoadingCats(false);
             }

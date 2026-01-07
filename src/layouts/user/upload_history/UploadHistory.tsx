@@ -5,6 +5,7 @@ import type { DocumentResponse } from "../../../models/response/DocumentResponse
 import type { LessonResponse } from "../../../models/response/LessonResponse";
 import DocumentComp from "./components/DocumentComp";
 import LessonComp from "./components/LessonComp";
+import axios from "axios";
 
 const UploadHistory: React.FC = () => {
     const [activeTab, setActiveTab] = useState<"documents" | "lessons">("documents");
@@ -29,9 +30,15 @@ const UploadHistory: React.FC = () => {
                 const response = await getMyLesson();
                 setLessons(response.resultList || []);
             }
-        } catch (err) {
-            setError("Không thể tải dữ liệu. Vui lòng thử lại.");
-            console.error("Error loading data:", err);
+        } catch (err: any) {
+            let message = "Không thể tải dữ liệu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -45,9 +52,15 @@ const UploadHistory: React.FC = () => {
         try {
             await deleteMyDocument(id);
             setDocuments(prev => prev.filter(doc => doc.id !== id));
-        } catch (err) {
-            setError("Xóa tài liệu thất bại. Vui lòng thử lại.");
-            console.error("Error deleting document:", err);
+        } catch (err: any) {
+            let message = "Xóa tài liệu thất bại. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setError(message);
         }
     };
 
@@ -59,9 +72,15 @@ const UploadHistory: React.FC = () => {
         try {
             await deleteMyLesson(id);
             setLessons(prev => prev.filter(lesson => lesson.id !== id));
-        } catch (err) {
-            setError("Xóa bài học thất bại. Vui lòng thử lại.");
-            console.error("Error deleting lesson:", err);
+        } catch (err: any) {
+            let message = "Xóa bài học thất bại. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setError(message);
         }
     };
 

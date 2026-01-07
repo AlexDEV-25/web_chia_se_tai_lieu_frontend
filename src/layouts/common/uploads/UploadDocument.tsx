@@ -4,6 +4,7 @@ import { getAllCategory } from "./../../../apis/CategoryApi";
 import { uploadDocument } from "./../../../apis/DocumentApi";
 import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
 import { useRef } from "react";
+import axios from "axios";
 const UploadDocument: React.FC = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -17,17 +18,26 @@ const UploadDocument: React.FC = () => {
     const [errFile, setErrFile] = useState("");
 
 
-    const [successMsg, setSuccessMsg] = useState("");
+    const [uploadMessage, setUploadMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        const categories = async () => {
-            const data = await getAllCategory();
-            setCategories(data?.resultList ?? []);
-        }
-        categories().catch(error => {
-            console.log(error);
-        });
+        const fetchCategories = async () => {
+            try {
+                const response = await getAllCategory();
+                setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
+            } catch (err: any) {
+                let message = "Không thể tải danh mục. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
+                console.log(message);;
+            }
+        };
+        fetchCategories();
     }, []);
 
     const handleUpload = async () => {
@@ -59,10 +69,10 @@ const UploadDocument: React.FC = () => {
         };
 
         try {
-            const res = await uploadDocument(file!, doc);
+            const response = await uploadDocument(file!, doc);
 
-            console.log(res);
-            setSuccessMsg("Upload thành công!");
+            console.log(response);
+            setUploadMessage("Upload thành công!");
 
             // Reset form
             setTitle("");
@@ -72,9 +82,15 @@ const UploadDocument: React.FC = () => {
             // Reset input file
             if (fileRef.current) { fileRef.current.value = ""; }
 
-        } catch (err) {
-            console.error(err);
-            setSuccessMsg("Upload thất bại!");
+        } catch (err: any) {
+            let message = "Upload thất bại!";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
+            setUploadMessage(message);
         } finally {
             setIsLoading(false);
         }
@@ -148,9 +164,9 @@ const UploadDocument: React.FC = () => {
                             {errFile && <span className="error-text">{errFile}</span>}
                         </div>
 
-                        {successMsg && (
-                            <div className={successMsg.includes("thành công") ? "success-text" : "error-text"}>
-                                {successMsg}
+                        {uploadMessage && (
+                            <div className={uploadMessage.includes("thành công") ? "success-text" : "error-text"}>
+                                {uploadMessage}
                             </div>
                         )}
 

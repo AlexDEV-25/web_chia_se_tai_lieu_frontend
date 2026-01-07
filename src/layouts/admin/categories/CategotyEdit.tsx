@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCategoryById, updateCategory } from "../../../apis/CategoryApi";
 import type { CategoryRequest } from "../../../models/request/CategoryRequest";
+import axios from "axios";
 
 const CategoryEdit: React.FC = () => {
     const { id } = useParams<{ id: string | undefined }>();
@@ -12,7 +13,6 @@ const CategoryEdit: React.FC = () => {
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [nameError, setNameError] = useState<string>("");
-    const [descriptionError, setDescriptionError] = useState<string>("");
     const [formError, setFormError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
@@ -25,12 +25,17 @@ const CategoryEdit: React.FC = () => {
             }
             try {
                 setLoading(true);
-                const data = await getCategoryById(parseInt(id, 10));
-                setName(data.result?.name ?? "");
-                setDescription(data.result?.description ?? "");
-            } catch (error: any) {
-                const message =
-                    error?.response?.data?.message ?? "Không tìm thấy danh mục. Vui lòng thử lại.";
+                const response = await getCategoryById(parseInt(id, 10));
+                setName(response.result?.name ?? "");
+                setDescription(response.result?.description ?? "");
+            } catch (err: any) {
+                let message = "Không tìm thấy danh mục. Vui lòng thử lại.";
+                if (axios.isAxiosError(err)) {
+                    message =
+                        err.response?.data?.message ??
+                        err.message ??
+                        message;
+                }
                 setFormError(message);
             } finally {
                 setLoading(false);
@@ -42,21 +47,12 @@ const CategoryEdit: React.FC = () => {
     const validateForm = () => {
         let isValid = true;
         let localNameError = "";
-        let localDescriptionError = "";
 
         if (name.trim() === "") {
             localNameError = "Vui lòng nhập tên danh mục.";
             isValid = false;
         }
-
-        if (description.trim() === "") {
-            localDescriptionError = "Mô tả không được bỏ trống.";
-            isValid = false;
-        }
-
         setNameError(localNameError);
-        setDescriptionError(localDescriptionError);
-
         return isValid;
     };
 
@@ -76,11 +72,16 @@ const CategoryEdit: React.FC = () => {
                 hide: false
             };
             await updateCategory(parseInt(id, 10), updatedCategory);
+
             navigate("/categories");
-        } catch (error: any) {
-            const message =
-                error?.response?.data?.message ??
-                "Không thể cập nhật danh mục. Vui lòng thử lại.";
+        } catch (err: any) {
+            let message = "Không thể cập nhật danh mục. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
+            }
             setFormError(message);
         } finally {
             setIsSubmitting(false);
@@ -136,13 +137,10 @@ const CategoryEdit: React.FC = () => {
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    className={`category-textarea ${descriptionError ? "has-error" : ""}`}
+                                    className="category-textarea"
                                     rows={5}
                                     placeholder="Mô tả ngắn để phân biệt với các danh mục khác."
                                 />
-                                {descriptionError && (
-                                    <small className="field-error">{descriptionError}</small>
-                                )}
                             </label>
 
                             <div className="category-form-actions">
@@ -160,7 +158,6 @@ const CategoryEdit: React.FC = () => {
                                         setName("");
                                         setDescription("");
                                         setNameError("");
-                                        setDescriptionError("");
                                         setFormError(null);
                                     }}
                                 >

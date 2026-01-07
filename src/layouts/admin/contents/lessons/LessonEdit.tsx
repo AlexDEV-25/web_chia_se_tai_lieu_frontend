@@ -6,6 +6,7 @@ import DocumentViewComp from '../../../common/components/DocumentViewComp';
 import RightProperties from '../components/RightProperties';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
 import type { LessonRequest } from '../../../../models/request/LessonRequest';
+import axios from 'axios';
 
 const LessonEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -33,20 +34,24 @@ const LessonEdit: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await getLessonById(parseInt(id));
-            if (data?.result) {
-                const les = data.result;
-                setLesson(les);
-                setFormData({
-                    title: les.title || '',
-                    description: les.description || '',
-                    status: les.status || 'PENDING',
-                    hide: les.hide || false,
-                    categoryId: les.categoryId
-                });
+            const response = await getLessonById(parseInt(id));
+            const les = response.result;
+            setLesson(les);
+            setFormData({
+                title: les?.title || '',
+                description: les?.description || '',
+                status: les?.status || 'PENDING',
+                hide: les?.hide || false,
+                categoryId: les?.categoryId
+            });
+        } catch (err: any) {
+            let message = "Không thể tải tài liệu. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
             }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể tải bài học';
             setError(message);
         } finally {
             setLoading(false);
@@ -81,12 +86,16 @@ const LessonEdit: React.FC = () => {
         setSaving(true);
         try {
             const response = await updateLesson(lesson.id, formData);
-            if (response?.result) {
-                setLesson(response.result);
-                setError(null);
+            setLesson(response.result);
+            setError(null);
+        } catch (err: any) {
+            let message = "Không thể cập nhật bài học. Vui lòng thử lại.";
+            if (axios.isAxiosError(err)) {
+                message =
+                    err.response?.data?.message ??
+                    err.message ??
+                    message;
             }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Không thể cập nhật bài học';
             setError(message);
         } finally {
             setSaving(false);
