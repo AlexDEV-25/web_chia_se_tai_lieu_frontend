@@ -206,6 +206,12 @@ const Login: React.FC<Props> = ({ setToken, setRoles }) => {
                             {isErrorPassword && <span className="error-text">{isErrorPassword}</span>}
                         </div>
 
+                        <div className="text-end">
+                            <Link to="/forgot-password" className="link-muted">
+                                Quên mật khẩu?
+                            </Link>
+                        </div>
+
                         <button
                             type="button"
                             onClick={handleSubmit}

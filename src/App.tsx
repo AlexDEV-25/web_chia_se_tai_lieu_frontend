@@ -14,6 +14,8 @@ import DocumentDetail from './layouts/common/document_detail/DocumentDetail';
 import Register from './layouts/common/auth/Register';
 import Login from './layouts/common/auth/Login';
 import Activate from './layouts/common/auth/Activate';
+import ForgotPassword from './layouts/common/auth/ForgotPassword';
+import ChangePassword from './layouts/common/auth/ChangePassword';
 import MyProfile from './layouts/user/profile/MyProfile';
 import FavoriteDocuments from './layouts/user/favorites/Favorites';
 import LessonDetail from './layouts/common/lesson_detail/LessonDetail';
@@ -77,6 +79,8 @@ function App() {
             {/* {auth} */}
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login setToken={setToken} setRoles={setRoles} />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/change-password/:email/:forgotPasswordCode" element={<ChangePassword />} />
             <Route path="/activate/:email/:activationCode" element={<Activate />} />
             {/* common */}
             <Route path="/uploadDocument" element={<UploadDocument />} />

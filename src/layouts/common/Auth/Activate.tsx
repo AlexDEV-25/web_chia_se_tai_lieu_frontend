@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { activateUser } from "../../../apis/AuthApi";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import type { ActiveAccountRequest } from "../../../models/request/ActiveAccountRequest";
 const Activate: React.FC = () => {
     const { email } = useParams();
     const { activationCode } = useParams();
@@ -19,7 +20,11 @@ const Activate: React.FC = () => {
 
     const activate = async () => {
         try {
-            const response = await activateUser(email + "", activationCode + "");
+            const data: ActiveAccountRequest = {
+                email: email + "",
+                activationCode: activationCode + ""
+            }
+            const response = await activateUser(data);
             if (response.code === 1000) {
                 setActivated(true);
             } else {
