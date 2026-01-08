@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { changePassword } from "../../../apis/AuthApi";
 import type { ChangePasswordRequest } from "../../../models/request/ChangePasswordRequest";
