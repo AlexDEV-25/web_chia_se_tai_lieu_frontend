@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 
 import { getAllDocumentByUser } from "../../../../apis/DocumentApi";
 import {
@@ -6,9 +6,8 @@ import {
     getDocumentFavoritesByUser,
     removeFavorite,
 } from "../../../../apis/FavoriteApi";
-import { getMyInfo } from "../../../../apis/UserApi";
+import { UserContext } from "../../../../AppContext";
 import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
-import type { FavoriteResponse } from "../../../../models/response/FavoriteResponse";
 import GrindItem from "../../components/GrindItem";
 import axios from "axios";
 
@@ -20,13 +19,15 @@ interface RightSidebarProps {
 type FavoriteMap = Record<number, { favoriteId: number }>;
 
 const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }) => {
+    const userCtx = useContext(UserContext);
+    const currentUser = userCtx?.currentUser;
+    const currentUserId = currentUser?.id ?? null;
+
     const [documents, setDocuments] = useState<DocumentResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-    const token = localStorage.getItem("token");
 
     useEffect(() => {
         const fetchByUser = async () => {
@@ -58,33 +59,23 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
     }, [userId, currentDocumentId]);
 
     useEffect(() => {
-        if (!token) {
-            setCurrentUserId(null);
+        if (!currentUserId) {
             setFavoriteMap({});
             return;
         }
 
         const fetchFavorites = async () => {
             try {
-                const userResponse = await getMyInfo();
-                const fetchedUserId = userResponse?.result?.id ?? null;
-                setCurrentUserId(fetchedUserId);
-
-                if (!fetchedUserId) {
-                    setFavoriteMap({});
-                    return;
-                }
-
                 const favoritesResponse = await getDocumentFavoritesByUser();
                 const map: FavoriteMap = {};
-                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteResponse) => {
+                (favoritesResponse.resultList ?? []).forEach((fav: any) => {
                     if (fav.contentId) {
                         map[fav.contentId] = { favoriteId: fav.id };
                     }
                 });
                 setFavoriteMap(map);
             } catch (err: any) {
-                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
                 if (axios.isAxiosError(err)) {
                     message =
                         err.response?.data?.message ??
@@ -97,7 +88,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
         };
 
         fetchFavorites();
-    }, [token]);
+    }, [currentUserId]);
 
     const handleToggleFavorite = async (doc: DocumentResponse) => {
         if (!currentUserId) {

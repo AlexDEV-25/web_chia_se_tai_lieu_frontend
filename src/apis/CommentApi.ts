@@ -5,7 +5,7 @@ import type { CommentTreeResponse } from "../models/response/CommentTreeResponse
 import type { CommentResponse } from "../models/response/CommentResponse";
 
 export const getCommentsByDocument = async (documentId: number) => {
-    return await httpGet<APIResponse<CommentTreeResponse[]>>(`/comments/document/${documentId}`);
+    return await httpGet<APIResponse<CommentTreeResponse[]>>(`/comments/document/${documentId}`) as APIResponse<CommentTreeResponse[]>;
 }
 
 export const createDocumentComment = async (data: CommentRequest) => {
@@ -13,7 +13,7 @@ export const createDocumentComment = async (data: CommentRequest) => {
 }
 
 export const getCommentsByLesson = async (lessonId: number) => {
-    return await httpGet<APIResponse<CommentTreeResponse[]>>(`/comments/lesson/${lessonId}`);
+    return await httpGet<APIResponse<CommentTreeResponse[]>>(`/comments/lesson/${lessonId}`) as APIResponse<CommentTreeResponse[]>;
 }
 
 export const createLessonComment = async (data: CommentRequest) => {

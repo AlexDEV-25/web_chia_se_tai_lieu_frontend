@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
     getCommentsByDocument,
@@ -9,8 +9,7 @@ import {
 } from "../../../apis/CommentApi";
 import type { CommentRequest } from "../../../models/request/CommentRequest";
 import type { CommentTreeResponse } from "../../../models/response/CommentTreeResponse";
-import type { UserResponse } from "../../../models/response/UserResponse";
-import api from "../../../apis/HttpClient";
+import { UserContext } from "../../../AppContext";
 import axios from "axios";
 
 interface CommentCompProps {
@@ -19,6 +18,9 @@ interface CommentCompProps {
 }
 
 const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
+    const userCtx = useContext(UserContext);
+    const currentUser = userCtx?.currentUser ?? null;
+
     const [comments, setComments] = useState<CommentTreeResponse[]>([]);
     const [loadingComments, setLoadingComments] = useState(false);
     const [commentError, setCommentError] = useState<string | null>(null);
@@ -27,27 +29,10 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
     const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
     const [submittingTarget, setSubmittingTarget] =
         useState<"root" | number | null>(null);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
 
     const isAuthenticated = Boolean(currentUser);
     const isLessonMode = Boolean(lessonId);
     const targetId = lessonId ?? docId;
-
-    /* ================= USER ================= */
-
-    const fetchCurrentUser = useCallback(async () => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            setCurrentUser(null);
-            return;
-        }
-        try {
-            const response = await api.get("/users/my-info");
-            setCurrentUser(response.data.result as UserResponse);
-        } catch {
-            setCurrentUser(null);
-        }
-    }, []);
 
     /* ================= COMMENTS ================= */
 
@@ -62,7 +47,7 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
                 ? await getCommentsByLesson(targetId)
                 : await getCommentsByDocument(targetId);
 
-            setComments(response.resultList ?? []);
+            setComments(Array.isArray(response.result) ? response.result : []);
         } catch (err: any) {
             let message = "Không thể tải bình luận.";
             if (axios.isAxiosError(err)) {
@@ -73,10 +58,6 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
             setLoadingComments(false);
         }
     }, [isLessonMode, targetId]);
-
-    useEffect(() => {
-        fetchCurrentUser();
-    }, [fetchCurrentUser]);
 
     useEffect(() => {
         fetchComments();
@@ -236,9 +217,9 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
                             </form>
                         )}
 
-                        {comment.children?.length > 0 && (
+                        {comment.children && comment.children.length > 0 && (
                             <div className="mt-3 ms-4 border-start ps-3">
-                                {comment.children.map(renderCommentThread)}
+                                {comment.children.map((child) => renderCommentThread(child))}
                             </div>
                         )}
                     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 
 import { getAllLessonByUser } from "../../../../apis/LessonApi";
 import {
@@ -6,9 +6,8 @@ import {
     getLessonFavoritesByUser,
     removeFavorite,
 } from "../../../../apis/FavoriteApi";
-import { getMyInfo } from "../../../../apis/UserApi";
+import { UserContext } from "../../../../AppContext";
 import type { LessonResponse } from "../../../../models/response/LessonResponse";
-import type { FavoriteResponse } from "../../../../models/response/FavoriteResponse";
 import GrindItem from "../../components/GrindItem";
 import axios from "axios";
 
@@ -20,13 +19,15 @@ interface LessonRightSidebarProps {
 type FavoriteMap = Record<number, { favoriteId: number }>;
 
 const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, currentLessonId }) => {
+    const userCtx = useContext(UserContext);
+    const currentUser = userCtx?.currentUser;
+    const currentUserId = currentUser?.id ?? null;
+
     const [lessons, setLessons] = useState<LessonResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-    const token = localStorage.getItem("token");
 
     useEffect(() => {
         const fetchByUser = async () => {
@@ -58,33 +59,23 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
     }, [userId, currentLessonId]);
 
     useEffect(() => {
-        if (!token) {
-            setCurrentUserId(null);
+        if (!currentUserId) {
             setFavoriteMap({});
             return;
         }
 
         const fetchFavorites = async () => {
             try {
-                const userResponae = await getMyInfo();
-                const fetchedUserId = userResponae?.result?.id ?? null;
-                setCurrentUserId(fetchedUserId);
-
-                if (!fetchedUserId) {
-                    setFavoriteMap({});
-                    return;
-                }
-
                 const favoritesResponse = await getLessonFavoritesByUser();
                 const map: FavoriteMap = {};
-                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteResponse) => {
+                (favoritesResponse.resultList ?? []).forEach((fav: any) => {
                     if (fav.contentId) {
                         map[fav.contentId] = { favoriteId: fav.id };
                     }
                 });
                 setFavoriteMap(map);
             } catch (err: any) {
-                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
                 if (axios.isAxiosError(err)) {
                     message =
                         err.response?.data?.message ??
@@ -97,7 +88,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
         };
 
         fetchFavorites();
-    }, [token]);
+    }, [currentUserId]);
 
     const handleToggleFavorite = async (lesson: LessonResponse) => {
         if (!currentUserId) {

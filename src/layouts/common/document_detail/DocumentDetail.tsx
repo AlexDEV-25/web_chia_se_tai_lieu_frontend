@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import CenterComp from "./components/CenterComp";
 import { downloadFile, getDocumentById, increaseDownload, increaseView } from "../../../apis/DocumentApi";
@@ -8,13 +8,17 @@ import LeftSidebar from "./components/LeftSidebar";
 import RightSidebar from "./components/RightSidebar";
 import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
-import { getMyInfo } from "../../../apis/UserApi";
+import { UserContext } from "../../../AppContext";
 import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import axios from "axios";
 
 const DocumentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const docId = Number(id);
+
+    const userCtx = useContext(UserContext);
+    const currentUser = userCtx?.currentUser;
+    const currentUserId = currentUser?.id ?? null;
 
     const [documentDetail, setDocumentDetail] = useState<DocumentResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -28,8 +32,6 @@ const DocumentDetail: React.FC = () => {
     const [downloading, setDownloading] = useState(false);
     const [favoriteId, setFavoriteId] = useState<number | null>(null);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
     // Tải thông tin document
     useEffect(() => {
@@ -81,9 +83,8 @@ const DocumentDetail: React.FC = () => {
     }, [docId]);
 
     useEffect(() => {
-        if (!docId || !token) {
+        if (!docId || !currentUserId) {
             setFavoriteId(null);
-            setCurrentUserId(null);
             return;
         }
 
@@ -91,22 +92,13 @@ const DocumentDetail: React.FC = () => {
 
         const fetchFavoriteState = async () => {
             try {
-                const userResponse = await getMyInfo();
-                if (!isMounted) return;
-                const fetchedUserId = userResponse?.result?.id ?? null;
-                setCurrentUserId(fetchedUserId);
-                if (!fetchedUserId) {
-                    setFavoriteId(null);
-                    return;
-                }
-
                 const favoritesResponse = await getDocumentFavoritesByUser();
                 if (!isMounted) return;
                 const favorites = favoritesResponse.resultList ?? [];
-                const existing = favorites.find((fav) => fav.documentId === docId);
+                const existing = favorites.find((fav) => fav.contentId === docId);
                 setFavoriteId(existing ? existing.id : null);
             } catch (err: any) {
-                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
                 if (axios.isAxiosError(err)) {
                     message =
                         err.response?.data?.message ??
@@ -125,7 +117,7 @@ const DocumentDetail: React.FC = () => {
         return () => {
             isMounted = false;
         };
-    }, [docId, token]);
+    }, [docId, currentUserId]);
 
     const handleToggleFavorite = async () => {
         if (!docId) return;

@@ -2,9 +2,9 @@ import './App.css'
 import Home from './layouts/common/home/Home'
 import Header from './layouts/common/header_footer/Header';
 import Footer from './layouts/common/header_footer/Footer';
-import { useState, useEffect } from 'react';
-import type { AppContextType } from './AppContext';
-import { AppContext } from './AppContext';
+import { useState, useEffect, useCallback } from 'react';
+import type { AppContextType, UserContextType } from './AppContext';
+import { AppContext, UserContext } from './AppContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import CategoryList from './layouts/admin/categories/CategoryList';
 import CategoryAdd from './layouts/admin/categories/CategoryAdd';
@@ -23,6 +23,7 @@ import Lesson from './layouts/common/lesson/Lesson';
 import ChatGemini from './layouts/common/chatbot/ChatGemini';
 import { pdfjs } from 'react-pdf';
 import { introspect, refreshToken } from './apis/AuthApi';
+import { getMyInfo } from './apis/UserApi';
 import UploadLesson from './layouts/common/uploads/UploadLesson';
 import UploadHistory from './layouts/user/upload_history/UploadHistory';
 import DocumentList from './layouts/admin/contents/documents/DocumentList';
@@ -32,6 +33,8 @@ import DocumentEdit from './layouts/admin/contents/documents/DocumentEdit';
 import LessonEdit from './layouts/admin/contents/lessons/LessonEdit';
 import UserAdd from './layouts/admin/users/UserAdd';
 import Dashboard from './layouts/admin/dashboard/Dashboard';
+import type { UserResponse } from './models/response/UserResponse';
+import axios from 'axios';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -40,9 +43,47 @@ function App() {
   const [keyWords, setKeyWords] = useState("");
   const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
   const [roles, setRoles] = useState<string[]>(JSON.parse(localStorage.getItem("roles") || "[]"));
+  const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(false);
+
   const ctxValue: AppContextType = {
     keyWords, setKeyWords,
   };
+
+  const userCtxValue: UserContextType = {
+    currentUser,
+    setCurrentUser,
+    isLoadingUser,
+    setIsLoadingUser,
+  };
+
+  // Fetch user info when app loads or token changes
+  const fetchCurrentUser = useCallback(async () => {
+    const currentToken = localStorage.getItem("token");
+    if (!currentToken) {
+      setCurrentUser(null);
+      return;
+    }
+
+    setIsLoadingUser(true);
+    try {
+      const response = await getMyInfo();
+      setCurrentUser(response?.result ?? null);
+    } catch (err: any) {
+      let message = "Không thể lấy thông tin người dùng.";
+      if (axios.isAxiosError(err)) {
+        message = err.response?.data?.message ?? err.message ?? message;
+      }
+      console.error(message);
+      setCurrentUser(null);
+    } finally {
+      setIsLoadingUser(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
   useEffect(() => {
     if (!token) return;
@@ -71,39 +112,41 @@ function App() {
     <>
       <BrowserRouter>
         <AppContext.Provider value={ctxValue}>
-          <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} roles={roles} setRoles={setRoles} />
-          <Routes>
-            <Route path="/" element={<Home keyWords={keyWords} />} />
-            <Route path="/lesson" element={<Lesson keyWords={keyWords} />} />
+          <UserContext.Provider value={userCtxValue}>
+            <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} roles={roles} setRoles={setRoles} />
+            <Routes>
+              <Route path="/" element={<Home keyWords={keyWords} />} />
+              <Route path="/lesson" element={<Lesson keyWords={keyWords} />} />
 
-            {/* {auth} */}
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login setToken={setToken} setRoles={setRoles} />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/change-password/:email/:forgotPasswordCode" element={<ChangePassword />} />
-            <Route path="/activate/:email/:activationCode" element={<Activate />} />
-            {/* common */}
-            <Route path="/uploadDocument" element={<UploadDocument />} />
-            <Route path="/uploadLesson" element={<UploadLesson />} />
-            <Route path="/document/:id" element={<DocumentDetail />} />
-            <Route path="/lesson/:id" element={<LessonDetail />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/profile" element={<MyProfile />} />
-            <Route path="/uploadHistory" element={<UploadHistory />} />
-            {/* {admin} */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/categories" element={<CategoryList />} />
-            <Route path="/categories/add" element={<CategoryAdd />} />
-            <Route path="/categories/edit/:id" element={<CategoryEdit />} />
-            <Route path="/documents" element={<DocumentList />} />
-            <Route path="/documents/edit/:id" element={<DocumentEdit />} />
-            <Route path="/lessons" element={<LessonList />} />
-            <Route path="/lessons/edit/:id" element={<LessonEdit />} />
-            <Route path="/users" element={<UserList />} />
-            <Route path="/users/add" element={<UserAdd />} />
-          </Routes>
+              {/* {auth} */}
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login setToken={setToken} setRoles={setRoles} />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/change-password/:email/:forgotPasswordCode" element={<ChangePassword />} />
+              <Route path="/activate/:email/:activationCode" element={<Activate />} />
+              {/* common */}
+              <Route path="/uploadDocument" element={<UploadDocument />} />
+              <Route path="/uploadLesson" element={<UploadLesson />} />
+              <Route path="/document/:id" element={<DocumentDetail />} />
+              <Route path="/lesson/:id" element={<LessonDetail />} />
+              <Route path="/favorites" element={<Favorites />} />
+              <Route path="/profile" element={<MyProfile />} />
+              <Route path="/uploadHistory" element={<UploadHistory />} />
+              {/* {admin} */}
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/categories" element={<CategoryList />} />
+              <Route path="/categories/add" element={<CategoryAdd />} />
+              <Route path="/categories/edit/:id" element={<CategoryEdit />} />
+              <Route path="/documents" element={<DocumentList />} />
+              <Route path="/documents/edit/:id" element={<DocumentEdit />} />
+              <Route path="/lessons" element={<LessonList />} />
+              <Route path="/lessons/edit/:id" element={<LessonEdit />} />
+              <Route path="/users" element={<UserList />} />
+              <Route path="/users/add" element={<UserAdd />} />
+            </Routes>
+            <ChatGemini />
+          </UserContext.Provider>
         </AppContext.Provider>
-        <ChatGemini />
         <Footer />
 
       </BrowserRouter>

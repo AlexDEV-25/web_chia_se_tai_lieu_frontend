@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
 import { getAllLessonByCategory } from "../../../apis/LessonApi";
 
@@ -6,7 +6,8 @@ import type { DocumentResponse } from "../../../models/response/DocumentResponse
 import type { LessonResponse } from "../../../models/response/LessonResponse";
 import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import { addFavoriteLesson, getLessonFavoritesByUser } from "../../../apis/FavoriteApi";
-import { getMyInfo } from "../../../apis/UserApi";
+import type { FavoriteRequest } from "../../../models/request/FavoriteRequest";
+import { UserContext } from "../../../AppContext";
 import GrindItem from "./GrindItem";
 import axios from "axios";
 
@@ -20,13 +21,15 @@ type Item = DocumentResponse | LessonResponse;
 type FavoriteMap = Record<number, { favoriteId: number }>;
 
 const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type }) => {
+    const userCtx = useContext(UserContext);
+    const currentUser = userCtx?.currentUser;
+    const currentUserId = currentUser?.id ?? null;
+
     const [items, setItems] = useState<Item[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-    const token = localStorage.getItem("token");
 
     useEffect(() => {
         const fetchByCategory = async () => {
@@ -63,22 +66,13 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
     }, [categoryId, currentItemId, type]);
 
     useEffect(() => {
-        if (!token) {
-            setCurrentUserId(null);
+        if (!currentUserId) {
             setFavoriteMap({});
             return;
         }
 
         const fetchFavorites = async () => {
             try {
-                const userResponse = await getMyInfo();
-                const fetchedUserId = userResponse?.result?.id ?? null;
-                setCurrentUserId(fetchedUserId);
-                if (!fetchedUserId) {
-                    setFavoriteMap({});
-                    return;
-                }
-
                 let favoritesResponse;
                 if (type === 'document') {
                     favoritesResponse = await getDocumentFavoritesByUser();
@@ -88,14 +82,14 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
 
                 const map: FavoriteMap = {};
                 (favoritesResponse.resultList ?? []).forEach((fav: any) => {
-                    const itemId = type === 'document' ? fav.documentId : fav.lessonId;
+                    const itemId = fav.contentId;
                     if (itemId) {
                         map[itemId] = { favoriteId: fav.id };
                     }
                 });
                 setFavoriteMap(map);
             } catch (err: any) {
-                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
                 if (axios.isAxiosError(err)) {
                     message =
                         err.response?.data?.message ??
@@ -108,7 +102,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
         };
 
         fetchFavorites();
-    }, [token, type]);
+    }, [currentUserId, type]);
 
     const handleToggleFavorite = async (item: Item) => {
         if (!currentUserId) {
@@ -128,7 +122,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                 });
             } else {
                 let response;
-                let data:FavoriteRequest;
+                let data: FavoriteRequest;
                 if (type === 'document') {
                     data = {
                         userId: currentUserId,
@@ -147,7 +141,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                 }
 
                 const saved = response.result;
-                
+
                 if (saved) {
                     setFavoriteMap((prev) => ({
                         ...prev,

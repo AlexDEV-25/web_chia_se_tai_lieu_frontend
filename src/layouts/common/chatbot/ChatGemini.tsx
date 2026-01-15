@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { chatbot, getAllHistoryByUser } from "../../../apis/ChatGemini";
-import { getMyInfo } from "../../../apis/UserApi";
-import type { UserResponse } from "../../../models/response/UserResponse";
 import type { ChatHistoryResponse } from "../../../models/response/ChatHistoryResponse";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { UserContext } from "../../../AppContext";
 
 interface Message {
     id: string;
@@ -14,39 +13,19 @@ interface Message {
 }
 
 const ChatGemini: React.FC = () => {
+    const userCtx = useContext(UserContext);
+    const currentUser = userCtx?.currentUser ?? null;
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputMessage, setInputMessage] = useState("");
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isMinimized, setIsMinimized] = useState(true);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const isAuthenticated = Boolean(currentUser);
-
-    const fetchCurrentUser = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            setCurrentUser(null);
-            return;
-        }
-        try {
-            const response = await getMyInfo();
-            setCurrentUser(response?.result);
-        } catch (err: any) {
-            let message = "Không thể lấy thông tin người dùng. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
-            console.error(message);
-            setCurrentUser(null);
-        }
-    };
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(currentUser && token);
 
     const loadChatHistory = async () => {
         setIsLoadingHistory(true);
@@ -73,36 +52,19 @@ const ChatGemini: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchCurrentUser();
-    }, []);
-
-    useEffect(() => {
         if (isAuthenticated) {
             loadChatHistory();
             setIsMinimized(false);
+        } else {
+            setMessages([]);
         }
     }, [isAuthenticated]);
 
     useEffect(() => {
-        const checkTokenChange = () => {
-            const token = localStorage.getItem("token");
-
-            // Handle login: token exists but no user data
-            if (token && !currentUser) {
-                fetchCurrentUser();
-            }
-
-            // Handle logout: no token but user data still exists
-            if (!token && currentUser) {
-                setCurrentUser(null);
-                setMessages([]);
-                setIsMinimized(true);
-            }
-        };
-
-        const interval = setInterval(checkTokenChange, 1000);
-        return () => clearInterval(interval);
-    }, [currentUser]);
+        if (!token && messages.length > 0) {
+            setMessages([]);
+        }
+    }, [token]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -205,7 +167,7 @@ const ChatGemini: React.FC = () => {
                     className="chatbot-toggle-btn"
                 >
                     <i className="fa fa-comments" />
-                    <span>Chat AI</span>
+                    <span>Alex</span>
                 </button>
             </div>
         );

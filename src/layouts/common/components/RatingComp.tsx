@@ -1,14 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useContext } from "react";
 import type { RatingResponse } from "../../../models/response/RatingResponse";
-import type { UserResponse } from "../../../models/response/UserResponse";
 import {
     getRatingsByDocument,
     createRatingDocument,
     getRatingsByLesson,
     createRatingLesson,
 } from "../../../apis/RatingApi";
-import type { RatingRequest } from "../../../models/request/RatingRequest";
-import api from "../../../apis/HttpClient";
+import { UserContext } from "../../../AppContext";
 import axios from "axios";
 
 interface RatingCompProps {
@@ -19,10 +17,13 @@ interface RatingCompProps {
 const TOTAL_STARS = 5;
 
 const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
+    const userCtx = useContext(UserContext);
+    const currentUser = userCtx?.currentUser;
+    const currentUserId = currentUser?.id ?? null;
+
     const [ratings, setRatings] = useState<RatingResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const [hoveredStar, setHoveredStar] = useState<number | null>(null);
     const [selectedStar, setSelectedStar] = useState<number | null>(null);
     const [submitting, setSubmitting] = useState(false);
@@ -60,32 +61,6 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
         };
         fetchRatings();
     }, [isLessonMode, targetId]);
-
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            setCurrentUserId(null);
-            return;
-        }
-        const fetchCurrentUser = async () => {
-            try {
-                const response = await api.get("/users/my-info");
-                const user = response.data.result as UserResponse;
-                setCurrentUserId(user.id);
-            } catch (err: any) {
-                let message = "Không thể lấy thông tin người dùng. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
-                console.error(message);
-                setCurrentUserId(null);
-            }
-        };
-        fetchCurrentUser();
-    }, []);
 
     const totalRatings = ratings.length;
     const averageRating = useMemo(() => {

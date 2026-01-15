@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import type { FavoriteResponse } from "../../../models/response/FavoriteResponse";
+import { useEffect, useState, useContext } from "react";
 import {
     addFavoriteDocument,
     addFavoriteLesson,
@@ -9,7 +8,7 @@ import {
     removeFavorite,
 } from "../../../apis/FavoriteApi";
 
-import { getMyInfo } from "../../../apis/UserApi";
+import { UserContext } from "../../../AppContext";
 import GrindItem from "./GrindItem";
 import axios from "axios";
 
@@ -55,49 +54,43 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
     emptyMessage,
     emptyIcon,
 }: MainBlockCompProps) => {
+    const userCtx = useContext(UserContext);
+    const currentUser = userCtx?.currentUser;
+    const currentUserId = currentUser?.id ?? null;
+
     const hasItems = items.length > 0;
     const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
-    const token = localStorage.getItem("token");
 
     useEffect(() => {
-        if (!token) {
-            setCurrentUserId(null);
+        if (!currentUserId) {
             setFavoriteMap({});
             return;
         }
 
-        const fetchUserAndFavorites = async () => {
+        const fetchFavorites = async () => {
             try {
-                const userResponse = await getMyInfo();
-                const fetchedUserId = userResponse?.result?.id ?? null;
-                setCurrentUserId(fetchedUserId);
-
-                if (!fetchedUserId) {
-                    setFavoriteMap({});
-                    return;
-                }
-
                 const map: FavoriteMap = {};
                 if (itemType === "document") {
                     const favoritesResponse = await getDocumentFavoritesByUser();
-                    (favoritesResponse.resultList ?? []).forEach((fav: FavoriteDocumentResponse) => {
-                        if (fav.documentId) {
-                            map[fav.documentId] = { favoriteId: fav.id };
+                    (favoritesResponse.resultList ?? []).forEach((fav: any) => {
+                        const itemId = fav.contentId;
+                        if (itemId) {
+                            map[itemId] = { favoriteId: fav.id };
                         }
                     });
                 } else {
                     const favoritesResponse = await getLessonFavoritesByUser();
-                    (favoritesResponse.resultList ?? []).forEach((fav: FavoriteLessonResponse) => {
-                        if (fav.lessonId) {
-                            map[fav.lessonId] = { favoriteId: fav.id };
+                    (favoritesResponse.resultList ?? []).forEach((fav: any) => {
+                        const itemId = fav.contentId;
+                        if (itemId) {
+                            map[itemId] = { favoriteId: fav.id };
                         }
                     });
                 }
                 setFavoriteMap(map);
             } catch (err: any) {
-                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
                 if (axios.isAxiosError(err)) {
                     message =
                         err.response?.data?.message ??
@@ -109,8 +102,8 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
             }
         };
 
-        fetchUserAndFavorites();
-    }, [token, itemType]);
+        fetchFavorites();
+    }, [currentUserId, itemType]);
 
     const handleToggleFavorite = async (itemId: number) => {
         if (!currentUserId) {

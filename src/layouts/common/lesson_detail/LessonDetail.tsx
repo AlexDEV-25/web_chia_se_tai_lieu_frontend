@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import VideoComp from "./components/VideoComp";
 import DocumentComp from "./components/DocumentComp";
@@ -8,13 +8,17 @@ import LessonRightSidebar from "./components/LessonRightSidebar";
 import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
 import CommentComp from "../components/CommentComp";
-import { getMyInfo } from "../../../apis/UserApi";
+import { UserContext } from "../../../AppContext";
 import { addFavoriteLesson, getLessonFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import axios from "axios";
 
 const LessonDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const lessonId = Number(id);
+
+    const userCtx = useContext(UserContext);
+    const currentUser = userCtx?.currentUser;
+    const currentUserId = currentUser?.id ?? null;
 
     const [lessonDetail, setLessonDetail] = useState<LessonResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -23,8 +27,6 @@ const LessonDetail: React.FC = () => {
     const [downloadingSub, setDownloadingSub] = useState(false);
     const [favoriteId, setFavoriteId] = useState<number | null>(null);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
     useEffect(() => {
         if (!lessonId) {
@@ -75,9 +77,8 @@ const LessonDetail: React.FC = () => {
     }, [lessonId]);
 
     useEffect(() => {
-        if (!lessonId || !token) {
+        if (!lessonId || !currentUserId) {
             setFavoriteId(null);
-            setCurrentUserId(null);
             return;
         }
 
@@ -85,22 +86,13 @@ const LessonDetail: React.FC = () => {
 
         const fetchFavoriteState = async () => {
             try {
-                const userResponse = await getMyInfo();
-                if (!isMounted) return;
-                const fetchedUserId = userResponse?.result?.id ?? null;
-                setCurrentUserId(fetchedUserId);
-                if (!fetchedUserId) {
-                    setFavoriteId(null);
-                    return;
-                }
-
                 const favoritesResponse = await getLessonFavoritesByUser();
                 if (!isMounted) return;
                 const favorites = favoritesResponse.resultList ?? [];
-                const existing = favorites.find((fav) => fav.lessonId === lessonId);
+                const existing = favorites.find((fav) => fav.contentId === lessonId);
                 setFavoriteId(existing ? existing.id : null);
             } catch (err: any) {
-                let message = "Không thể tải dữ liệu người dùng hoặc kho yêu thích. Vui lòng thử lại.";
+                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
                 if (axios.isAxiosError(err)) {
                     message =
                         err.response?.data?.message ??
@@ -119,7 +111,7 @@ const LessonDetail: React.FC = () => {
         return () => {
             isMounted = false;
         };
-    }, [lessonId, token]);
+    }, [lessonId, currentUserId]);
 
     const handleToggleFavorite = async () => {
         if (!lessonId) return;
