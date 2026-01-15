@@ -47,7 +47,8 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
                 ? await getCommentsByLesson(targetId)
                 : await getCommentsByDocument(targetId);
 
-            setComments(Array.isArray(response.result) ? response.result : []);
+            const commentList = Array.isArray(response.result) ? response.result : [];
+            setComments(commentList);
         } catch (err: any) {
             let message = "Không thể tải bình luận.";
             if (axios.isAxiosError(err)) {

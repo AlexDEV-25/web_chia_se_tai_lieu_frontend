@@ -2,8 +2,8 @@ import { useState, useRef, useEffect, useContext } from "react";
 import { chatbot, getAllHistoryByUser } from "../../../apis/ChatGemini";
 import type { ChatHistoryResponse } from "../../../models/response/ChatHistoryResponse";
 import axios from "axios";
-import { Link } from "react-router-dom";
 import { UserContext } from "../../../AppContext";
+import ChatAuthRequired from "./component/ChatAuthRequired";
 
 interface Message {
     id: string;
@@ -172,35 +172,9 @@ const ChatGemini: React.FC = () => {
             </div>
         );
     }
-
     if (!isAuthenticated) {
         return (
-            <div className="chatbot-container">
-                <div className="chatbot-header">
-                    <div className="chatbot-title">
-                        <i className="fa fa-robot" />
-                        <span>AI Assistant</span>
-                    </div>
-                    <button
-                        onClick={() => setIsMinimized(true)}
-                        className="chatbot-minimize-btn"
-                    >
-                        <i className="fa fa-minus" />
-                    </button>
-                </div>
-
-                <div className="chatbot-messages">
-                    <div className="chatbot-auth-required">
-                        <i className="fa fa-lock" />
-                        <h3>Yêu cầu đăng nhập</h3>
-                        <p>Bạn phải đăng nhập để sử dụng tính năng này.</p>
-                        <Link to="/login" className="login-btn">
-                            <i className="fa fa-sign-in" />
-                            Đăng nhập ngay
-                        </Link>
-                    </div>
-                </div>
-            </div>
+            <ChatAuthRequired onMinimize={() => setIsMinimized(true)} />
         );
     }
 
