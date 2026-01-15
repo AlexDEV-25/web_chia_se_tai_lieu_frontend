@@ -5,6 +5,7 @@ import { uploadLesson } from "./../../../apis/LessonApi";
 import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
 import { useRef } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const UploadLesson: React.FC = () => {
     const [title, setTitle] = useState("");
@@ -112,7 +113,7 @@ const UploadLesson: React.FC = () => {
                 <h1>Upload Bài giảng Video</h1>
                 <p>Chia sẻ kiến thức với cộng đồng qua video bài giảng và tài liệu đi kèm.</p>
                 <div className="page-actions">
-                    <a href="/lesson" className="pill-link">Xem bài giảng</a>
+                    <Link to="/lesson" className="pill-link">Xem bài giảng</Link>
                 </div>
             </section>
 

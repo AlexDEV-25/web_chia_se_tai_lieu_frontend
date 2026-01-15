@@ -10,6 +10,7 @@ import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
 import LeftSidebar from '../components/LeftSidebar';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 
 const CategoryList: React.FC = () => {
@@ -139,9 +140,9 @@ const CategoryList: React.FC = () => {
             align: 'right' as const,
             render: (cat: CategoryResponse) => (
                 <div className="category-row-actions">
-                    <a href={`/categories/edit/${cat.id}`} className="category-btn subtle">
+                    <Link to={`/categories/edit/${cat.id}`} className="category-btn subtle">
                         Chỉnh sửa
-                    </a>
+                    </Link>
                     <button
                         onClick={() => handleToggleVisibility(cat)}
                         disabled={updatingId === cat.id}

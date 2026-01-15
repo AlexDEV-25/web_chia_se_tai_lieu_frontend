@@ -17,7 +17,7 @@ import Activate from './layouts/common/auth/Activate';
 import ForgotPassword from './layouts/common/auth/ForgotPassword';
 import ChangePassword from './layouts/common/auth/ChangePassword';
 import MyProfile from './layouts/user/profile/MyProfile';
-import FavoriteDocuments from './layouts/user/favorites/Favorites';
+import Favorites from './layouts/user/favorites/Favorites';
 import LessonDetail from './layouts/common/lesson_detail/LessonDetail';
 import Lesson from './layouts/common/lesson/Lesson';
 import ChatGemini from './layouts/common/chatbot/ChatGemini';
@@ -87,7 +87,7 @@ function App() {
             <Route path="/uploadLesson" element={<UploadLesson />} />
             <Route path="/document/:id" element={<DocumentDetail />} />
             <Route path="/lesson/:id" element={<LessonDetail />} />
-            <Route path="/favorites" element={<FavoriteDocuments />} />
+            <Route path="/favorites" element={<Favorites />} />
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/uploadHistory" element={<UploadHistory />} />
             {/* {admin} */}

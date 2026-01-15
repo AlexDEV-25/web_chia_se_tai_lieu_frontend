@@ -137,7 +137,8 @@ const LessonDetail: React.FC = () => {
             } else {
                 const response = await addFavoriteLesson({
                     userId: currentUserId,
-                    lessonId,
+                    contentId: lessonId,
+                    type: 'LESSON',
                 });
 
                 const saved = response.result;

@@ -8,7 +8,7 @@ import {
 } from "../../../../apis/FavoriteApi";
 import { getMyInfo } from "../../../../apis/UserApi";
 import type { LessonResponse } from "../../../../models/response/LessonResponse";
-import type { FavoriteLessonResponse } from "../../../../models/response/FavoriteLessonResponse";
+import type { FavoriteResponse } from "../../../../models/response/FavoriteResponse";
 import GrindItem from "../../components/GrindItem";
 import axios from "axios";
 
@@ -77,9 +77,9 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
 
                 const favoritesResponse = await getLessonFavoritesByUser();
                 const map: FavoriteMap = {};
-                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteLessonResponse) => {
-                    if (fav.lessonId) {
-                        map[fav.lessonId] = { favoriteId: fav.id };
+                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteResponse) => {
+                    if (fav.contentId) {
+                        map[fav.contentId] = { favoriteId: fav.id };
                     }
                 });
                 setFavoriteMap(map);
@@ -118,7 +118,8 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
             } else {
                 const response = await addFavoriteLesson({
                     userId: currentUserId,
-                    lessonId: lesson.id,
+                    contentId: lesson.id,
+                    type: 'LESSON',
                 });
                 const saved = response.result;
                 if (saved) {

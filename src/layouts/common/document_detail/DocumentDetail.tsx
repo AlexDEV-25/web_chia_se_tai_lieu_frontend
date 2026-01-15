@@ -143,9 +143,11 @@ const DocumentDetail: React.FC = () => {
             } else {
                 const response = await addFavoriteDocument({
                     userId: currentUserId,
-                    documentId: docId,
+                    contentId: docId,
+                    type: 'DOCUMENT',
                 });
                 const saved = response.result;
+                console.log('Added favorite:', saved);
                 if (saved) {
                     setFavoriteId(saved.id);
                 }

@@ -1,23 +1,21 @@
 import { httpGet, httpPost } from "./HttpClient";
 import type { APIResponse } from "../models/response/APIResponse";
-import type { CommentDocumentResponse } from "../models/response/CommentDocumentResponse";
-import type { CommentDocumentRequest } from "../models/request/CommentDocumentRequest";
-
-import type { CommentLessonResponse } from "../models/response/CommentLessonResponse";
-import type { CommentLessonRequest } from "../models/request/CommentLessonRequest";
+import type { CommentRequest } from "../models/request/CommentRequest";
+import type { CommentTreeResponse } from "../models/response/CommentTreeResponse";
+import type { CommentResponse } from "../models/response/CommentResponse";
 
 export const getCommentsByDocument = async (documentId: number) => {
-    return await httpGet<APIResponse<CommentDocumentResponse>>(`/comments/document/${documentId}`);
+    return await httpGet<APIResponse<CommentTreeResponse[]>>(`/comments/document/${documentId}`);
 }
 
-export const createDocumentComment = async (data: CommentDocumentRequest) => {
-    return await httpPost<APIResponse<CommentDocumentResponse>>(`/comments/document`, data);
+export const createDocumentComment = async (data: CommentRequest) => {
+    return await httpPost<APIResponse<CommentResponse>>(`/comments/document`, data);
 }
 
 export const getCommentsByLesson = async (lessonId: number) => {
-    return await httpGet<APIResponse<CommentLessonResponse>>(`/comments/lesson/${lessonId}`);
+    return await httpGet<APIResponse<CommentTreeResponse[]>>(`/comments/lesson/${lessonId}`);
 }
 
-export const createLessonComment = async (data: CommentLessonRequest) => {
-    return await httpPost<APIResponse<CommentLessonResponse>>(`/comments/lesson`, data);
+export const createLessonComment = async (data: CommentRequest) => {
+    return await httpPost<APIResponse<CommentResponse>>(`/comments/lesson`, data);
 }

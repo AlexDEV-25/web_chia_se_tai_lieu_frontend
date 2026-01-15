@@ -1,4 +1,4 @@
-export interface CommentDocumentResponse {
+export interface CommentResponse {
     id: number;
     content: string;
     createdAt: string;
@@ -7,6 +7,7 @@ export interface CommentDocumentResponse {
     userId: number;
     username: string;
     userAvatar: string;
-    documentId: number;
+    contentId: number;
     hide: boolean;
+    type: 'DOCUMENT' | 'LESSON';
 }

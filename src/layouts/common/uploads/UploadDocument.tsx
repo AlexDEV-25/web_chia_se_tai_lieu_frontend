@@ -5,6 +5,7 @@ import { uploadDocument } from "./../../../apis/DocumentApi";
 import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
 import { useRef } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 const UploadDocument: React.FC = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -103,7 +104,7 @@ const UploadDocument: React.FC = () => {
                 <h1>Upload Tài liệu</h1>
                 <p>Chia sẻ tài liệu học tập với cộng đồng học viên.</p>
                 <div className="page-actions">
-                    <a href="/" className="pill-link">Xem tài liệu</a>
+                    <Link to="/" className="pill-link">Xem tài liệu</Link>
                 </div>
             </section>
 

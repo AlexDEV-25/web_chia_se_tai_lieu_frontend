@@ -8,7 +8,7 @@ import {
 } from "../../../../apis/FavoriteApi";
 import { getMyInfo } from "../../../../apis/UserApi";
 import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
-import type { FavoriteDocumentResponse } from "../../../../models/response/FavoriteDocumentResponse";
+import type { FavoriteResponse } from "../../../../models/response/FavoriteResponse";
 import GrindItem from "../../components/GrindItem";
 import axios from "axios";
 
@@ -77,9 +77,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
 
                 const favoritesResponse = await getDocumentFavoritesByUser();
                 const map: FavoriteMap = {};
-                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteDocumentResponse) => {
-                    if (fav.documentId) {
-                        map[fav.documentId] = { favoriteId: fav.id };
+                (favoritesResponse.resultList ?? []).forEach((fav: FavoriteResponse) => {
+                    if (fav.contentId) {
+                        map[fav.contentId] = { favoriteId: fav.id };
                     }
                 });
                 setFavoriteMap(map);
@@ -118,7 +118,8 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
             } else {
                 const response = await addFavoriteDocument({
                     userId: currentUserId,
-                    documentId: doc.id,
+                    contentId: doc.id,
+                    type: 'DOCUMENT',
                 });
                 const saved = response.result;
                 if (saved) {

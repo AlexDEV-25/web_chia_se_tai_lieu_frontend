@@ -1,23 +1,21 @@
 import { httpGet, httpPost } from "./HttpClient";
 import type { APIResponse } from "../models/response/APIResponse";
-import type { RatingDocumentResponse } from "../models/response/RatingDocumentResponse";
-import type { RatingDocumentRequest } from "../models/request/RatingDocumentRequest";
-import type { RatingLessonResponse } from "../models/response/RatingLessonResponse";
-import type { RatingLessonRequest } from "../models/request/RatingLessonRequest";
+import type { RatingRequest } from "../models/request/RatingRequest";
+import type { RatingResponse } from "../models/response/RatingResponse";
 
 export const getRatingsByDocument = async (documentId: number) => {
-    return await httpGet<APIResponse<RatingDocumentResponse>>(`/ratings/document/${documentId}`);
+    return await httpGet<APIResponse<RatingResponse>>(`/ratings/document/${documentId}`);
 }
 
-export const createRatingDocument = async (data: RatingDocumentRequest) => {
-    return await httpPost<APIResponse<RatingDocumentResponse>>(`/ratings/document`, data);
+export const createRatingDocument = async (data: RatingRequest) => {
+    return await httpPost<APIResponse<RatingResponse>>(`/ratings/document`, data);
 }
 
 export const getRatingsByLesson = async (lessonId: number) => {
-    return await httpGet<APIResponse<RatingLessonResponse>>(`/ratings/lesson/${lessonId}`);
+    return await httpGet<APIResponse<RatingResponse>>(`/ratings/lesson/${lessonId}`);
 }
 
-export const createRatingLesson = async (data: RatingLessonRequest) => {
-    return await httpPost<APIResponse<RatingLessonResponse>>(`/ratings/lesson`, data);
+export const createRatingLesson = async (data: RatingRequest) => {
+    return await httpPost<APIResponse<RatingResponse>>(`/ratings/lesson`, data);
 }
 

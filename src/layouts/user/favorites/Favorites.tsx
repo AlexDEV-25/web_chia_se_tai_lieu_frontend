@@ -1,21 +1,24 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import type { FavoriteDocumentResponse } from "../../../models/response/FavoriteDocumentResponse";
-import type { FavoriteLessonResponse } from "../../../models/response/FavoriteLessonResponse";
-import { getDocumentFavoritesByUser, getLessonFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
-import DocumentFavoritesComp from "./components/DocumentFavoritesComp";
-import LessonFavoritesComp from "./components/LessonFavoritesComp";
+import type { FavoriteResponse } from "../../../models/response/FavoriteResponse";
+import {
+    getDocumentFavoritesByUser,
+    getLessonFavoritesByUser,
+    removeFavorite,
+} from "../../../apis/FavoriteApi";
+import FavoritesComp from "./components/FavoritesComp";
 import axios from "axios";
 
 type TabKey = "document" | "lesson";
 
-const FavoriteDocuments: React.FC = () => {
-    const [documentFavorites, setDocumentFavorites] = useState<FavoriteDocumentResponse[]>([]);
-    const [lessonFavorites, setLessonFavorites] = useState<FavoriteLessonResponse[]>([]);
+const Favorites: React.FC = () => {
+    const [documentFavorites, setDocumentFavorites] = useState<FavoriteResponse[]>([]);
+    const [lessonFavorites, setLessonFavorites] = useState<FavoriteResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [removingId, setRemovingId] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState<TabKey>("document");
+
     const token = localStorage.getItem("token");
 
     const formatSavedDate = (value: string) => {
@@ -40,12 +43,13 @@ const FavoriteDocuments: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const [docsResponse, lessonsResponse] = await Promise.all([
+                const [docsRes, lessonsRes] = await Promise.all([
                     getDocumentFavoritesByUser(),
                     getLessonFavoritesByUser(),
                 ]);
-                setDocumentFavorites(docsResponse.resultList ?? []);
-                setLessonFavorites(lessonsResponse.resultList ?? []);
+
+                setDocumentFavorites(docsRes.resultList ?? []);
+                setLessonFavorites(lessonsRes.resultList ?? []);
             } catch (err: any) {
                 let message = "Không thể tải kho lưu. Vui lòng thử lại.";
                 if (axios.isAxiosError(err)) {
@@ -63,15 +67,18 @@ const FavoriteDocuments: React.FC = () => {
         fetchFavorites();
     }, [token]);
 
-    const handleRemove = async (favoriteId: number, tab: TabKey) => {
+    const handleRemove = async (favoriteId: number) => {
         setRemovingId(favoriteId);
         try {
             await removeFavorite(favoriteId);
-            if (tab === "document") {
-                setDocumentFavorites((prev) => prev.filter((fav) => fav.id !== favoriteId));
-            } else {
-                setLessonFavorites((prev) => prev.filter((fav) => fav.id !== favoriteId));
-            }
+
+            // favoriteId là unique → lọc cả 2 mảng đều an toàn
+            setDocumentFavorites((prev) =>
+                prev.filter((fav) => fav.id !== favoriteId)
+            );
+            setLessonFavorites((prev) =>
+                prev.filter((fav) => fav.id !== favoriteId)
+            );
         } catch (err: any) {
             let message = "Không thể xóa mục khỏi kho lưu. Vui lòng thử lại.";
             if (axios.isAxiosError(err)) {
@@ -89,9 +96,13 @@ const FavoriteDocuments: React.FC = () => {
     const renderEmptyState = (tab: TabKey) => (
         <div className="text-center py-5">
             <p className="mb-3">
-                Bạn chưa lưu {tab === "document" ? "tài liệu" : "bài giảng"} nào. Khám phá và lưu về để xem sau!
+                Bạn chưa lưu {tab === "document" ? "tài liệu" : "bài giảng"} nào.
+                Khám phá và lưu về để xem sau!
             </p>
-            <Link to={tab === "document" ? "/" : "/lesson"} className="btn btn-primary">
+            <Link
+                to={tab === "document" ? "/" : "/lesson"}
+                className="btn btn-primary"
+            >
                 Khám phá {tab === "document" ? "tài liệu" : "bài giảng"}
             </Link>
         </div>
@@ -101,7 +112,9 @@ const FavoriteDocuments: React.FC = () => {
         return (
             <div className="container py-5">
                 <div className="alert alert-warning text-center">
-                    <p className="mb-3">Bạn cần đăng nhập để xem kho tài liệu đã lưu.</p>
+                    <p className="mb-3">
+                        Bạn cần đăng nhập để xem kho tài liệu đã lưu.
+                    </p>
                     <Link className="btn btn-primary" to="/login">
                         Đăng nhập ngay
                     </Link>
@@ -140,48 +153,62 @@ const FavoriteDocuments: React.FC = () => {
                 </div>
             ) : (
                 <>
-                    <div className="btn-group mb-4" role="group" aria-label="Tabs kho lưu">
+                    <div
+                        className="btn-group mb-4"
+                        role="group"
+                        aria-label="Tabs kho lưu"
+                    >
                         <button
                             type="button"
-                            className={`btn ${activeTab === "document" ? "btn-primary" : "btn-outline-secondary"}`}
+                            className={`btn ${
+                                activeTab === "document"
+                                    ? "btn-primary"
+                                    : "btn-outline-secondary"
+                            }`}
                             onClick={() => setActiveTab("document")}
                         >
                             Tài liệu ({documentFavorites.length})
                         </button>
                         <button
                             type="button"
-                            className={`btn ${activeTab === "lesson" ? "btn-primary" : "btn-outline-secondary"}`}
+                            className={`btn ${
+                                activeTab === "lesson"
+                                    ? "btn-primary"
+                                    : "btn-outline-secondary"
+                            }`}
                             onClick={() => setActiveTab("lesson")}
                         >
                             Bài giảng ({lessonFavorites.length})
                         </button>
                     </div>
 
-                    {activeTab === "document"
-                        ? documentFavorites.length > 0
-                            ? (
-                                <DocumentFavoritesComp
-                                    documentFavorites={documentFavorites}
-                                    formatSavedDate={formatSavedDate}
-                                    removingId={removingId}
-                                    onRemove={(favoriteId) => handleRemove(favoriteId, "document")}
-                                />
-                            )
-                            : renderEmptyState("document")
-                        : lessonFavorites.length > 0
-                            ? (
-                                <LessonFavoritesComp
-                                    lessonFavorites={lessonFavorites}
-                                    formatSavedDate={formatSavedDate}
-                                    removingId={removingId}
-                                    onRemove={(favoriteId) => handleRemove(favoriteId, "lesson")}
-                                />
-                            )
-                            : renderEmptyState("lesson")}
+                    {activeTab === "document" ? (
+                        documentFavorites.length > 0 ? (
+                            <FavoritesComp
+                                type="DOCUMENT"
+                                favorites={documentFavorites}
+                                formatSavedDate={formatSavedDate}
+                                removingId={removingId}
+                                onRemove={handleRemove}
+                            />
+                        ) : (
+                            renderEmptyState("document")
+                        )
+                    ) : lessonFavorites.length > 0 ? (
+                        <FavoritesComp
+                            type="LESSON"
+                            favorites={lessonFavorites}
+                            formatSavedDate={formatSavedDate}
+                            removingId={removingId}
+                            onRemove={handleRemove}
+                        />
+                    ) : (
+                        renderEmptyState("lesson")
+                    )}
                 </>
             )}
         </div>
     );
 };
 
-export default FavoriteDocuments;
+export default Favorites;

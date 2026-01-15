@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
     getCommentsByDocument,
@@ -7,10 +7,8 @@ import {
     getCommentsByLesson,
     createLessonComment,
 } from "../../../apis/CommentApi";
-import type { CommentDocumentRequest } from "../../../models/request/CommentDocumentRequest";
-import type { CommentDocumentResponse } from "../../../models/response/CommentDocumentResponse";
-import type { CommentLessonRequest } from "../../../models/request/CommentLessonRequest";
-import type { CommentLessonResponse } from "../../../models/response/CommentLessonResponse";
+import type { CommentRequest } from "../../../models/request/CommentRequest";
+import type { CommentTreeResponse } from "../../../models/response/CommentTreeResponse";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import api from "../../../apis/HttpClient";
 import axios from "axios";
@@ -20,45 +18,22 @@ interface CommentCompProps {
     lessonId?: number;
 }
 
-type CommentItem = CommentDocumentResponse | CommentLessonResponse;
-
 const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
-    const [comments, setComments] = useState<CommentItem[]>([]);
+    const [comments, setComments] = useState<CommentTreeResponse[]>([]);
     const [loadingComments, setLoadingComments] = useState(false);
     const [commentError, setCommentError] = useState<string | null>(null);
     const [commentContent, setCommentContent] = useState("");
     const [replyContent, setReplyContent] = useState<Record<number, string>>({});
     const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
-    const [submittingTarget, setSubmittingTarget] = useState<"root" | number | null>(null);
+    const [submittingTarget, setSubmittingTarget] =
+        useState<"root" | number | null>(null);
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
 
     const isAuthenticated = Boolean(currentUser);
     const isLessonMode = Boolean(lessonId);
     const targetId = lessonId ?? docId;
 
-    const nonHiddenComments = useMemo(
-        () => comments.filter((c) => !c.hide),
-        [comments]
-    );
-
-    const commentsByParent = useMemo(() => {
-        const grouped: Record<number, CommentItem[]> = {};
-        nonHiddenComments.forEach((comment) => {
-            const parentKey =
-                comment.idParent && comment.idParent > 0 ? comment.idParent : 0;
-            if (!grouped[parentKey]) grouped[parentKey] = [];
-            grouped[parentKey].push(comment);
-        });
-        Object.values(grouped).forEach((list) =>
-            list.sort(
-                (a, b) =>
-                    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-            )
-        );
-        return grouped;
-    }, [nonHiddenComments]);
-
-    const topLevelComments = commentsByParent[0] ?? [];
+    /* ================= USER ================= */
 
     const fetchCurrentUser = useCallback(async () => {
         const token = localStorage.getItem("token");
@@ -69,35 +44,29 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
         try {
             const response = await api.get("/users/my-info");
             setCurrentUser(response.data.result as UserResponse);
-        } catch (err: any) {
-            let message = "Không thể lấy thông tin người dùng. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
-            console.error(message);
+        } catch {
             setCurrentUser(null);
         }
     }, []);
 
+    /* ================= COMMENTS ================= */
+
     const fetchComments = useCallback(async () => {
         if (!targetId) return;
+
         setLoadingComments(true);
         setCommentError(null);
+
         try {
             const response = isLessonMode
                 ? await getCommentsByLesson(targetId)
                 : await getCommentsByDocument(targetId);
+
             setComments(response.resultList ?? []);
         } catch (err: any) {
-            let message = "Không thể tải bình luận. Vui lòng thử lại sau";
+            let message = "Không thể tải bình luận.";
             if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
+                message = err.response?.data?.message ?? err.message ?? message;
             }
             setCommentError(message);
         } finally {
@@ -113,71 +82,57 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
         fetchComments();
     }, [fetchComments]);
 
+    /* ================= SUBMIT ================= */
+
     const submitComment = async (content: string, idParent: number) => {
         if (!currentUser || !targetId) return;
 
-        const basePayload = {
+        const payload: CommentRequest = {
             content: content.trim(),
             idParent,
             hide: false,
+            contentId: targetId,
             userId: currentUser.id,
+            type: isLessonMode ? "LESSON" : "DOCUMENT",
         };
 
         if (isLessonMode) {
-            const payload: CommentLessonRequest = {
-                ...basePayload,
-                lessonId: targetId,
-            };
             await createLessonComment(payload);
         } else {
-            const payload: CommentDocumentRequest = {
-                ...basePayload,
-                documentId: targetId,
-            };
             await createDocumentComment(payload);
         }
+
         await fetchComments();
     };
 
     const handleCommentSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!currentUser) {
-            setCommentError("Bạn cần đăng nhập để bình luận.");
+
+        if (!isAuthenticated) {
+            setCommentError("Vui lòng đăng nhập để bình luận.");
             return;
         }
+
         if (!commentContent.trim()) {
             setCommentError("Nội dung bình luận không được để trống.");
             return;
         }
-        setCommentError(null);
+
         setSubmittingTarget("root");
+        setCommentError(null);
+
         try {
             await submitComment(commentContent, 0);
             setCommentContent("");
-        } catch (err) {
-            let message = "Không thể gửi bình luận. Vui lòng thử lại.";
+        } catch (err: any) {
+            let message = "Không thể gửi bình luận.";
             if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
+                message = err.response?.data?.message ?? err.message ?? message;
             }
             setCommentError(message);
         } finally {
             setSubmittingTarget(null);
         }
-    };
-
-    const handleToggleReply = (commentId: number) => {
-        setCommentError(null);
-        setActiveReplyId((prev) => (prev === commentId ? null : commentId));
-    };
-
-    const handleReplyChange = (commentId: number, value: string) => {
-        setReplyContent((prev) => ({
-            ...prev,
-            [commentId]: value,
-        }));
     };
 
     const handleReplySubmit = async (
@@ -185,29 +140,29 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
         parentId: number
     ) => {
         e.preventDefault();
-        if (!currentUser) {
-            setCommentError("Bạn cần đăng nhập để bình luận.");
+
+        if (!isAuthenticated) {
+            setCommentError("Vui lòng đăng nhập để bình luận.");
             return;
         }
-        const content = (replyContent[parentId] ?? "").trim();
+
+        const content = replyContent[parentId]?.trim();
         if (!content) {
             setCommentError("Nội dung trả lời không được để trống.");
             return;
         }
 
-        setCommentError(null);
         setSubmittingTarget(parentId);
+        setCommentError(null);
+
         try {
             await submitComment(content, parentId);
-            setReplyContent((prev) => ({ ...prev, [parentId]: "" }));
+            setReplyContent((p) => ({ ...p, [parentId]: "" }));
             setActiveReplyId(null);
         } catch (err: any) {
-            let message = "Không thể gửi trả lời. Vui lòng thử lại.";
+            let message = "Không thể gửi trả lời.";
             if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
+                message = err.response?.data?.message ?? err.message ?? message;
             }
             setCommentError(message);
         } finally {
@@ -215,19 +170,16 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
         }
     };
 
-    const renderCommentThread = (comment: CommentItem) => {
-        const replies = commentsByParent[comment.id] ?? [];
+    /* ================= RENDER ================= */
+
+    const renderCommentThread = (comment: CommentTreeResponse) => {
         const isReplying = activeReplyId === comment.id;
 
         return (
             <div key={comment.id} className="mb-3">
                 <div className="d-flex">
                     <img
-                        src={
-                            comment.userAvatar
-                                ? `http://localhost:8080/api/images/avatar/${comment.userAvatar}`
-                                : "myAvatar.jpg"
-                        }
+                        src={`http://localhost:8080/api/images/avatar/${comment.userAvatar ?? "myAvatar.jpg"}`}
                         alt={comment.username}
                         className="rounded-circle me-3"
                         style={{ width: 44, height: 44, objectFit: "cover" }}
@@ -239,11 +191,17 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
                                 {new Date(comment.createdAt).toLocaleString("vi-VN")}
                             </small>
                         </div>
+
                         <p className="mb-2">{comment.content}</p>
+
                         {isAuthenticated && (
                             <button
                                 className="btn btn-link btn-sm p-0"
-                                onClick={() => handleToggleReply(comment.id)}
+                                onClick={() =>
+                                    setActiveReplyId(
+                                        isReplying ? null : comment.id
+                                    )
+                                }
                             >
                                 {isReplying ? "Hủy trả lời" : "Trả lời"}
                             </button>
@@ -252,34 +210,35 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
                         {isReplying && (
                             <form
                                 className="mt-2"
-                                onSubmit={(e) => handleReplySubmit(e, comment.id)}
+                                onSubmit={(e) =>
+                                    handleReplySubmit(e, comment.id)
+                                }
                             >
                                 <textarea
                                     className="form-control mb-2"
                                     rows={2}
                                     value={replyContent[comment.id] ?? ""}
                                     onChange={(e) =>
-                                        handleReplyChange(comment.id, e.target.value)
+                                        setReplyContent((p) => ({
+                                            ...p,
+                                            [comment.id]: e.target.value,
+                                        }))
                                     }
-                                    placeholder="Nhập nội dung trả lời..."
                                 />
-                                <div className="text-end">
-                                    <button
-                                        type="submit"
-                                        className="btn btn-sm btn-primary"
-                                        disabled={submittingTarget === comment.id}
-                                    >
-                                        {submittingTarget === comment.id
-                                            ? "Đang gửi..."
-                                            : "Gửi trả lời"}
-                                    </button>
-                                </div>
+                                <button
+                                    className="btn btn-sm btn-primary"
+                                    disabled={submittingTarget === comment.id}
+                                >
+                                    {submittingTarget === comment.id
+                                        ? "Đang gửi..."
+                                        : "Gửi trả lời"}
+                                </button>
                             </form>
                         )}
 
-                        {replies.length > 0 && (
+                        {comment.children?.length > 0 && (
                             <div className="mt-3 ms-4 border-start ps-3">
-                                {replies.map((reply) => renderCommentThread(reply))}
+                                {comment.children.map(renderCommentThread)}
                             </div>
                         )}
                     </div>
@@ -288,23 +247,18 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
         );
     };
 
+    /* ================= JSX ================= */
+
     return (
-        <div className="border rounded p-4 shadow-sm bg-white">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h4 className="mb-0">Bình luận</h4>
-                <span className="badge bg-light text-dark">
-                    {nonHiddenComments.length} bình luận
-                </span>
-            </div>
+        <div className="border rounded p-4 bg-white">
+            <h4 className="mb-3">Bình luận</h4>
 
             {commentError && (
-                <div className="alert alert-danger py-2">{commentError}</div>
+                <div className="alert alert-danger">{commentError}</div>
             )}
 
             {loadingComments ? (
-                <div className="text-center text-muted py-4">
-                    Đang tải bình luận...
-                </div>
+                <p>Đang tải bình luận...</p>
             ) : (
                 <>
                     {isAuthenticated ? (
@@ -312,34 +266,32 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
                             <textarea
                                 className="form-control mb-2"
                                 rows={3}
-                                placeholder="Chia sẻ cảm nghĩ của bạn..."
                                 value={commentContent}
-                                onChange={(e) => setCommentContent(e.target.value)}
+                                onChange={(e) =>
+                                    setCommentContent(e.target.value)
+                                }
                             />
-                            <div className="text-end">
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary"
-                                    disabled={submittingTarget === "root"}
-                                >
-                                    {submittingTarget === "root" ? "Đang gửi..." : "Gửi bình luận"}
-                                </button>
-                            </div>
+                            <button
+                                className="btn btn-primary"
+                                disabled={submittingTarget === "root"}
+                            >
+                                Gửi bình luận
+                            </button>
                         </form>
                     ) : (
-                        <div className="alert alert-info mb-4">
-                            <strong>Chỉ đọc:</strong> Vui lòng <Link to="/login">đăng nhập</Link> để
-                            tham gia bình luận.
+                        <div className="alert alert-info">
+                            Vui lòng <Link to="/login">đăng nhập</Link> để bình
+                            luận
                         </div>
                     )}
 
-                    <div className="mt-3">
-                        {topLevelComments.length === 0 ? (
-                            <p className="text-muted mb-0">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
-                        ) : (
-                            topLevelComments.map((comment) => renderCommentThread(comment))
-                        )}
-                    </div>
+                    {comments.length === 0 ? (
+                        <p className="text-muted">
+                            Chưa có bình luận nào.
+                        </p>
+                    ) : (
+                        comments.map(renderCommentThread)
+                    )}
                 </>
             )}
         </div>
@@ -347,4 +299,3 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
 };
 
 export default CommentComp;
-

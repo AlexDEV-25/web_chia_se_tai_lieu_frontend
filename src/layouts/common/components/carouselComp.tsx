@@ -128,19 +128,26 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                 });
             } else {
                 let response;
+                let data:FavoriteRequest;
                 if (type === 'document') {
-                    response = await addFavoriteDocument({
+                    data = {
                         userId: currentUserId,
-                        documentId: item.id,
-                    });
+                        contentId: item.id,
+                        type: 'DOCUMENT',
+                    };
+                    console.log(data);
+                    response = await addFavoriteDocument(data);
                 } else {
-                    response = await addFavoriteLesson({
+                    data = {
                         userId: currentUserId,
-                        lessonId: item.id,
-                    });
+                        contentId: item.id,
+                        type: 'LESSON',
+                    };
+                    response = await addFavoriteLesson(data);
                 }
 
                 const saved = response.result;
+                
                 if (saved) {
                     setFavoriteMap((prev) => ({
                         ...prev,

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { RatingDocumentResponse } from "../../../models/response/RatingDocumentResponse";
-import type { RatingLessonResponse } from "../../../models/response/RatingLessonResponse";
+import type { RatingResponse } from "../../../models/response/RatingResponse";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import {
     getRatingsByDocument,
@@ -8,6 +7,7 @@ import {
     getRatingsByLesson,
     createRatingLesson,
 } from "../../../apis/RatingApi";
+import type { RatingRequest } from "../../../models/request/RatingRequest";
 import api from "../../../apis/HttpClient";
 import axios from "axios";
 
@@ -18,10 +18,8 @@ interface RatingCompProps {
 
 const TOTAL_STARS = 5;
 
-type RatingItem = RatingDocumentResponse | RatingLessonResponse;
-
 const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
-    const [ratings, setRatings] = useState<RatingItem[]>([]);
+    const [ratings, setRatings] = useState<RatingResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
@@ -125,8 +123,9 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
             if (isLessonMode) {
                 const response = await createRatingLesson({
                     rating: selectedStar,
-                    lessonId: targetId,
+                    contentId: targetId,
                     userId: currentUserId,
+                    type: 'LESSON',
                 });
                 const created = response.result;
                 if (created) {
@@ -135,8 +134,9 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
             } else {
                 const response = await createRatingDocument({
                     rating: selectedStar,
-                    documentId: targetId,
+                    contentId: targetId,
                     userId: currentUserId,
+                    type: 'DOCUMENT',
                 });
                 const created = response.result;
                 if (created) {

@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import type { FavoriteDocumentResponse } from "../../../models/response/FavoriteDocumentResponse";
-import type { FavoriteLessonResponse } from "../../../models/response/FavoriteLessonResponse";
+import type { FavoriteResponse } from "../../../models/response/FavoriteResponse";
 import {
     addFavoriteDocument,
     addFavoriteLesson,
@@ -135,11 +134,13 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                     itemType === "document"
                         ? await addFavoriteDocument({
                             userId: currentUserId,
-                            documentId: itemId,
+                            contentId: itemId,
+                            type: 'DOCUMENT',
                         })
                         : await addFavoriteLesson({
                             userId: currentUserId,
-                            lessonId: itemId,
+                            contentId: itemId,
+                            type: 'LESSON',
                         });
                 const saved = response.result;
                 if (saved) {

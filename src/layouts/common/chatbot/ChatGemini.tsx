@@ -4,6 +4,7 @@ import { getMyInfo } from "../../../apis/UserApi";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import type { ChatHistoryResponse } from "../../../models/response/ChatHistoryResponse";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 interface Message {
     id: string;
@@ -231,10 +232,10 @@ const ChatGemini: React.FC = () => {
                         <i className="fa fa-lock" />
                         <h3>Yêu cầu đăng nhập</h3>
                         <p>Bạn phải đăng nhập để sử dụng tính năng này.</p>
-                        <a href="/login" className="login-btn">
+                        <Link to="/login" className="login-btn">
                             <i className="fa fa-sign-in" />
                             Đăng nhập ngay
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
