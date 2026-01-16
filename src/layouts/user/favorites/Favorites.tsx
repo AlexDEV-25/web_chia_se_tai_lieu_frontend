@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { FavoriteResponse } from "../../../models/response/FavoriteResponse";
 import {
@@ -8,18 +8,22 @@ import {
 } from "../../../apis/FavoriteApi";
 import FavoritesComp from "./components/FavoritesComp";
 import axios from "axios";
+import { UserContext } from "../../../AppContext";
 
 type TabKey = "document" | "lesson";
 
 const Favorites: React.FC = () => {
+    const userCtx = useContext(UserContext);
+    const currentUser = userCtx?.currentUser ?? null;
+    const isLoadingUser = userCtx?.isLoadingUser ?? false;
+    const isAuthenticated = Boolean(currentUser);
+
     const [documentFavorites, setDocumentFavorites] = useState<FavoriteResponse[]>([]);
     const [lessonFavorites, setLessonFavorites] = useState<FavoriteResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [removingId, setRemovingId] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState<TabKey>("document");
-
-    const token = localStorage.getItem("token");
 
     const formatSavedDate = (value: string) => {
         const date = new Date(value);
@@ -32,12 +36,16 @@ const Favorites: React.FC = () => {
     };
 
     useEffect(() => {
-        if (!token) {
+        if (isLoadingUser) return;
+
+        if (!isAuthenticated) {
             setLoading(false);
             setDocumentFavorites([]);
             setLessonFavorites([]);
             return;
         }
+
+        let isMounted = true;
 
         const fetchFavorites = async () => {
             setLoading(true);
@@ -48,9 +56,12 @@ const Favorites: React.FC = () => {
                     getLessonFavoritesByUser(),
                 ]);
 
+                if (!isMounted) return;
+
                 setDocumentFavorites(docsRes.resultList ?? []);
                 setLessonFavorites(lessonsRes.resultList ?? []);
             } catch (err: any) {
+                if (!isMounted) return;
                 let message = "Không thể tải kho lưu. Vui lòng thử lại.";
                 if (axios.isAxiosError(err)) {
                     message =
@@ -60,12 +71,18 @@ const Favorites: React.FC = () => {
                 }
                 setError(message);
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchFavorites();
-    }, [token]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [isAuthenticated, isLoadingUser]);
 
     const handleRemove = async (favoriteId: number) => {
         setRemovingId(favoriteId);
@@ -108,7 +125,18 @@ const Favorites: React.FC = () => {
         </div>
     );
 
-    if (!token) {
+    if (isLoadingUser) {
+        return (
+            <div className="container py-5 text-center">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Đang kiểm tra phiên đăng nhập...</span>
+                </div>
+                <p className="mt-3 text-muted">Đang kiểm tra phiên đăng nhập...</p>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
         return (
             <div className="container py-5">
                 <div className="alert alert-warning text-center">
@@ -160,22 +188,20 @@ const Favorites: React.FC = () => {
                     >
                         <button
                             type="button"
-                            className={`btn ${
-                                activeTab === "document"
+                            className={`btn ${activeTab === "document"
                                     ? "btn-primary"
                                     : "btn-outline-secondary"
-                            }`}
+                                }`}
                             onClick={() => setActiveTab("document")}
                         >
                             Tài liệu ({documentFavorites.length})
                         </button>
                         <button
                             type="button"
-                            className={`btn ${
-                                activeTab === "lesson"
+                            className={`btn ${activeTab === "lesson"
                                     ? "btn-primary"
                                     : "btn-outline-secondary"
-                            }`}
+                                }`}
                             onClick={() => setActiveTab("lesson")}
                         >
                             Bài giảng ({lessonFavorites.length})

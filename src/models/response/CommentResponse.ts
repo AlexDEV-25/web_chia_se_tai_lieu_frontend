@@ -8,6 +8,7 @@ export interface CommentResponse {
     username: string;
     userAvatar: string;
     contentId: number;
+    level: number;
     hide: boolean;
     type: 'DOCUMENT' | 'LESSON';
 }

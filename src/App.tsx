@@ -2,7 +2,7 @@ import './App.css'
 import Home from './layouts/common/home/Home'
 import Header from './layouts/common/header_footer/Header';
 import Footer from './layouts/common/header_footer/Footer';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import type { AppContextType, UserContextType } from './AppContext';
 import { AppContext, UserContext } from './AppContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -58,42 +58,52 @@ function App() {
   };
 
   // Fetch user info when app loads or token changes
-  const fetchCurrentUser = useCallback(async () => {
-    const currentToken = localStorage.getItem("token");
-    if (!currentToken) {
+  useEffect(() => {
+    if (!token) {
       setCurrentUser(null);
       return;
     }
 
+    let isMounted = true;
     setIsLoadingUser(true);
-    try {
-      const response = await getMyInfo();
-      setCurrentUser(response?.result ?? null);
-    } catch (err: any) {
-      let message = "Không thể lấy thông tin người dùng.";
-      if (axios.isAxiosError(err)) {
-        message = err.response?.data?.message ?? err.message ?? message;
+    (async () => {
+      try {
+        const response = await getMyInfo();
+        if (!isMounted) return;
+        setCurrentUser(response?.result ?? null);
+      } catch (err: any) {
+        let message = "Không thể lấy thông tin người dùng.";
+        if (axios.isAxiosError(err)) {
+          message = err.response?.data?.message ?? err.message ?? message;
+        }
+        console.error(message);
+        if (isMounted) {
+          setCurrentUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingUser(false);
+        }
       }
-      console.error(message);
-      setCurrentUser(null);
-    } finally {
-      setIsLoadingUser(false);
-    }
-  }, []);
+    })();
 
-  useEffect(() => {
-    fetchCurrentUser();
-  }, [fetchCurrentUser]);
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   useEffect(() => {
     if (!token) return;
     const check = async () => {
       await introspect().catch(() => {
         localStorage.removeItem("token");
+        localStorage.removeItem("roles");
+        setToken(null);
+        setRoles([]);
       });
     }
     check()
-  }, []);
+  }, [token, setRoles]);
 
 
   useEffect(() => {
@@ -106,7 +116,7 @@ function App() {
       }
     }, 15 * 60 * 1000); // 15 phút
     return () => clearInterval(interval);
-  }, []);
+  }, [token]);
 
   return (
     <>
