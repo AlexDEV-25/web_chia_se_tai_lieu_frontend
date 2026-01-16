@@ -10,7 +10,8 @@ import {
 
 import { UserContext } from "../../../AppContext";
 import GrindItem from "./GrindItem";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 interface BaseItem {
     id: number;
@@ -90,14 +91,7 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                 }
                 setFavoriteMap(map);
             } catch (err: any) {
-                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
-                console.error(message);
+                console.error(handleApiError(err, ERROR_MESSAGES.FAVORITE_LOAD_FAILED));
                 setFavoriteMap({});
             }
         };
@@ -107,7 +101,7 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
 
     const handleToggleFavorite = async (itemId: number) => {
         if (!currentUserId) {
-            alert(`Vui lòng đăng nhập để lưu ${itemType === "document" ? "tài liệu" : "bài giảng"} yêu thích.`);
+            alert(`${ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE} ${itemType === "document" ? "tài liệu" : "bài giảng"} yêu thích.`);
             return;
         }
 
@@ -144,13 +138,7 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                 }
             }
         } catch (err: any) {
-            let message = "Không thể cập nhật kho yêu thích. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED);
             console.error(message);
             alert(message);
         } finally {

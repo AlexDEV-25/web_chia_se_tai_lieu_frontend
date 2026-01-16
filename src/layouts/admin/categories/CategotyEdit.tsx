@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCategoryById, updateCategory } from "../../../apis/CategoryApi";
 import type { CategoryRequest } from "../../../models/request/CategoryRequest";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 const CategoryEdit: React.FC = () => {
     const { id } = useParams<{ id: string | undefined }>();
@@ -29,13 +30,7 @@ const CategoryEdit: React.FC = () => {
                 setName(response.result?.name ?? "");
                 setDescription(response.result?.description ?? "");
             } catch (err: any) {
-                let message = "Không tìm thấy danh mục. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_NOT_FOUND);
                 setFormError(message);
             } finally {
                 setLoading(false);
@@ -75,13 +70,7 @@ const CategoryEdit: React.FC = () => {
 
             navigate("/categories");
         } catch (err: any) {
-            let message = "Không thể cập nhật danh mục. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.UPDATE_FAILED);
             setFormError(message);
         } finally {
             setIsSubmitting(false);

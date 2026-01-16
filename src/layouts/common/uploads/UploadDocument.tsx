@@ -4,7 +4,8 @@ import { getAllCategory } from "./../../../apis/CategoryApi";
 import { uploadDocument } from "./../../../apis/DocumentApi";
 import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
 import { useRef } from "react";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../../constants/messages";
 import { Link } from "react-router-dom";
 const UploadDocument: React.FC = () => {
     const [title, setTitle] = useState("");
@@ -28,13 +29,7 @@ const UploadDocument: React.FC = () => {
                 const response = await getAllCategory();
                 setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
             } catch (err: any) {
-                let message = "Không thể tải danh mục. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED);
                 console.log(message);;
             }
         };
@@ -49,8 +44,8 @@ const UploadDocument: React.FC = () => {
         let fErr = "";
 
 
-        if (title.trim() === "") tErr = "Tiêu đề không được để trống";
-        if (!file) fErr = "Vui lòng chọn file";
+        if (title.trim() === "") tErr = ERROR_MESSAGES.TITLE_EMPTY;
+        if (!file) fErr = ERROR_MESSAGES.FILE_EMPTY;
 
         // Set errors
         setErrTitle(tErr);
@@ -73,7 +68,7 @@ const UploadDocument: React.FC = () => {
             const response = await uploadDocument(file!, doc);
 
             console.log(response);
-            setUploadMessage("Upload thành công!");
+            setUploadMessage(SUCCESS_MESSAGES.UPLOAD_SUCCESS);
 
             // Reset form
             setTitle("");
@@ -84,13 +79,7 @@ const UploadDocument: React.FC = () => {
             if (fileRef.current) { fileRef.current.value = ""; }
 
         } catch (err: any) {
-            let message = "Upload thất bại!";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.UPLOAD_FAILED);
             setUploadMessage(message);
         } finally {
             setIsLoading(false);

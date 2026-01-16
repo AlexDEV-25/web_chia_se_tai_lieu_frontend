@@ -9,7 +9,8 @@ import {
 import { UserContext } from "../../../../AppContext";
 import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
 import GrindItem from "../../components/GrindItem";
-import axios from "axios";
+import { handleApiError } from "../../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../../constants/messages";
 
 interface RightSidebarProps {
     userId: number;
@@ -40,13 +41,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                 );
                 setDocuments(list.slice(0, 6));
             } catch (err: any) {
-                let message = "Không thể tải thêm tài liệu của tác giả này. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.AUTHOR_DOCUMENTS_LOAD_FAILED);
                 setError(message);
             } finally {
                 setLoading(false);
@@ -75,13 +70,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                 });
                 setFavoriteMap(map);
             } catch (err: any) {
-                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.FAVORITES_LOAD_FAILED);
                 console.error(message)
                 setFavoriteMap({});
             }
@@ -92,7 +81,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
 
     const handleToggleFavorite = async (doc: DocumentResponse) => {
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để lưu tài liệu yêu thích.");
+            alert(ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE);
             return;
         }
 
@@ -121,13 +110,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                 }
             }
         } catch (err: any) {
-            let message = "Không thể cập nhật kho lưu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED);
             alert(message);
         } finally {
             setFavoriteLoadingId(null);

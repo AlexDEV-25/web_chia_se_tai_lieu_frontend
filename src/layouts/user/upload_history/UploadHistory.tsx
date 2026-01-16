@@ -6,6 +6,8 @@ import type { LessonResponse } from "../../../models/response/LessonResponse";
 import DocumentComp from "./components/DocumentComp";
 import LessonComp from "./components/LessonComp";
 import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 const UploadHistory: React.FC = () => {
     const [activeTab, setActiveTab] = useState<"documents" | "lessons">("documents");
@@ -31,14 +33,7 @@ const UploadHistory: React.FC = () => {
                 setLessons(response.resultList || []);
             }
         } catch (err: any) {
-            let message = "Không thể tải dữ liệu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
-            setError(message);
+            setError(handleApiError(err, ERROR_MESSAGES.UPLOAD_HISTORY_LOAD_FAILED));
         } finally {
             setLoading(false);
         }
@@ -53,14 +48,7 @@ const UploadHistory: React.FC = () => {
             await deleteMyDocument(id);
             setDocuments(prev => prev.filter(doc => doc.id !== id));
         } catch (err: any) {
-            let message = "Xóa tài liệu thất bại. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
-            setError(message);
+            setError(handleApiError(err, ERROR_MESSAGES.DOCUMENT_DELETE_FAILED));
         }
     };
 
@@ -73,14 +61,7 @@ const UploadHistory: React.FC = () => {
             await deleteMyLesson(id);
             setLessons(prev => prev.filter(lesson => lesson.id !== id));
         } catch (err: any) {
-            let message = "Xóa bài học thất bại. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
-            setError(message);
+            setError(handleApiError(err, ERROR_MESSAGES.LESSON_DELETE_FAILED));
         }
     };
 

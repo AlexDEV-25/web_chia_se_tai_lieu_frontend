@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createCategory } from "../../../apis/CategoryApi";
 import type { CategoryRequest } from "../../../models/request/CategoryRequest";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 const CategoryAdd: React.FC = () => {
     const navigate = useNavigate();
@@ -44,13 +45,7 @@ const CategoryAdd: React.FC = () => {
             await createCategory(newCategory);
             navigate("/categories");
         } catch (err: any) {
-            let message = "Không thể tạo danh mục mới. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.CREATE_FAILED);
             setFormError(message);
         } finally {
             setIsSubmitting(false);

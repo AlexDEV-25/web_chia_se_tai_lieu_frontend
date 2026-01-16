@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import api from "../../../apis/HttpClient";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import { getMyInfo } from "../../../apis/UserApi";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 const MyProfile: React.FC = () => {
     const [user, setUser] = useState<UserResponse | null>(null);
@@ -32,14 +33,7 @@ const MyProfile: React.FC = () => {
             setUsername(response?.result?.username || "");
             setEmail(response?.result?.email || "");
         } catch (err: any) {
-            let message = "Không thể tải thông tin cá nhân. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
-            setInfoMessage(message)
+            setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_LOAD_FAILED))
         }
     };
 
@@ -106,14 +100,7 @@ const MyProfile: React.FC = () => {
             setShowChangePassword(false);
 
         } catch (err: any) {
-            let message = "Cập nhật thất bại!";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
-            setInfoMessage(message);
+            setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_UPDATE_FAILED));
         }
     };
 

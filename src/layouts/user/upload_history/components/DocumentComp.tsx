@@ -4,7 +4,8 @@ import type { DocumentResponse } from "../../../../models/response/DocumentRespo
 import type { DocumentRequest } from "../../../../models/request/DocumentReques";
 import FormUpdate, { type FormDataType } from "./FormUpdate";
 import DeleteAlert from "./DeleteAlert";
-import axios from "axios";
+import { handleApiError } from "../../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../../constants/messages";
 
 interface Props {
     documents: DocumentResponse[];
@@ -32,13 +33,7 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
             setEditingDocument(null);
             onUpdate();
         } catch (err: any) {
-            let message = "Update thất bại!";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_UPDATE_FAILED_FORM);
             console.error(message);
         }
     };
@@ -61,13 +56,7 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
             setShowDeleteAlert(false);
             setDeletingDocument(null);
         } catch (err: any) {
-            let message = "Xóa thất bại!";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.DELETE_FAILED_FORM);
             console.error(message);
             setShowDeleteAlert(false);
             setDeletingDocument(null);

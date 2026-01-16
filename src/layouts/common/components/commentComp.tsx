@@ -10,7 +10,8 @@ import {
 import type { CommentRequest } from "../../../models/request/CommentRequest";
 import type { CommentTreeResponse } from "../../../models/response/CommentTreeResponse";
 import { UserContext } from "../../../AppContext";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 interface CommentCompProps {
     docId?: number;
@@ -50,11 +51,7 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
 
             setComments(Array.isArray(res.result) ? res.result : []);
         } catch (err) {
-            if (axios.isAxiosError(err)) {
-                setError(err.response?.data?.message ?? "Không thể tải bình luận");
-            } else {
-                setError("Không thể tải bình luận");
-            }
+            setError(handleApiError(err, ERROR_MESSAGES.COMMENT_LOAD_FAILED));
         } finally {
             setLoading(false);
         }

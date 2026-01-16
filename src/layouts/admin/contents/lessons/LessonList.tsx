@@ -10,7 +10,8 @@ import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
 import LeftSidebar from '../../components/LeftSidebar';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
-import axios from 'axios';
+import { handleApiError } from '../../../../utils/errorHandler';
+import { ERROR_MESSAGES } from '../../../../constants/messages';
 
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 
@@ -30,13 +31,7 @@ const LessonList: React.FC = () => {
             const response = await getAllLesson();
             setLessons(response?.resultList ?? []);
         } catch (err: any) {
-            let message = "Không thể tải bài giảng. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.LESSON_LOAD_FAILED);
             setError(message);
         } finally {
             setLoading(false);
@@ -69,13 +64,7 @@ const LessonList: React.FC = () => {
                 )
             );
         } catch (err: any) {
-            let message = "Không thể cập nhật trạng thái bài giảng. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.LESSON_UPDATE_FAILED);
             setError(message);
         } finally {
             setUpdatingId(null);
@@ -92,13 +81,7 @@ const LessonList: React.FC = () => {
             await deleteLesson(id);
             setLessons((prev) => prev.filter((item) => item.id !== id));
         } catch (err: any) {
-            let message = "Không thể xóa bài giảng. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.LESSON_DELETE_FAILED);
             setError(message);
         } finally {
             setUpdatingId(null);

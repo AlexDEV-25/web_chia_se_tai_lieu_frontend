@@ -4,7 +4,8 @@ import type { LessonResponse } from "../../../../models/response/LessonResponse"
 import type { LessonRequest } from "../../../../models/request/LessonRequest";
 import FormUpdate, { type FormDataType } from "./FormUpdate";
 import DeleteAlert from "./DeleteAlert";
-import axios from "axios";
+import { handleApiError } from "../../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../../constants/messages";
 
 interface Props {
     lessons: LessonResponse[];
@@ -32,13 +33,7 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
             setEditingLesson(null);
             onUpdate();
         } catch (err: any) {
-            let message = "Update thất bại. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.LESSON_UPDATE_FAILED_FORM);
             console.error(message);
         }
     };
@@ -61,13 +56,7 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
             setShowDeleteAlert(false);
             setDeletingLesson(null);
         } catch (err: any) {
-            let message = "Xóa thất bại. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.DELETE_FAILED_FORM);
             console.error(message);
             setShowDeleteAlert(false);
             setDeletingLesson(null);

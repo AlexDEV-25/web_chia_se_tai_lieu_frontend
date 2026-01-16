@@ -9,7 +9,8 @@ import LoadingState from '../components/LoadingState';
 import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
 import LeftSidebar from '../components/LeftSidebar';
-import axios from 'axios';
+import { handleApiError } from '../../../utils/errorHandler';
+import { ERROR_MESSAGES } from '../../../constants/messages';
 import { Link } from 'react-router-dom';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 
@@ -29,13 +30,7 @@ const CategoryList: React.FC = () => {
             const response = await getAllCategory();
             setCategories(response?.resultList ?? []);
         } catch (err: any) {
-            let message = "Đã xảy ra lỗi khi tải danh mục. Vui lòng thử lại";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED);
             setError(message);
         } finally {
             setLoading(false);
@@ -65,13 +60,7 @@ const CategoryList: React.FC = () => {
             );
 
         } catch (err: any) {
-            let message = "Không thể cập nhật trạng thái danh mục. Vui lòng thử lại";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_UPDATE_FAILED);
             setError(message);
         } finally {
             setUpdatingId(null);

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
 import { forgotPassword } from "../../../apis/AuthApi";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../../constants/messages";
 
 const ForgotPassword: React.FC = () => {
     const [email, setEmail] = useState("");
@@ -12,11 +13,11 @@ const ForgotPassword: React.FC = () => {
 
     const validateEmail = (value: string) => {
         if (value.trim() === "") {
-            return "Email không được để trống";
+            return ERROR_MESSAGES.EMAIL_EMPTY;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value.trim())) {
-            return "Email không hợp lệ";
+            return ERROR_MESSAGES.EMAIL_INVALID;
         }
         return "";
     };
@@ -31,15 +32,9 @@ const ForgotPassword: React.FC = () => {
         try {
             await forgotPassword(email.trim());
             setSuccess(true);
-            setMessage("Đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn. Vui lòng kiểm tra hộp thư.");
+            setMessage(SUCCESS_MESSAGES.FORGOT_PASSWORD_SUCCESS);
         } catch (err: any) {
-            let msg = "Không thể gửi yêu cầu khôi phục mật khẩu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                msg =
-                    err.response?.data?.message ??
-                    err.message ??
-                    msg;
-            }
+            const msg = handleApiError(err, ERROR_MESSAGES.FORGOT_PASSWORD_FAILED);
             setSuccess(false);
             setMessage(msg);
         } finally {

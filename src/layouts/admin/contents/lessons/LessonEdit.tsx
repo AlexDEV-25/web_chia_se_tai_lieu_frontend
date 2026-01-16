@@ -6,7 +6,8 @@ import DocumentViewComp from '../../../common/components/DocumentViewComp';
 import RightProperties from '../components/RightProperties';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
 import type { LessonRequest } from '../../../../models/request/LessonRequest';
-import axios from 'axios';
+import { handleApiError } from '../../../../utils/errorHandler';
+import { ERROR_MESSAGES } from '../../../../constants/messages';
 
 const LessonEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -45,13 +46,7 @@ const LessonEdit: React.FC = () => {
                 categoryId: les?.categoryId
             });
         } catch (err: any) {
-            let message = "Không thể tải tài liệu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.LESSON_LOAD_FAILED);
             setError(message);
         } finally {
             setLoading(false);
@@ -89,13 +84,7 @@ const LessonEdit: React.FC = () => {
             setLesson(response.result);
             setError(null);
         } catch (err: any) {
-            let message = "Không thể cập nhật bài học. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.LESSON_UPDATE_FAILED);
             setError(message);
         } finally {
             setSaving(false);

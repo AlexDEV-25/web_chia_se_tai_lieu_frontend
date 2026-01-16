@@ -9,7 +9,8 @@ import { addFavoriteLesson, getLessonFavoritesByUser } from "../../../apis/Favor
 import type { FavoriteRequest } from "../../../models/request/FavoriteRequest";
 import { UserContext } from "../../../AppContext";
 import GrindItem from "./GrindItem";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 interface CarouselProps {
     categoryId: number;
@@ -47,14 +48,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                 );
                 setItems(list.slice(0, 8));
             } catch (err: any) {
-                let message = "Không thể lấy thông tin cùng danh mục. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
-                setError(`Không thể tải ${type === 'document' ? 'tài liệu' : 'bài giảng'} cùng danh mục.`);
+                setError(handleApiError(err, ERROR_MESSAGES.CAROUSEL_LOAD_FAILED));
             } finally {
                 setLoading(false);
             }
@@ -89,14 +83,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                 });
                 setFavoriteMap(map);
             } catch (err: any) {
-                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
-                console.error(message);
+                console.error(handleApiError(err, ERROR_MESSAGES.FAVORITES_LOAD_FAILED));
                 setFavoriteMap({});
             }
         };
@@ -150,14 +137,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                 }
             }
         } catch (err: any) {
-            let message = "Không thể cập nhật kho lưu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
-            alert(message);
+            alert(handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED));
         } finally {
             setFavoriteLoadingId(null);
         }

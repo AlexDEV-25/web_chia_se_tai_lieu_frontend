@@ -4,7 +4,8 @@ import { getAllCategory } from "./../../../apis/CategoryApi";
 import { uploadLesson } from "./../../../apis/LessonApi";
 import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
 import { useRef } from "react";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../../constants/messages";
 import { Link } from "react-router-dom";
 
 const UploadLesson: React.FC = () => {
@@ -32,13 +33,7 @@ const UploadLesson: React.FC = () => {
                 const response = await getAllCategory();
                 setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
             } catch (err: any) {
-                let message = "Không thể tải danh mục. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED);
                 console.log(message);;
             }
         };
@@ -52,8 +47,8 @@ const UploadLesson: React.FC = () => {
         let tErr = "";
         let vErr = "";
 
-        if (title.trim() === "") tErr = "Tiêu đề không được để trống";
-        if (!videoFile) vErr = "Vui lòng chọn file video";
+        if (title.trim() === "") tErr = ERROR_MESSAGES.TITLE_EMPTY;
+        if (!videoFile) vErr = ERROR_MESSAGES.VIDEO_EMPTY;
 
         // Set errors
         setErrTitle(tErr);
@@ -78,7 +73,7 @@ const UploadLesson: React.FC = () => {
             const response = await uploadLesson(videoFile!, lesson, documentFile || undefined, subFile || undefined);
 
             console.log(response);
-            setUploadMessage("Upload thành công!");
+            setUploadMessage(SUCCESS_MESSAGES.UPLOAD_SUCCESS);
 
             // Reset form
             setTitle("");
@@ -93,13 +88,7 @@ const UploadLesson: React.FC = () => {
             if (subFileRef.current) subFileRef.current.value = "";
 
         } catch (err: any) {
-            let message = "Upload thất bại!";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.UPLOAD_FAILED);
             setUploadMessage(message);
         } finally {
             setIsLoading(false);

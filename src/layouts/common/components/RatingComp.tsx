@@ -7,7 +7,8 @@ import {
     createRatingLesson,
 } from "../../../apis/RatingApi";
 import { UserContext } from "../../../AppContext";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 interface RatingCompProps {
     docId?: number;
@@ -36,7 +37,7 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
             if (!targetId) {
                 setRatings([]);
                 setLoading(false);
-                setError("Không xác định được nội dung để lấy đánh giá.");
+                setError(ERROR_MESSAGES.CONTENT_NOT_FOUND);
                 return;
             }
             setLoading(true);
@@ -47,14 +48,7 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
                     : await getRatingsByDocument(targetId);
                 setRatings(response.resultList ?? []);
             } catch (err: any) {
-                let message = "Không thể tải đánh giá. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
-                setError(message);
+                setError(handleApiError(err, ERROR_MESSAGES.RATING_LOAD_FAILED));
             } finally {
                 setLoading(false);
             }
@@ -78,19 +72,19 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
 
     const handleSubmitRating = async () => {
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để đánh giá tài liệu.");
+            alert(ERROR_MESSAGES.LOGIN_REQUIRED_RATING);
             return;
         }
         if (userRatingValue) {
-            alert("Bạn đã đánh giá tài liệu này.");
+            alert(ERROR_MESSAGES.RATING_ALREADY_EXISTS);
             return;
         }
         if (!selectedStar) {
-            alert("Vui lòng chọn số sao trước khi xác nhận.");
+            alert(ERROR_MESSAGES.RATING_SELECT_REQUIRED);
             return;
         }
         if (!targetId) {
-            alert("Không xác định được nội dung cần đánh giá.");
+            alert(ERROR_MESSAGES.CONTENT_NOT_FOUND);
             return;
         }
         setSubmitting(true);
@@ -119,13 +113,7 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
                 }
             }
         } catch (err: any) {
-            let message = "Không thể gửi đánh giá. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.RATING_SUBMIT_FAILED);
             alert(message);
         } finally {
             setSubmitting(false);

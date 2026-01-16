@@ -10,7 +10,8 @@ import RatingComp from "../components/RatingComp";
 import CommentComp from "../components/CommentComp";
 import { UserContext } from "../../../AppContext";
 import { addFavoriteLesson, getLessonFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 const LessonDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -30,7 +31,7 @@ const LessonDetail: React.FC = () => {
 
     useEffect(() => {
         if (!lessonId) {
-            setError("Không tìm thấy bài giảng.");
+            setError(ERROR_MESSAGES.LESSON_NOT_FOUND);
             setLoading(false);
             return;
         }
@@ -40,13 +41,7 @@ const LessonDetail: React.FC = () => {
                 const response = await getLessonById(lessonId);
                 setLessonDetail(response?.result ?? null);
             } catch (err: any) {
-                let message = "Không thể tải chi tiết bài giảng. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.LESSON_DETAIL_LOAD_FAILED);
                 setError(message);
             } finally {
                 setLoading(false);
@@ -62,13 +57,7 @@ const LessonDetail: React.FC = () => {
             try {
                 await increaseView(lessonId);
             } catch (err: any) {
-                let message = "Không thể tăng lượt xem";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.INCREASE_VIEW_FAILED);
                 console.error(message);
             }
         }, 30000); // 30 seconds
@@ -92,13 +81,7 @@ const LessonDetail: React.FC = () => {
                 const existing = favorites.find((fav) => fav.contentId === lessonId);
                 setFavoriteId(existing ? existing.id : null);
             } catch (err: any) {
-                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_ADD_FAILED);
                 console.error(message);
                 if (isMounted) {
                     setFavoriteId(null);
@@ -116,7 +99,7 @@ const LessonDetail: React.FC = () => {
     const handleToggleFavorite = async () => {
         if (!lessonId) return;
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để lưu bài giảng yêu thích.");
+            alert(ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE);
             return;
         }
 
@@ -139,13 +122,7 @@ const LessonDetail: React.FC = () => {
                 }
             }
         } catch (err: any) {
-            let message = "Không thể cập nhật kho lưu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_ADD_FAILED);
             console.error(message);
             alert(message);
         } finally {
@@ -179,13 +156,7 @@ const LessonDetail: React.FC = () => {
             link.click();
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
-            let message = "Vui lòng đăng nhập để tải tài liệu";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.DOWNLOAD_LOGIN_REQUIRED_LESSON);
             alert(message);
         } finally {
             setDownloadingDoc(false);
@@ -204,13 +175,7 @@ const LessonDetail: React.FC = () => {
             link.click();
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
-            let message = "Vui lòng đăng nhập để tải file bổ sung";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.DOWNLOAD_SUBFILE_LOGIN_REQUIRED);
             alert(message);
         } finally {
             setDownloadingSub(false);

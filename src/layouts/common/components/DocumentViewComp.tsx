@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Document, Page } from "react-pdf";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 interface Props {
     fileUrl: string | null;
@@ -178,7 +179,7 @@ const DocumentViewComp: React.FC<Props> = ({
     }
 
     function onDocumentLoadError() {
-        setErrorMessage("Không thể mở tài liệu PDF.");
+        setErrorMessage(ERROR_MESSAGES.PDF_LOAD_ERROR);
     }
 
     return (
@@ -210,7 +211,7 @@ const DocumentViewComp: React.FC<Props> = ({
                             onLoadSuccess={onDocumentLoadSuccess}
                             onLoadError={onDocumentLoadError}
                             loading="Đang tải PDF..."
-                            error="Không thể mở tài liệu PDF."
+                            error={ERROR_MESSAGES.PDF_LOAD_ERROR}
                         >
                             <Page
                                 pageNumber={currentPage}

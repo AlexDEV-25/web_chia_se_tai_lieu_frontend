@@ -7,7 +7,8 @@ import {
     removeFavorite,
 } from "../../../apis/FavoriteApi";
 import FavoritesComp from "./components/FavoritesComp";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 import { UserContext } from "../../../AppContext";
 
 type TabKey = "document" | "lesson";
@@ -62,14 +63,7 @@ const Favorites: React.FC = () => {
                 setLessonFavorites(lessonsRes.resultList ?? []);
             } catch (err: any) {
                 if (!isMounted) return;
-                let message = "Không thể tải kho lưu. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
-                setError(message);
+                setError(handleApiError(err, ERROR_MESSAGES.FAVORITES_LOAD_FAILED));
             } finally {
                 if (isMounted) {
                     setLoading(false);
@@ -97,13 +91,7 @@ const Favorites: React.FC = () => {
                 prev.filter((fav) => fav.id !== favoriteId)
             );
         } catch (err: any) {
-            let message = "Không thể xóa mục khỏi kho lưu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_REMOVE_FAILED);
             alert(message);
         } finally {
             setRemovingId(null);
@@ -189,8 +177,8 @@ const Favorites: React.FC = () => {
                         <button
                             type="button"
                             className={`btn ${activeTab === "document"
-                                    ? "btn-primary"
-                                    : "btn-outline-secondary"
+                                ? "btn-primary"
+                                : "btn-outline-secondary"
                                 }`}
                             onClick={() => setActiveTab("document")}
                         >
@@ -199,8 +187,8 @@ const Favorites: React.FC = () => {
                         <button
                             type="button"
                             className={`btn ${activeTab === "lesson"
-                                    ? "btn-primary"
-                                    : "btn-outline-secondary"
+                                ? "btn-primary"
+                                : "btn-outline-secondary"
                                 }`}
                             onClick={() => setActiveTab("lesson")}
                         >

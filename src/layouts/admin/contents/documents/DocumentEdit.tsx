@@ -5,7 +5,8 @@ import DocumentViewComp from '../../../common/components/DocumentViewComp';
 import RightProperties from '../components/RightProperties';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
 import type { DocumentRequest } from '../../../../models/request/DocumentReques';
-import axios from 'axios';
+import { handleApiError } from '../../../../utils/errorHandler';
+import { ERROR_MESSAGES } from '../../../../constants/messages';
 
 const DocumentEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -44,13 +45,7 @@ const DocumentEdit: React.FC = () => {
                 categoryId: doc?.categoryId
             });
         } catch (err: any) {
-            let message = "Không thể tải tài liệu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_LOAD_FAILED);
             setError(message);
         } finally {
             setLoading(false);
@@ -88,13 +83,7 @@ const DocumentEdit: React.FC = () => {
             setDocument(response.result);
             setError(null);
         } catch (err: any) {
-            let message = "Không thể cập nhật tài liệu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_UPDATE_FAILED);
             setError(message);
         } finally {
             setSaving(false);

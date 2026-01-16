@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { chatbot, getAllHistoryByUser } from "../../../apis/ChatGemini";
 import type { ChatHistoryResponse } from "../../../models/response/ChatHistoryResponse";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 import { UserContext } from "../../../AppContext";
 import ChatAuthRequired from "./component/ChatAuthRequired";
 
@@ -38,13 +39,7 @@ const ChatGemini: React.FC = () => {
             })) || [];
             setMessages(historyMessages);
         } catch (err: any) {
-            let message = "Không thể lấy thông tin lịch sử chat. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.CHAT_HISTORY_LOAD_FAILED);
             console.error(message);
         } finally {
             setIsLoadingHistory(false);
@@ -102,17 +97,11 @@ const ChatGemini: React.FC = () => {
 
             setMessages(prev => [...prev, botMessage]);
         } catch (err: any) {
-            let message = "Đã xảy ra lỗi khi gửi tin nhắn. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.CHAT_SEND_FAILED);
             console.error("Chat error:", message);
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
-                text: "Đã xảy ra lỗi khi gửi tin nhắn. Vui lòng thử lại.",
+                text: ERROR_MESSAGES.CHAT_SEND_FAILED,
                 sender: "bot",
             };
             setMessages(prev => [...prev, errorMessage]);

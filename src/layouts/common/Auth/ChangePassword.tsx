@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
 import { changePassword } from "../../../apis/AuthApi";
 import type { ChangePasswordRequest } from "../../../models/request/ChangePasswordRequest";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../../constants/messages";
 
 const ChangePassword: React.FC = () => {
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ const ChangePassword: React.FC = () => {
     const handleChangePassword = async () => {
         if (!hasValidLink) {
             setChangeSuccess(false);
-            setChangeMessage("Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+            setChangeMessage(ERROR_MESSAGES.INVALID_LINK);
             return;
         }
 
@@ -35,16 +36,16 @@ const ChangePassword: React.FC = () => {
 
         let passwordErr = "";
         if (password.trim() === "") {
-            passwordErr = "Mật khẩu không được để trống";
+            passwordErr = ERROR_MESSAGES.PASSWORD_EMPTY;
         } else if (!passwordRegex.test(password)) {
-            passwordErr = "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt";
+            passwordErr = ERROR_MESSAGES.PASSWORD_INVALID;
         }
 
         let confirmErr = "";
         if (confirmPassword.trim() === "") {
             confirmErr = "Vui lòng nhập lại mật khẩu";
         } else if (confirmPassword !== password) {
-            confirmErr = "Mật khẩu nhập lại không khớp";
+            confirmErr = ERROR_MESSAGES.PASSWORD_MISMATCH;
         }
 
         setPasswordError(passwordErr);
@@ -63,18 +64,12 @@ const ChangePassword: React.FC = () => {
         try {
             await changePassword(payload);
             setChangeSuccess(true);
-            setChangeMessage("Đổi mật khẩu thành công! Bạn có thể đăng nhập với mật khẩu mới.");
+            setChangeMessage(SUCCESS_MESSAGES.CHANGE_PASSWORD_SUCCESS);
             setPassword("");
             setConfirmPassword("");
             setTimeout(() => navigate("/login"), 2000);
         } catch (err: any) {
-            let message = "Không thể đổi mật khẩu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.CHANGE_PASSWORD_FAILED);
             setChangeSuccess(false);
             setChangeMessage(message);
         } finally {

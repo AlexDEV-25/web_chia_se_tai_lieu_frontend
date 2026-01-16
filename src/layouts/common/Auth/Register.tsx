@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { checkEmailExist, checkUsernameExist } from "../../../apis/UserApi";
 import { register } from "../../../apis/AuthApi";
 import type { UserRequest } from "../../../models/request/UserRequest";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../../constants/messages";
 
 const Register: React.FC = () => {
     const [username, setUsername] = useState<string>("");
@@ -32,41 +33,40 @@ const Register: React.FC = () => {
 
         // USERNAME
         if (username.trim() === "") {
-            usernameError = "Tên người dùng không được để trống";
+            usernameError = ERROR_MESSAGES.USERNAME_EMPTY;
         } else if (username.trim().length < 2) {
-            usernameError = "Tên người dùng quá ngắn";
+            usernameError = ERROR_MESSAGES.USERNAME_TOO_SHORT;
         } else if (username.trim().length > 50) {
-            usernameError = "Tên người dùng quá dài";
+            usernameError = ERROR_MESSAGES.USERNAME_TOO_LONG;
         } else {
             const exist = await checkUsernameExist(username.trim());
-            if (exist.result) usernameError = "Tên người dùng đã tồn tại";
+            if (exist.result) usernameError = ERROR_MESSAGES.USERNAME_EXISTS;
         }
 
         // EMAIL
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (email.trim() === "") {
-            emailError = "Email không được để trống";
+            emailError = ERROR_MESSAGES.EMAIL_EMPTY;
         } else if (!emailRegex.test(email.trim())) {
-            emailError = "Email không hợp lệ";
+            emailError = ERROR_MESSAGES.EMAIL_INVALID;
         } else {
             const exist = await checkEmailExist(email.trim());
-            if (exist.result) emailError = "Email đã tồn tại";
+            if (exist.result) emailError = ERROR_MESSAGES.EMAIL_EXISTS;
         }
 
         // PASSWORD
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (password.trim() === "") {
-            passwordError = "Mật khẩu không được để trống";
+            passwordError = ERROR_MESSAGES.PASSWORD_EMPTY;
         } else if (!passwordRegex.test(password)) {
-            passwordError =
-                "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt";
+            passwordError = ERROR_MESSAGES.PASSWORD_INVALID;
         }
 
         // RE-PASSWORD
         if (rePassword.trim() === "") {
             rePasswordError = "Vui lòng nhập lại mật khẩu";
         } else if (rePassword !== password) {
-            rePasswordError = "Mật khẩu nhập lại không khớp";
+            rePasswordError = ERROR_MESSAGES.PASSWORD_MISMATCH;
         }
 
         // SET ERROR
@@ -97,15 +97,9 @@ const Register: React.FC = () => {
             setEmail("");
             setPassword("");
             setRePassword("");
-            setIsSuccess("Đăng ký thành công vui lòng vào Email để kích hoạt tài khoản!");
+            setIsSuccess(SUCCESS_MESSAGES.REGISTER_SUCCESS);
         } catch (err: any) {
-            let message = "Không thể đăng ký tài khoản. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.REGISTER_FAILED);
             console.log(message);
         } finally {
             setIsLoading(false);

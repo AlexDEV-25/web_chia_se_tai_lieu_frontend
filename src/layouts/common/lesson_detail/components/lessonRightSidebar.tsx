@@ -9,7 +9,8 @@ import {
 import { UserContext } from "../../../../AppContext";
 import type { LessonResponse } from "../../../../models/response/LessonResponse";
 import GrindItem from "../../components/GrindItem";
-import axios from "axios";
+import { handleApiError } from "../../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../../constants/messages";
 
 interface LessonRightSidebarProps {
     userId: number;
@@ -40,14 +41,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
                 );
                 setLessons(list.slice(0, 6));
             } catch (err: any) {
-                let message = "Không thể tải thêm bài giảng của giảng viên này. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
-                setError(message);
+                setError(handleApiError(err, ERROR_MESSAGES.LESSON_AUTHOR_LOAD_FAILED));
             } finally {
                 setLoading(false);
             }
@@ -75,13 +69,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
                 });
                 setFavoriteMap(map);
             } catch (err: any) {
-                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.FAVORITES_LOAD_FAILED);
                 console.error(message);
                 setFavoriteMap({});
             }
@@ -92,7 +80,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
 
     const handleToggleFavorite = async (lesson: LessonResponse) => {
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để lưu video yêu thích.");
+            alert(ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE);
             return;
         }
 
@@ -121,13 +109,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
                 }
             }
         } catch (err: any) {
-            let message = "Không thể cập nhật kho lưu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED);
             alert(message);
         } finally {
             setFavoriteLoadingId(null);

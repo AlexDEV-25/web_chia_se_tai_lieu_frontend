@@ -10,7 +10,8 @@ import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
 import { UserContext } from "../../../AppContext";
 import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 const DocumentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -36,7 +37,7 @@ const DocumentDetail: React.FC = () => {
     // Tải thông tin document
     useEffect(() => {
         if (!docId) {
-            setError("Không tìm thấy tài liệu.");
+            setError(ERROR_MESSAGES.DOCUMENT_NOT_FOUND);
             setLoading(false);
             return;
         }
@@ -46,13 +47,7 @@ const DocumentDetail: React.FC = () => {
                 const response = await getDocumentById(docId);
                 setDocumentDetail(response?.result ?? null);
             } catch (err: any) {
-                let message = "Không thể tải chi tiết tài liệu. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_LOAD_FAILED);
                 setError(message);
             } finally {
                 setLoading(false);
@@ -68,13 +63,7 @@ const DocumentDetail: React.FC = () => {
             try {
                 await increaseView(docId);
             } catch (err: any) {
-                let message = "Không thể tăng lượt xem.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.INCREASE_VIEW_FAILED);
                 console.error(message);
             }
         }, 30000); // 30 seconds
@@ -98,13 +87,7 @@ const DocumentDetail: React.FC = () => {
                 const existing = favorites.find((fav) => fav.contentId === docId);
                 setFavoriteId(existing ? existing.id : null);
             } catch (err: any) {
-                let message = "Không thể tải kho yêu thích. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_LOAD_FAILED);
                 console.error(message);
                 if (isMounted) {
                     setFavoriteId(null);
@@ -122,7 +105,7 @@ const DocumentDetail: React.FC = () => {
     const handleToggleFavorite = async () => {
         if (!docId) return;
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để lưu tài liệu yêu thích.");
+            alert(ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE);
             return;
         }
 
@@ -145,13 +128,7 @@ const DocumentDetail: React.FC = () => {
                 }
             }
         } catch (err: any) {
-            let message = "Không thể cập nhật kho lưu. Vui lòng thử lại.";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED);
             console.error(message);
             alert(message);
         } finally {
@@ -199,13 +176,7 @@ const DocumentDetail: React.FC = () => {
             link.click();
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
-            let message = "Vui lòng đăng nhập để tải tài liệu";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.DOWNLOAD_LOGIN_REQUIRED);
             alert(message);
         } finally {
             setDownloading(false);

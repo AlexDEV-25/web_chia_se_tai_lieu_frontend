@@ -6,7 +6,8 @@ import type { CategoryResponse } from "../../../models/response/CategoryResponse
 import HeroBlockComp from "../components/HeroBlockComp";
 import CategoryBlockComp from "../components/CategoryBlockComp";
 import MainBlockComp from "../components/MainBlockComp";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 interface Props {
     keyWords: string
 }
@@ -25,14 +26,7 @@ const Home = ({ keyWords }: Props) => {
                 const response = await getAllDocument();
                 setDocuments(response?.resultList ?? []);
             } catch (err: any) {
-                let message = "Không thể tải tài liệu. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
-                setError(message);
+                setError(handleApiError(err, ERROR_MESSAGES.DOCUMENT_LOAD_FAILED));
             } finally {
                 setLoadingDocs(false);
             }
@@ -46,14 +40,7 @@ const Home = ({ keyWords }: Props) => {
                 const response = await getAllCategory();
                 setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
             } catch (err: any) {
-                let message = "Không thể tải danh mục. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
-                setError(message);
+                setError(handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED));
             } finally {
                 setLoadingCats(false);
             }

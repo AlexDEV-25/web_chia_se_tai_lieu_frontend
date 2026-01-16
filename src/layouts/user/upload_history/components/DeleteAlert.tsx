@@ -1,5 +1,7 @@
-import axios from "axios";
 import { useState } from "react";
+import { handleApiError } from "../../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../../constants/messages";
+
 
 interface Props {
     isVisible: boolean;
@@ -23,13 +25,7 @@ const DeleteAlert: React.FC<Props> = ({
         try {
             await onConfirm();
         } catch (err: any) {
-            let message = "Xóa thất bại!";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.DELETE_FAILED_FORM);
             console.error(message);
             setIsDeleting(false);
         }

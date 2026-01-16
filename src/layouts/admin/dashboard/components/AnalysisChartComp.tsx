@@ -8,7 +8,8 @@ import PieChart from './child_components/PieChart';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
 import type { UserResponse } from '../../../../models/response/UserResponse';
-import axios from 'axios';
+import { handleApiError } from '../../../../utils/errorHandler';
+import { ERROR_MESSAGES } from '../../../../constants/messages';
 const AnalysisChartComp: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [documents, setDocuments] = useState<DocumentResponse[]>([]);
@@ -28,13 +29,7 @@ const AnalysisChartComp: React.FC = () => {
                 setLessons(lessonsData?.resultList ?? []);
                 setUsers(usersData?.resultList ?? []);
             } catch (err: any) {
-                let message = "Không thể tải tài liệu, bài giảng, người dùng. Vui lòng thử lại.";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.LOAD_FAILED);
                 console.error(message);
             } finally {
                 setLoading(false);

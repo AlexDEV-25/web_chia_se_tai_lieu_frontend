@@ -8,7 +8,8 @@ import { exchangeToken } from "../../../apis/GoogleApi";
 import { useSearchParams } from "react-router-dom";
 import type { UserResponse } from "../../../models/response/UserResponse";
 import { getMyInfo } from "../../../apis/UserApi";
-import axios from "axios";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 interface Props {
     setToken: (value: string | null) => void
     setRoles: (value: string[]) => void
@@ -31,11 +32,11 @@ const Login: React.FC<Props> = ({ setToken, setRoles }) => {
         let emailError = "";
         let passwordError = "";
         if (email.trim() === "") {
-            emailError = "Email không được để trống";
+            emailError = ERROR_MESSAGES.EMAIL_EMPTY;
         }
 
         if (password.trim() === "") {
-            passwordError = "Mật khẩu không được để trống";
+            passwordError = ERROR_MESSAGES.PASSWORD_EMPTY;
         }
 
         setIsErrorEmail(emailError);
@@ -51,7 +52,7 @@ const Login: React.FC<Props> = ({ setToken, setRoles }) => {
             const token = response.result?.token;
 
             if (!token) {
-                setLoginError("Đăng nhập thất bại!");
+                setLoginError(ERROR_MESSAGES.LOGIN_FAILED);
                 return;
             }
 
@@ -63,30 +64,18 @@ const Login: React.FC<Props> = ({ setToken, setRoles }) => {
                 const roles: string[] | undefined = user?.roles?.map((role) => role.name);
                 localStorage.setItem("roles", JSON.stringify(roles));
                 if (!user) {
-                    setLoginError("Đăng nhập thất bại!");
+                    setLoginError(ERROR_MESSAGES.LOGIN_FAILED);
                     return;
                 }
                 setRoles(roles!);
             } catch (err: any) {
-                let message = "Đăng nhập thất bại. Vui lòng thử lại!";
-                if (axios.isAxiosError(err)) {
-                    message =
-                        err.response?.data?.message ??
-                        err.message ??
-                        message;
-                }
+                const message = handleApiError(err, ERROR_MESSAGES.LOGIN_FAILED);
                 setLoginError(message);
             }
             setLoginError("");
             navigate("/");
         } catch (err: any) {
-            let message = "Đăng nhập thất bại. Vui lòng thử lại!";
-            if (axios.isAxiosError(err)) {
-                message =
-                    err.response?.data?.message ??
-                    err.message ??
-                    message;
-            }
+            const message = handleApiError(err, ERROR_MESSAGES.LOGIN_FAILED);
             setLoginError(message);
         }
     };
@@ -119,7 +108,7 @@ const Login: React.FC<Props> = ({ setToken, setRoles }) => {
                     const data = await exchangeToken(code);
                     const token = data.result?.token;
                     if (!token) {
-                        setLoginError("Đăng nhập thất bại!");
+                        setLoginError(ERROR_MESSAGES.LOGIN_FAILED);
                         return;
                     }
                     localStorage.setItem("token", token);
@@ -131,28 +120,16 @@ const Login: React.FC<Props> = ({ setToken, setRoles }) => {
                         localStorage.setItem("roles", JSON.stringify(roles));
                         setRoles(roles!);
                         if (!user) {
-                            setLoginError("Đăng nhập thất bại!");
+                            setLoginError(ERROR_MESSAGES.LOGIN_FAILED);
                             return;
                         }
                     } catch (err: any) {
-                        let message = "Đăng nhập thất bại. Vui lòng thử lại!";
-                        if (axios.isAxiosError(err)) {
-                            message =
-                                err.response?.data?.message ??
-                                err.message ??
-                                message;
-                        }
+                        const message = handleApiError(err, ERROR_MESSAGES.LOGIN_FAILED);
                         setLoginError(message);
                     }
                     navigate("/");
                 } catch (err: any) {
-                    let message = "Đăng nhập thất bại. Vui lòng thử lại!";
-                    if (axios.isAxiosError(err)) {
-                        message =
-                            err.response?.data?.message ??
-                            err.message ??
-                            message;
-                    }
+                    const message = handleApiError(err, ERROR_MESSAGES.LOGIN_FAILED);
                     setLoginError(message);
                 }
             }
