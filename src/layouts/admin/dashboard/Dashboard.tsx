@@ -18,14 +18,6 @@ const Dashboard: React.FC = () => {
                                 Theo dõi hiệu suất và hoạt động của nền tảng chia sẻ tài liệu học tập.
                             </p>
                         </div>
-                        <div className="dashboard-actions">
-                            <button className="dashboard-btn ghost">
-                                <i className="fa fa-calendar" /> Hôm nay
-                            </button>
-                            <button className="dashboard-btn primary">
-                                <i className="fa fa-download" /> Xuất báo cáo
-                            </button>
-                        </div>
                     </div>
 
                     {/* Overview Section */}

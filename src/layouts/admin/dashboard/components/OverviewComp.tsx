@@ -1,32 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { getAllDocument } from '../../../../apis/DocumentApi';
-import { getAllLesson } from '../../../../apis/LessonApi';
 import { getAllUser } from '../../../../apis/UserApi';
+import { userLast7Days, documentLast7Days, lessonLast7Days } from '../../../../apis/Statistics';
 import OverviewCard from './child_components/OverviewCard';
-import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
-import type { LessonResponse } from '../../../../models/response/LessonResponse';
 import type { UserResponse } from '../../../../models/response/UserResponse';
+import type { DailyCountResponse } from '../../../../models/response/DailyCountResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
 
 const OverviewComp: React.FC = () => {
     const [loading, setLoading] = useState(true);
-    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
-    const [lessons, setLessons] = useState<LessonResponse[]>([]);
     const [users, setUsers] = useState<UserResponse[]>([]);
+    const [userStats, setUserStats] = useState<DailyCountResponse[]>([]);
+    const [documentStats, setDocumentStats] = useState<DailyCountResponse[]>([]);
+    const [lessonStats, setLessonStats] = useState<DailyCountResponse[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [docsData, lessonsData, usersData] = await Promise.all([
-                    getAllDocument(),
-                    getAllLesson(),
-                    getAllUser()
+                const [usersData, userStatsData, documentStatsData, lessonStatsData] = await Promise.all([
+                    getAllUser(),
+                    userLast7Days(),
+                    documentLast7Days(),
+                    lessonLast7Days()
                 ]);
-                setDocuments(docsData?.resultList ?? []);
-                setLessons(lessonsData?.resultList ?? []);
                 setUsers(usersData?.resultList ?? []);
+                setUserStats(userStatsData?.result ? [userStatsData.result] : []);
+                setDocumentStats(documentStatsData?.result ? [documentStatsData.result] : []);
+                setLessonStats(lessonStatsData?.result ? [lessonStatsData.result] : []);
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.LOAD_FAILED);
                 console.error(message);
@@ -39,50 +40,26 @@ const OverviewComp: React.FC = () => {
     }, []);
 
     const calculateStats = () => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = new Date().toLocaleDateString('vi-VN');
 
-        const weekAgo = new Date(today);
-        weekAgo.setDate(weekAgo.getDate() - 7);
+        const usersToday = userStats.find(stat => stat.date === today)?.total ?? 0;
+        const documentsToday = documentStats.find(stat => stat.date === today)?.total ?? 0;
+        const lessonsToday = lessonStats.find(stat => stat.date === today)?.total ?? 0;
 
-        const documentsToday = documents.filter(d => {
-            const docDate = new Date(d.createdAt);
-            docDate.setHours(0, 0, 0, 0);
-            return docDate.getTime() === today.getTime();
-        }).length;
-
-        const lessonsToday = lessons.filter(l => {
-            const lessonDate = new Date(l.createdAt);
-            lessonDate.setHours(0, 0, 0, 0);
-            return lessonDate.getTime() === today.getTime();
-        }).length;
-
-        const documentsThisWeek = documents.filter(d => {
-            const docDate = new Date(d.createdAt);
-            return docDate >= weekAgo;
-        }).length;
-
-        const lessonsThisWeek = lessons.filter(l => {
-            const lessonDate = new Date(l.createdAt);
-            return lessonDate >= weekAgo;
-        }).length;
-
-        const pendingDocuments = documents.filter(d => d.status === 'PENDING').length;
-        const pendingLessons = lessons.filter(l => l.status === 'PENDING').length;
-
-        const totalDownloads = documents.reduce((sum, d) => sum + (d.downloadsCount ?? 0), 0);
+        const usersThisWeek = userStats.reduce((sum, stat) => sum + stat.total, 0);
+        const documentsThisWeek = documentStats.reduce((sum, stat) => sum + stat.total, 0);
+        const lessonsThisWeek = lessonStats.reduce((sum, stat) => sum + stat.total, 0);
 
         return {
             totalUsers: users.length,
-            totalDocuments: documents.length,
-            totalLessons: lessons.length,
+            totalDocuments: documentsThisWeek,
+            totalLessons: lessonsThisWeek,
             documentsToday,
             lessonsToday,
             documentsThisWeek,
             lessonsThisWeek,
-            pendingDocuments,
-            pendingLessons,
-            totalDownloads
+            usersToday,
+            usersThisWeek
         };
     };
 
@@ -95,15 +72,15 @@ const OverviewComp: React.FC = () => {
     return (
         <div className="overview-grid">
             <OverviewCard
-                icon="👥"
-                title="Tổng số người dùng"
-                value={stats.totalUsers}
+                icon="👤"
+                title="Người dùng mới hôm nay"
+                value={stats.usersToday}
                 color="blue"
             />
 
             <OverviewCard
                 icon="📚"
-                title="Tổng tài liệu & bài giảng"
+                title="Tổng tài liệu & bài giảng tuần này"
                 value={stats.totalDocuments + stats.totalLessons}
                 subtitle={`${stats.totalDocuments} tài liệu, ${stats.totalLessons} bài giảng`}
                 color="green"
@@ -118,26 +95,10 @@ const OverviewComp: React.FC = () => {
             />
 
             <OverviewCard
-                icon="📅"
-                title="Mới tuần này"
-                value={stats.documentsThisWeek + stats.lessonsThisWeek}
-                subtitle={`${stats.documentsThisWeek} tài liệu, ${stats.lessonsThisWeek} bài giảng`}
+                icon="👥"
+                title="Tổng số người dùng"
+                value={stats.totalUsers}
                 color="purple"
-            />
-
-            <OverviewCard
-                icon="⬇️"
-                title="Lượt tải xuống"
-                value={stats.totalDownloads}
-                color="blue"
-            />
-
-            <OverviewCard
-                icon="⏳"
-                title="Chờ duyệt"
-                value={stats.pendingDocuments + stats.pendingLessons}
-                subtitle={`${stats.pendingDocuments} tài liệu, ${stats.pendingLessons} bài giảng`}
-                color="red"
             />
         </div>
     );

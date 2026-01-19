@@ -1,33 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { getAllDocument } from '../../../../apis/DocumentApi';
-import { getAllLesson } from '../../../../apis/LessonApi';
-import { getAllUser } from '../../../../apis/UserApi';
+import { userLast7Days, documentLast7Days, lessonLast7Days, documentByCategory } from '../../../../apis/Statistics';
 import ColumnChart from './child_components/ColumnChart';
 import BarChart from './child_components/BarChart';
 import PieChart from './child_components/PieChart';
-import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
-import type { LessonResponse } from '../../../../models/response/LessonResponse';
-import type { UserResponse } from '../../../../models/response/UserResponse';
+import type { DailyCountResponse } from '../../../../models/response/DailyCountResponse';
+import type { CategoryCountResponse } from '../../../../models/response/CategoryCountResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
 const AnalysisChartComp: React.FC = () => {
     const [loading, setLoading] = useState(true);
-    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
-    const [lessons, setLessons] = useState<LessonResponse[]>([]);
-    const [users, setUsers] = useState<UserResponse[]>([]);
+    const [userStats, setUserStats] = useState<DailyCountResponse[]>([]);
+    const [documentStats, setDocumentStats] = useState<DailyCountResponse[]>([]);
+    const [lessonStats, setLessonStats] = useState<DailyCountResponse[]>([]);
+    const [documentCategories, setDocumentCategories] = useState<CategoryCountResponse[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [docsData, lessonsData, usersData] = await Promise.all([
-                    getAllDocument(),
-                    getAllLesson(),
-                    getAllUser(),
+                const [userStatsData, documentStatsData, lessonStatsData, documentCategoriesData] = await Promise.all([
+                    userLast7Days(),
+                    documentLast7Days(),
+                    lessonLast7Days(),
+                    documentByCategory()
                 ]);
-                setDocuments(docsData?.resultList ?? []);
-                setLessons(lessonsData?.resultList ?? []);
-                setUsers(usersData?.resultList ?? []);
+                setUserStats(userStatsData?.result ? [userStatsData.result] : []);
+                setDocumentStats(documentStatsData?.result ? [documentStatsData.result] : []);
+                setLessonStats(lessonStatsData?.result ? [lessonStatsData.result] : []);
+                setDocumentCategories(documentCategoriesData?.resultList ?? []);
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.LOAD_FAILED);
                 console.error(message);
@@ -39,87 +39,59 @@ const AnalysisChartComp: React.FC = () => {
         fetchData();
     }, []);
 
-    // Calculate documents upload by day
+    // Transform document stats for chart
     const getDocumentUploadByDay = () => {
-        const last7Days = Array.from({ length: 7 }, (_, i) => {
-            const date = new Date();
-            date.setDate(date.getDate() - (6 - i));
-            return date;
-        });
+        if (documentStats.length === 0) {
+            // Fallback to empty data if no stats
+            return Array.from({ length: 7 }, (_, i) => ({
+                day: `Ngày ${new Date().getDate() - (6 - i)}`,
+                upload: 0
+            }));
+        }
 
-        return last7Days.map(date => {
-            const dateStr = date.toLocaleDateString('vi-VN');
-            const dayStr = date.getDate();
-            const docCount = documents.filter(d => {
-                const docDate = new Date(d.createdAt);
-                return docDate.toLocaleDateString('vi-VN') === dateStr;
-            }).length;
-
-            return {
-                day: `Ngày ${dayStr}`,
-                upload: docCount
-            };
-        });
+        return documentStats.map(stat => ({
+            day: `Ngày ${new Date(stat.date).getDate()}`,
+            upload: stat.total
+        }));
     };
 
-    // Calculate lessons upload by day
+    // Transform lesson stats for chart
     const getLessonUploadByDay = () => {
-        const last7Days = Array.from({ length: 7 }, (_, i) => {
-            const date = new Date();
-            date.setDate(date.getDate() - (6 - i));
-            return date;
-        });
+        if (lessonStats.length === 0) {
+            // Fallback to empty data if no stats
+            return Array.from({ length: 7 }, (_, i) => ({
+                day: `Ngày ${new Date().getDate() - (6 - i)}`,
+                upload: 0
+            }));
+        }
 
-        return last7Days.map(date => {
-            const dateStr = date.toLocaleDateString('vi-VN');
-            const dayStr = date.getDate();
-            const lessonCount = lessons.filter(l => {
-                const lessonDate = new Date(l.createdAt);
-                return lessonDate.toLocaleDateString('vi-VN') === dateStr;
-            }).length;
-
-            return {
-                day: `Ngày ${dayStr}`,
-                upload: lessonCount
-            };
-        });
+        return lessonStats.map(stat => ({
+            day: `Ngày ${new Date(stat.date).getDate()}`,
+            upload: stat.total
+        }));
     };
 
-    // Calculate new users by day
+    // Transform user stats for chart
     const getNewUsersByDay = () => {
-        const last7Days = Array.from({ length: 7 }, (_, i) => {
-            const date = new Date();
-            date.setDate(date.getDate() - (6 - i));
-            return date;
-        });
+        if (userStats.length === 0) {
+            // Fallback to empty data if no stats
+            return Array.from({ length: 7 }, (_, i) => ({
+                day: `Ngày ${new Date().getDate() - (6 - i)}`,
+                người_dùng: 0
+            }));
+        }
 
-        return last7Days.map(date => {
-            const dateStr = date.toLocaleDateString('vi-VN');
-            const dayStr = date.getDate();
-            const userCount = users.filter(u => {
-                const userDate = new Date(u.createdAt);
-                return userDate.toLocaleDateString('vi-VN') === dateStr;
-            }).length;
-
-            return {
-                day: `Ngày ${dayStr}`,
-                người_dùng: userCount
-            };
-        });
+        return userStats.map(stat => ({
+            day: `Ngày ${new Date(stat.date).getDate()}`,
+            người_dùng: stat.total
+        }));
     };
 
-    // Calculate documents by category
+    // Transform document categories for pie chart
     const getDocumentsByCategory = () => {
-        const categoryMap: { [key: string]: number } = {};
-
-        documents.forEach(doc => {
-            const categoryName = doc.categoryName || 'Chưa phân loại';
-            categoryMap[categoryName] = (categoryMap[categoryName] || 0) + 1;
-        });
-
-        return Object.entries(categoryMap).map(([name, count]) => ({
-            name,
-            value: count
+        return documentCategories.map(category => ({
+            name: category.categoryName,
+            value: category.total
         }));
     };
 
