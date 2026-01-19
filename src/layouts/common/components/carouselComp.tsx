@@ -31,6 +31,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
     const [error, setError] = useState<string | null>(null);
     const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
         const fetchByCategory = async () => {
@@ -46,7 +47,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                 const list = (response.resultList ?? []).filter(
                     (item: Item) => item.id !== currentItemId && item.status === "PUBLISHED"
                 );
-                setItems(list.slice(0, 8));
+                setItems(list);
             } catch (err: any) {
                 setError(handleApiError(err, ERROR_MESSAGES.CAROUSEL_LOAD_FAILED));
             } finally {
@@ -144,6 +145,30 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
     };
 
     const hasItems = items.length > 0;
+    const itemsPerPage = 4;
+    const totalPages = Math.ceil(items.length / itemsPerPage);
+    const startIndex = currentIndex * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = items.slice(startIndex, endIndex);
+    const canGoPrev = currentIndex > 0;
+    const canGoNext = currentIndex < totalPages - 1;
+
+    const handlePrev = () => {
+        if (canGoPrev) {
+            setCurrentIndex(currentIndex - 1);
+        }
+    };
+
+    const handleNext = () => {
+        if (canGoNext) {
+            setCurrentIndex(currentIndex + 1);
+        }
+    };
+
+    // Reset index when items change
+    useEffect(() => {
+        setCurrentIndex(0);
+    }, [items]);
 
     if (!categoryId) return null;
 
@@ -164,33 +189,61 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
             )}
 
             {hasItems && (
-                <div className="document-grid">
-                    {items.map((item) => {
-                        const isFavorite = Boolean(favoriteMap[item.id]);
-                        const isLoadingFavorite = favoriteLoadingId === item.id;
-                        const thumbnailUrl = 'thumbnailUrl' in item && item.thumbnailUrl
-                            ? `http://localhost:8080/api/images/thumbnail/${item.thumbnailUrl}`
-                            : undefined;
-                        const link = type === 'document' ? `/document/${item.id}` : `/lesson/${item.id}`;
-                        const description = 'description' in item ? item.description : '';
+                <div className="carousel-container">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <div className="carousel-info">
+                            <span className="badge bg-primary">
+                                {currentIndex + 1} / {totalPages}
+                            </span>
+                        </div>
+                        <div className="btn-group" role="group">
+                            <button
+                                className="btn btn-outline-primary btn-sm"
+                                onClick={handlePrev}
+                                disabled={!canGoPrev}
+                                aria-label="Previous"
+                            >
+                                <i className="fa fa-chevron-left"></i>
+                            </button>
+                            <button
+                                className="btn btn-outline-primary btn-sm"
+                                onClick={handleNext}
+                                disabled={!canGoNext}
+                                aria-label="Next"
+                            >
+                                <i className="fa fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div className="row g-3">
+                        {currentItems.map((item) => {
+                            const isFavorite = Boolean(favoriteMap[item.id]);
+                            const isLoadingFavorite = favoriteLoadingId === item.id;
+                            const thumbnailUrl = 'thumbnailUrl' in item && item.thumbnailUrl
+                                ? `http://localhost:8080/api/images/thumbnail/${item.thumbnailUrl}`
+                                : undefined;
+                            const link = type === 'document' ? `/document/${item.id}` : `/lesson/${item.id}`;
+                            const description = 'description' in item ? item.description : '';
 
-                        return (
-                            <GrindItem
-                                key={item.id}
-                                itemType={type}
-                                link={link}
-                                title={item.title}
-                                thumbnailUrl={thumbnailUrl}
-                                subtitle={<p>{description ?? `${type === 'document' ? 'Tài liệu' : 'Bài giảng'} chưa có mô tả.`}</p>}
-                                viewsCount={item.viewsCount}
-                                downloadsCount={'downloadsCount' in item ? item.downloadsCount : undefined}
-                                showInlineFavorite
-                                isFavorite={isFavorite}
-                                favoriteDisabled={isLoadingFavorite}
-                                onToggleFavorite={() => handleToggleFavorite(item)}
-                            />
-                        );
-                    })}
+                            return (
+                                <div key={item.id} className="col-12 col-md-6 col-lg-3">
+                                    <GrindItem
+                                        itemType={type}
+                                        link={link}
+                                        title={item.title}
+                                        thumbnailUrl={thumbnailUrl}
+                                        subtitle={<p>{description ?? `${type === 'document' ? 'Tài liệu' : 'Bài giảng'} chưa có mô tả.`}</p>}
+                                        viewsCount={item.viewsCount}
+                                        downloadsCount={'downloadsCount' in item ? item.downloadsCount : undefined}
+                                        showInlineFavorite
+                                        isFavorite={isFavorite}
+                                        favoriteDisabled={isLoadingFavorite}
+                                        onToggleFavorite={() => handleToggleFavorite(item)}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             )}
         </section>
