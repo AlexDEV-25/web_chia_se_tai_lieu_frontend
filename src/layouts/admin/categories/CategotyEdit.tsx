@@ -70,7 +70,7 @@ const CategoryEdit: React.FC = () => {
 
             navigate("/categories");
         } catch (err: any) {
-            const message = handleApiError(err, ERROR_MESSAGES.UPDATE_FAILED);
+            const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_UPDATE_FAILED);
             setFormError(message);
         } finally {
             setIsSubmitting(false);

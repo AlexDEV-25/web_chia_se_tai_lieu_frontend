@@ -87,7 +87,7 @@ const DocumentDetail: React.FC = () => {
                 const existing = favorites.find((fav) => fav.contentId === docId);
                 setFavoriteId(existing ? existing.id : null);
             } catch (err: any) {
-                const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_LOAD_FAILED);
+                const message = handleApiError(err, ERROR_MESSAGES.FAVORITES_LOAD_FAILED);
                 console.error(message);
                 if (isMounted) {
                     setFavoriteId(null);
