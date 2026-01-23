@@ -24,31 +24,30 @@ export const increaseView = async (id: number) => {
     return await httpPost<APIResponse<void>>(`/lessons/view/${id}`);
 }
 
-export const downloadDocument = async (fileName: string): Promise<Blob> => {
-    if (!fileName) {
-        throw new Error("Thiếu tên file để tải xuống");
+export const downloadDocument = async (lessonId: number): Promise<Blob> => {
+    if (!lessonId) {
+        throw new Error("Thiếu ID lesson để tải tài liệu");
     }
 
-    const response = await api.get<Blob>(`/lessons/download-document`, {
-        params: { fileName },
+    const response = await api.get<Blob>(`/lessons/${lessonId}/document`, {
         responseType: "blob",
     });
 
     return response.data;
-}
+};
 
-export const downloadSubFile = async (fileName: string): Promise<Blob> => {
-    if (!fileName) {
-        throw new Error("Thiếu tên file để tải xuống");
+export const downloadSubFile = async (lessonId: number): Promise<Blob> => {
+    if (!lessonId) {
+        throw new Error("Thiếu ID lesson để tải sub file");
     }
 
-    const response = await api.get<Blob>(`/lessons/download-subfile`, {
-        params: { fileName },
+    const response = await api.get<Blob>(`/lessons/${lessonId}/download-subfile`, {
         responseType: "blob",
     });
 
     return response.data;
-}
+};
+
 
 export const uploadLesson = async (
     videoFile: File,

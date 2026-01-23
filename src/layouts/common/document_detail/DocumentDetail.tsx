@@ -164,16 +164,18 @@ const DocumentDetail: React.FC = () => {
     };
 
     const handleDownload = async () => {
-        if (!documentDetail) return;
+        if (!documentDetail?.id) return;
         setDownloading(true);
         try {
             await increaseDownload(documentDetail.id);
-            const blob = await downloadFile(documentDetail.fileUrl);
+            const blob = await downloadFile(documentDetail.id);
             const url = window.URL.createObjectURL(blob);
             const link = window.document.createElement("a");
             link.href = url;
             link.download = documentDetail.title ? `${documentDetail.title}.pdf` : "document.pdf";
+            document.body.appendChild(link);
             link.click();
+            link.remove();
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.DOWNLOAD_LOGIN_REQUIRED);
@@ -182,6 +184,7 @@ const DocumentDetail: React.FC = () => {
             setDownloading(false);
         }
     };
+
 
     if (loading) {
         return <div className="document-detail-shell"><div className="glass-card">Đang tải nội dung...</div></div>;

@@ -145,15 +145,17 @@ const LessonDetail: React.FC = () => {
     }, [lessonDetail]);
 
     const handleDownloadDocument = async () => {
-        if (!lessonDetail?.documentUrl) return;
+        if (!lessonDetail?.id) return;
         setDownloadingDoc(true);
         try {
-            const blob = await downloadDocument(lessonDetail.documentUrl);
+            const blob = await downloadDocument(lessonDetail.id);
             const url = window.URL.createObjectURL(blob);
             const link = window.document.createElement("a");
             link.href = url;
             link.download = lessonDetail.title ? `${lessonDetail.title}.pdf` : "document.pdf";
+            document.body.appendChild(link);
             link.click();
+            link.remove();
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.DOWNLOAD_LOGIN_REQUIRED_LESSON);
@@ -162,17 +164,18 @@ const LessonDetail: React.FC = () => {
             setDownloadingDoc(false);
         }
     };
-
     const handleDownloadSubFile = async () => {
-        if (!lessonDetail?.subFileUrl) return;
+        if (!lessonDetail?.id) return;
         setDownloadingSub(true);
         try {
-            const blob = await downloadSubFile(lessonDetail.subFileUrl);
+            const blob = await downloadSubFile(lessonDetail.id);
             const url = window.URL.createObjectURL(blob);
             const link = window.document.createElement("a");
             link.href = url;
             link.download = lessonDetail.title ? `${lessonDetail.title}.rar` : "subfile.rar";
+            document.body.appendChild(link);
             link.click();
+            link.remove();
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.DOWNLOAD_SUBFILE_LOGIN_REQUIRED);

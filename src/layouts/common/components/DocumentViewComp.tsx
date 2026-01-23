@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Document, Page } from "react-pdf";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import ZoomComp from "./zoomComp";
 
 interface Props {
     fileUrl: string | null;
@@ -29,6 +30,7 @@ const DocumentViewComp: React.FC<Props> = ({
     const [internalPage, setInternalPage] = useState<number>(page ?? 1);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [zoomLevel, setZoomLevel] = useState<number>(100);
+    const [showZoomControls, setShowZoomControls] = useState<boolean>(true);
     const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState<boolean>(false);
     const dragStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -131,6 +133,10 @@ const DocumentViewComp: React.FC<Props> = ({
         setOffset({ x: 0, y: 0 });
     };
 
+    const toggleZoomControls = () => {
+        setShowZoomControls(!showZoomControls);
+    };
+
     const handlePointerDown = (e: React.PointerEvent) => {
         if (e.button !== 0) return;
         if (zoomLevel <= 100 || !stageRef.current) return;
@@ -225,21 +231,14 @@ const DocumentViewComp: React.FC<Props> = ({
                 </div>
 
                 {/* Floating Zoom Controls */}
-                <div className="pdf-zoom-controls-floating">
-                    <button onClick={handleZoomOut} title="Zoom out" className="pdf-zoom-btn">
-                        <i className="fa fa-minus" />
-                    </button>
-
-                    <span className="pdf-zoom-indicator">{zoomLevel}%</span>
-
-                    <button onClick={handleZoomIn} title="Zoom in" className="pdf-zoom-btn">
-                        <i className="fa fa-plus" />
-                    </button>
-
-                    <button onClick={resetZoom} title="Reset zoom" className="pdf-zoom-btn">
-                        <i className="fa fa-undo" />
-                    </button>
-                </div>
+                <ZoomComp
+                    zoomLevel={zoomLevel}
+                    onZoomIn={handleZoomIn}
+                    onZoomOut={handleZoomOut}
+                    onResetZoom={resetZoom}
+                    isVisible={showZoomControls}
+                    onToggleVisibility={toggleZoomControls}
+                />
             </div>
 
             {errorMessage && <div className="error-text text-center">{errorMessage}</div>}

@@ -28,18 +28,17 @@ export const increaseDownload = async (id: number) => {
     return await httpPost<APIResponse<void>>(`/documents/download/${id}`);
 }
 
-export const downloadFile = async (fileName: string): Promise<Blob> => {
-    if (!fileName) {
-        throw new Error("Thiếu tên file để tải xuống");
+export const downloadFile = async (documentId: number): Promise<Blob> => {
+    if (!documentId) {
+        throw new Error("Thiếu ID document để tải xuống");
     }
 
-    const response = await api.get<Blob>(`/documents/download-file`, {
-        params: { fileName },
+    const response = await api.get<Blob>(`/documents/${documentId}/download`, {
         responseType: "blob",
     });
 
     return response.data;
-}
+};
 
 export const uploadDocument = async (file: File, documentData: DocumentRequest): Promise<APIResponse<DocumentResponse>> => {
     const formData = new FormData();
