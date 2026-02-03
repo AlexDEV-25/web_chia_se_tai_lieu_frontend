@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getAllUser } from '../../../../apis/UserApi';
-import { userLast7Days, documentLast7Days, lessonLast7Days } from '../../../../apis/Statistics';
+import { userLast7Days, documentLast7Days, lessonLast7Days } from '../../../../apis/StatisticsApi';
 import OverviewCard from './child_components/OverviewCard';
 import type { UserResponse } from '../../../../models/response/UserResponse';
 import type { DailyCountResponse } from '../../../../models/response/DailyCountResponse';

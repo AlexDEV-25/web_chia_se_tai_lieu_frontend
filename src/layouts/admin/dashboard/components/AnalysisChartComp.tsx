@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { userLast7Days, documentLast7Days, lessonLast7Days, documentByCategory } from '../../../../apis/Statistics';
+import { userLast7Days, documentLast7Days, lessonLast7Days, documentByCategory } from '../../../../apis/StatisticsApi';
 import ColumnChart from './child_components/ColumnChart';
 import BarChart from './child_components/BarChart';
 import PieChart from './child_components/PieChart';

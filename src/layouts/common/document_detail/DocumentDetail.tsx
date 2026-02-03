@@ -8,6 +8,7 @@ import LeftSidebar from "./components/LeftSidebar";
 import RightSidebar from "./components/RightSidebar";
 import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
+import ReportComp from "../components/ReportComp";
 import { UserContext } from "../../../AppContext";
 import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";
@@ -221,6 +222,7 @@ const DocumentDetail: React.FC = () => {
                         <span className="chip ghost">
                             <i className="fa fa-download" /> {documentDetail.downloadsCount?.toLocaleString("vi-VN") ?? 0} tải xuống
                         </span>
+                        <ReportComp contentId={docId} contentType="DOCUMENT" />
                     </div>
 
                     <div className="stat-grid">

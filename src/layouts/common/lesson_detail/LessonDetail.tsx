@@ -8,6 +8,7 @@ import LessonRightSidebar from "./components/LessonRightSidebar";
 import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
 import CommentComp from "../components/CommentComp";
+import ReportComp from "../components/ReportComp";
 import { UserContext } from "../../../AppContext";
 import { addFavoriteLesson, getLessonFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";
@@ -215,6 +216,7 @@ const LessonDetail: React.FC = () => {
                         <span className="chip ghost">
                             <i className="fa fa-eye" /> {lessonDetail.viewsCount?.toLocaleString("vi-VN") ?? 0} lượt xem
                         </span>
+                        <ReportComp contentId={lessonId} contentType="LESSON" />
                     </div>
 
                     <div className="stat-grid">
