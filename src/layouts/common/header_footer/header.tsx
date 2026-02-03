@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import UploadDropdown from "./components/UploadDropdown";
+import ListNotification from "./components/ListNotification";
 
 interface Props {
     token: string | null
@@ -81,6 +82,8 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, roles
                 </button>
             </div>
 
+            {token && <ListNotification />}
+
 
             <div className="nav-actions">
                 {token === null ? (
@@ -97,14 +100,14 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, roles
                         <details>
                             <summary>
                                 <span className="avatar-chip">
-                                    Tài khoản
+                                    Tài khoản <i className="fa fa-chevron-down" />
                                 </span>
                             </summary>
                             <div className="user-dropdown">
                                 <Link to="/profile">Thông tin cá nhân</Link>
                                 <details className="upload-submenu">
                                     <summary>
-                                        Lịch sử
+                                        Khác
                                         <i className="fa fa-chevron-right" />
                                     </summary>
                                     <div className="submenu-content">
