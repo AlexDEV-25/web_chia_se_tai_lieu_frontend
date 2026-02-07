@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { getAllDocument } from "../../../apis/DocumentApi";
-import { getAllCategory } from "../../../apis/CategoryApi";
+import { search, stats, getAllPublicDocument } from "../../../apis/DocumentApi";
+import { getAllPublicCategory } from "../../../apis/CategoryApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import type { CategoryResponse } from "../../../models/response/CategoryResponse";
 import HeroBlockComp from "../components/HeroBlockComp";
@@ -14,6 +14,7 @@ interface Props {
 const Home = ({ keyWords }: Props) => {
     const [documents, setDocuments] = useState<DocumentResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
+    const [statsData, setStatsData] = useState<any>(null);
     const [loadingDocs, setLoadingDocs] = useState(true);
     const [loadingCats, setLoadingCats] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -21,10 +22,32 @@ const Home = ({ keyWords }: Props) => {
     const [showAllCategories, setShowAllCategories] = useState(false);
 
     useEffect(() => {
-        const fetchDocuments = async () => {
+        const fetchStats = async () => {
             try {
-                const response = await getAllDocument();
-                setDocuments(response?.resultList ?? []);
+                const response = await stats();
+                setStatsData(response?.result ?? null);
+            } catch (err: any) {
+                console.error(handleApiError(err, ERROR_MESSAGES.DOCUMENT_LOAD_FAILED));
+            }
+        };
+        fetchStats();
+    }, []);
+
+    useEffect(() => {
+        const fetchDocuments = async () => {
+            setLoadingDocs(true);
+            try {
+                const hasKeyword = keyWords.trim() !== "";
+                const hasCategory = selectedCategory !== "all";
+
+                if (!hasKeyword && !hasCategory) {
+                    const response = await getAllPublicDocument();
+                    setDocuments(response?.resultList ?? []);
+                } else {
+                    const categoryId = selectedCategory === "all" ? 0 : (selectedCategory as number);
+                    const response = await search(keyWords, categoryId);
+                    setDocuments(response?.resultList ?? []);
+                }
             } catch (err: any) {
                 setError(handleApiError(err, ERROR_MESSAGES.DOCUMENT_LOAD_FAILED));
             } finally {
@@ -32,13 +55,13 @@ const Home = ({ keyWords }: Props) => {
             }
         };
         fetchDocuments();
-    }, []);
+    }, [keyWords, selectedCategory]);
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await getAllCategory();
-                setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
+                const response = await getAllPublicCategory();
+                setCategories((response?.resultList ?? []));
             } catch (err: any) {
                 setError(handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED));
             } finally {
@@ -49,16 +72,8 @@ const Home = ({ keyWords }: Props) => {
     }, []);
 
     const filteredDocuments = useMemo(() => {
-        return documents.filter(doc => {
-            if ((doc.status && doc.status !== "PUBLISHED") || (doc.hide !== false)) {
-                return false;
-            }
-            const matchCategory = selectedCategory === "all" || doc.categoryId === selectedCategory;
-            const matchSearch = doc.title.toLowerCase().includes(keyWords.toLowerCase()) ||
-                doc.description.toLowerCase().includes(keyWords.toLowerCase());
-            return matchCategory && matchSearch;
-        });
-    }, [documents, keyWords, selectedCategory]);
+        return documents;
+    }, [documents]);
 
     const topCategories: CategoryResponse[] = useMemo(() => categories.slice(0, 6), [categories]);
     const displayedCategories: CategoryResponse[] = showAllCategories ? categories : topCategories;
@@ -67,15 +82,13 @@ const Home = ({ keyWords }: Props) => {
         ? "Trending tuần này"
         : `Danh mục: ${categories.find(cat => cat.id === selectedCategory)?.name ?? ""}`;
 
-    const stats = useMemo(() => {
-        const totalDownloads: number = documents.reduce((sum, doc) => sum + (doc.downloadsCount ?? 0), 0);
-        const totalViews: number = documents.reduce((sum, doc) => sum + (doc.viewsCount ?? 0), 0);
+    const statsMetrics = useMemo(() => {
         return {
-            totalDocuments: documents.length,
-            totalDownloads,
-            totalViews,
+            totalDocuments: statsData?.totalDocuments ?? 0,
+            totalDownloads: statsData?.totalDownloads ?? 0,
+            totalViews: statsData?.totalViews ?? 0,
         };
-    }, [documents]);
+    }, [statsData]);
 
     const shimmer = Array.from({ length: 6 });
 
@@ -90,17 +103,17 @@ const Home = ({ keyWords }: Props) => {
                 metrics={[
                     {
                         label: "Tài liệu",
-                        value: stats.totalDocuments,
+                        value: statsMetrics.totalDocuments,
                         subtext: "đã sẵn sàng"
                     },
                     {
                         label: "Lượt tải",
-                        value: stats.totalDownloads.toLocaleString("vi-VN"),
+                        value: statsMetrics.totalDownloads.toLocaleString("vi-VN"),
                         subtext: "từ cộng đồng"
                     },
                     {
                         label: "Lượt xem",
-                        value: stats.totalViews.toLocaleString("vi-VN"),
+                        value: statsMetrics.totalViews.toLocaleString("vi-VN"),
                         subtext: "đang học"
                     }
                 ]}

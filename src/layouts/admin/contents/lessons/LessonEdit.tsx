@@ -151,7 +151,7 @@ const LessonEdit: React.FC = () => {
                         <div className="document-preview-card">
                             <h3 className="document-section-title">Video bài giảng</h3>
                             <VideoComp
-                                lessonId={lesson.id}
+                                source={`http://localhost:8080/api/lessons/admin/${lesson.id}/video`}
                                 thumbnailUrl={lesson.thumbnailUrl}
                             />
                         </div>
@@ -161,7 +161,7 @@ const LessonEdit: React.FC = () => {
                             <div className="document-preview-card">
                                 <h3 className="document-section-title">Tài liệu bài giảng</h3>
                                 <DocumentViewComp
-                                    fileUrl={`http://localhost:8080/api/lessons/${lesson.id}/document`}
+                                    fileUrl={`http://localhost:8080/api/lessons/admin/${lesson.id}/document`}
                                     maxRenderWidth={860}
                                     emptyFallback={
                                         <div className="document-empty-preview">

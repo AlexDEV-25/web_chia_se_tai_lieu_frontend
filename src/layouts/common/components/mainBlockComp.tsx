@@ -91,7 +91,7 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                 }
                 setFavoriteMap(map);
             } catch (err: any) {
-                console.error(handleApiError(err, ERROR_MESSAGES.FAVORITE_LOAD_FAILED));
+                console.error(handleApiError(err, ERROR_MESSAGES.FAVORITES_LOAD_FAILED));
                 setFavoriteMap({});
             }
         };

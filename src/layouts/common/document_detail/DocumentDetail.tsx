@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import CenterComp from "./components/CenterComp";
-import { downloadFile, getDocumentById, increaseDownload, increaseView } from "../../../apis/DocumentApi";
+import { downloadFile, getPublicDocumentById, increaseDownload, increaseView } from "../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import CommentComp from "../components/CommentComp";
 import LeftSidebar from "./components/LeftSidebar";
@@ -45,7 +45,7 @@ const DocumentDetail: React.FC = () => {
 
         const fetchDetail = async () => {
             try {
-                const response = await getDocumentById(docId);
+                const response = await getPublicDocumentById(docId);
                 setDocumentDetail(response?.result ?? null);
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_LOAD_FAILED);

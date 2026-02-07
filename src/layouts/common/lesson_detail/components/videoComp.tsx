@@ -1,10 +1,10 @@
 interface VideoCompProps {
-    lessonId?: number;
+    source?: string;
     thumbnailUrl?: string | null;
 }
 
-const VideoComp: React.FC<VideoCompProps> = ({ lessonId, thumbnailUrl }) => {
-    const videoSource = lessonId ? `http://localhost:8080/api/lessons/${lessonId}/video` : null;
+const VideoComp: React.FC<VideoCompProps> = ({ source, thumbnailUrl }) => {
+    const videoSource = source ? source : null;
 
     if (!videoSource) {
         return (

@@ -40,13 +40,11 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
             try {
                 let response;
                 if (type === 'document') {
-                    response = await getAllDocumentByCategory(categoryId);
+                    response = await getAllDocumentByCategory(currentItemId, categoryId);
                 } else {
-                    response = await getAllLessonByCategory(categoryId);
+                    response = await getAllLessonByCategory(currentItemId, categoryId);
                 }
-                const list = (response.resultList ?? []).filter(
-                    (item: Item) => item.id !== currentItemId && item.status === "PUBLISHED"
-                );
+                const list = (response.resultList ?? [])
                 setItems(list);
             } catch (err: any) {
                 setError(handleApiError(err, ERROR_MESSAGES.CAROUSEL_LOAD_FAILED));

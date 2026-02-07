@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import VideoComp from "./components/VideoComp";
 import DocumentComp from "./components/DocumentComp";
-import { downloadDocument, downloadSubFile, getLessonById, increaseView } from "../../../apis/LessonApi";
+import { downloadDocument, downloadSubFile, getPublicLessonById, increaseView } from "../../../apis/LessonApi";
 import type { LessonResponse } from "../../../models/response/LessonResponse";
 import LessonRightSidebar from "./components/LessonRightSidebar";
 import CarouselComp from "../components/CarouselComp";
@@ -39,7 +39,7 @@ const LessonDetail: React.FC = () => {
 
         const fetchDetail = async () => {
             try {
-                const response = await getLessonById(lessonId);
+                const response = await getPublicLessonById(lessonId);
                 setLessonDetail(response?.result ?? null);
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.LESSON_DETAIL_LOAD_FAILED);
@@ -276,7 +276,7 @@ const LessonDetail: React.FC = () => {
             <section className="lesson-content-layout">
                 <div className="rail-pane lesson-video-pane">
                     <VideoComp
-                        lessonId={lessonId}
+                        source={`http://localhost:8080/api/lessons/${lessonId}/video`}
                         thumbnailUrl={lessonDetail.thumbnailUrl}
                     />
                 </div>
@@ -297,7 +297,7 @@ const LessonDetail: React.FC = () => {
                 )}
             </section>
 
-            {lessonDetail.categoryId && (
+            {lessonDetail.categoryId && lessonDetail.id && (
                 <section className="glass-card doc-related">
                     <CarouselComp
                         categoryId={lessonDetail.categoryId}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { getAllLesson } from "../../../apis/LessonApi";
-import { getAllCategory } from "../../../apis/CategoryApi";
+import { search, stats, getPublicAllLesson } from "../../../apis/LessonApi";
+import { getAllPublicCategory } from "../../../apis/CategoryApi";
 import type { LessonResponse } from "../../../models/response/LessonResponse";
 import type { CategoryResponse } from "../../../models/response/CategoryResponse";
 import HeroBlockComp from "../components/HeroBlockComp";
@@ -16,6 +16,7 @@ interface Props {
 const Lesson = ({ keyWords }: Props) => {
     const [lessons, setLessons] = useState<LessonResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
+    const [statsData, setStatsData] = useState<any>(null);
     const [loadingLessons, setLoadingLessons] = useState(true);
     const [loadingCats, setLoadingCats] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -23,10 +24,32 @@ const Lesson = ({ keyWords }: Props) => {
     const [showAllCategories, setShowAllCategories] = useState(false);
 
     useEffect(() => {
-        const fetchLessons = async () => {
+        const fetchStats = async () => {
             try {
-                const response = await getAllLesson();
-                setLessons(response?.resultList ?? []);
+                const response = await stats();
+                setStatsData(response?.result ?? null);
+            } catch (err: any) {
+                console.error(handleApiError(err, ERROR_MESSAGES.LESSON_LOAD_FAILED));
+            }
+        };
+        fetchStats();
+    }, []);
+
+    useEffect(() => {
+        const fetchLessons = async () => {
+            setLoadingLessons(true);
+            try {
+                const hasKeyword = keyWords.trim() !== "";
+                const hasCategory = selectedCategory !== "all";
+
+                if (!hasKeyword && !hasCategory) {
+                    const response = await getPublicAllLesson();
+                    setLessons(response?.resultList ?? []);
+                } else {
+                    const categoryId = selectedCategory === "all" ? 0 : (selectedCategory as number);
+                    const response = await search(keyWords, categoryId);
+                    setLessons(response?.resultList ?? []);
+                }
             } catch (err: any) {
                 setError(handleApiError(err, ERROR_MESSAGES.LESSON_LOAD_FAILED));
             } finally {
@@ -34,13 +57,13 @@ const Lesson = ({ keyWords }: Props) => {
             }
         };
         fetchLessons();
-    }, []);
+    }, [keyWords, selectedCategory]);
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await getAllCategory();
-                setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
+                const response = await getAllPublicCategory();
+                setCategories((response?.resultList ?? []));
             } catch (err: any) {
                 setError(handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED));
             } finally {
@@ -51,16 +74,8 @@ const Lesson = ({ keyWords }: Props) => {
     }, []);
 
     const filteredLessons = useMemo(() => {
-        return lessons.filter(lesson => {
-            if ((lesson.status && lesson.status !== "PUBLISHED") || (lesson.hide !== false)) {
-                return false;
-            }
-            const matchCategory = selectedCategory === "all" || lesson.categoryId === selectedCategory;
-            const matchSearch = lesson.title.toLowerCase().includes(keyWords.toLowerCase()) ||
-                lesson.description.toLowerCase().includes(keyWords.toLowerCase());
-            return matchCategory && matchSearch;
-        });
-    }, [lessons, keyWords, selectedCategory]);
+        return lessons;
+    }, [lessons]);
 
     const topCategories = useMemo(() => categories.slice(0, 6), [categories]);
     const displayedCategories = showAllCategories ? categories : topCategories;
@@ -69,15 +84,13 @@ const Lesson = ({ keyWords }: Props) => {
         ? "Trending tuần này"
         : `Danh mục: ${categories.find(cat => cat.id === selectedCategory)?.name ?? ""}`;
 
-    const stats = useMemo(() => {
-        const totalViews = lessons.reduce((sum, lesson) => sum + (lesson.viewsCount ?? 0), 0);
-        const totalVideos = lessons.filter(lesson => lesson.documentUrl).length;
+    const statsMetrics = useMemo(() => {
         return {
-            totalLessons: lessons.length,
-            totalViews,
-            totalVideos,
+            totalLessons: statsData?.totalLessons ?? 0,
+            totalViews: statsData?.totalViews ?? 0,
+            totalVideos: statsData?.totalDocuments ?? 0,
         };
-    }, [lessons]);
+    }, [statsData]);
 
     const shimmer = Array.from({ length: 6 });
 
@@ -92,19 +105,14 @@ const Lesson = ({ keyWords }: Props) => {
                 metrics={[
                     {
                         label: "Video",
-                        value: stats.totalLessons,
+                        value: statsMetrics.totalLessons,
                         subtext: "bài giảng"
                     },
                     {
                         label: "Lượt xem",
-                        value: stats.totalViews.toLocaleString("vi-VN"),
+                        value: statsMetrics.totalViews.toLocaleString("vi-VN"),
                         subtext: "đang học"
                     },
-                    {
-                        label: "Tài liệu",
-                        value: stats.totalVideos,
-                        subtext: "đã sẵn sàng"
-                    }
                 ]}
             />
 

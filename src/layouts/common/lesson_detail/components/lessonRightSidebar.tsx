@@ -35,10 +35,8 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
             setLoading(true);
             setError(null);
             try {
-                const response = await getAllLessonByUser(userId);
-                const list = (response.resultList ?? []).filter(
-                    (lesson) => lesson.id !== currentLessonId && lesson.status === "PUBLISHED" && !lesson.hide
-                );
+                const response = await getAllLessonByUser(currentLessonId, userId);
+                const list = (response.resultList ?? []);
                 setLessons(list.slice(0, 6));
             } catch (err: any) {
                 setError(handleApiError(err, ERROR_MESSAGES.LESSON_AUTHOR_LOAD_FAILED));

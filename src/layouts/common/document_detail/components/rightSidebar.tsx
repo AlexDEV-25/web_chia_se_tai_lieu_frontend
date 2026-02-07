@@ -35,10 +35,8 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
             setLoading(true);
             setError(null);
             try {
-                const response = await getAllDocumentByUser(userId);
-                const list = (response.resultList ?? []).filter(
-                    (doc) => doc.id !== currentDocumentId && doc.status === "PUBLISHED"
-                );
+                const response = await getAllDocumentByUser(currentDocumentId, userId);
+                const list = (response.resultList ?? []);
                 setDocuments(list.slice(0, 6));
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.AUTHOR_DOCUMENTS_LOAD_FAILED);
@@ -130,7 +128,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
             <div className="section-heading">
                 <div>
                     <p className="eyebrow">Từ tác giả này</p>
-                    <h3>Slide nổi bật</h3>
+                    <h3>Tài liệu nổi bật</h3>
                 </div>
                 <span className="chip ghost">{documents.length}</span>
             </div>
@@ -139,7 +137,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
             {error && <div className="alert alert-danger">{error}</div>}
 
             {!loading && documents.length === 0 && (
-                <div className="empty-state">Tác giả chưa có thêm slide công khai.</div>
+                <div className="empty-state">Tác giả chưa có thêm Tài liệu công khai.</div>
             )}
 
             <div className="document-grid two-col">

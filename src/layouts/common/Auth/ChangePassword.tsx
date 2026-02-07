@@ -9,8 +9,6 @@ const ChangePassword: React.FC = () => {
     const navigate = useNavigate();
     const { email } = useParams();
     const { forgotPasswordCode } = useParams();
-    console.log("email", email);
-    console.log("forgotPasswordCode", forgotPasswordCode);
     const hasValidLink = email !== "" && forgotPasswordCode !== "";
 
     const [password, setPassword] = useState("");
