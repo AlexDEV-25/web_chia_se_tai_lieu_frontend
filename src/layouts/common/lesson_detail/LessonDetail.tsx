@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useContext } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import VideoComp from "./components/VideoComp";
 import DocumentComp from "./components/DocumentComp";
@@ -9,18 +9,16 @@ import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
 import CommentComp from "../components/CommentComp";
 import ReportComp from "../components/ReportComp";
-import { UserContext } from "../../../AppContext";
 import { addFavoriteLesson, getLessonFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 
 const LessonDetail: React.FC = () => {
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
+
     const { id } = useParams<{ id: string }>();
     const lessonId = Number(id);
-
-    const userCtx = useContext(UserContext);
-    const currentUser = userCtx?.currentUser;
-    const currentUserId = currentUser?.id ?? null;
 
     const [lessonDetail, setLessonDetail] = useState<LessonResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -67,7 +65,7 @@ const LessonDetail: React.FC = () => {
     }, [lessonId]);
 
     useEffect(() => {
-        if (!lessonId || !currentUserId) {
+        if (!lessonId || !isAuthenticated) {
             setFavoriteId(null);
             return;
         }
@@ -95,11 +93,11 @@ const LessonDetail: React.FC = () => {
         return () => {
             isMounted = false;
         };
-    }, [lessonId, currentUserId]);
+    }, [lessonId, isAuthenticated]);
 
     const handleToggleFavorite = async () => {
         if (!lessonId) return;
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             alert(ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE);
             return;
         }
@@ -112,7 +110,6 @@ const LessonDetail: React.FC = () => {
                 setFavoriteId(null);
             } else {
                 const response = await addFavoriteLesson({
-                    userId: currentUserId,
                     contentId: lessonId,
                     type: 'LESSON',
                 });

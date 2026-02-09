@@ -56,11 +56,11 @@ const UploadDocument: React.FC = () => {
             setIsLoading(false);
             return;
         }
-        const status: string = "PENDING";
         const doc: DocumentRequest = {
             title,
             description,
-            status, hide: false,
+            status: "PENDING"
+            , hide: false,
             categoryId: categoryId === -1 ? undefined : categoryId
         };
 

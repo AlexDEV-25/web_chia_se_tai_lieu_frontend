@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useState, useContext } from "react";
-import type { RatingResponse } from "../../../models/response/RatingResponse";
+import { useEffect, useState } from "react";
 import {
-    getRatingsByDocument,
     createRatingDocument,
-    getRatingsByLesson,
     createRatingLesson,
+    getRatingSummaryByDocument,
+    getRatingSummaryByLesson,
+    getMyRatingByDocument,
+    getMyRatingByLesson,
 } from "../../../apis/RatingApi";
-import { UserContext } from "../../../AppContext";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import type { RatingSummaryResponse } from "../../../models/response/RatingSummaryResponse";
 
 interface RatingCompProps {
     docId?: number;
@@ -18,24 +19,24 @@ interface RatingCompProps {
 const TOTAL_STARS = 5;
 
 const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
-    const userCtx = useContext(UserContext);
-    const currentUser = userCtx?.currentUser;
-    const currentUserId = currentUser?.id ?? null;
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
 
-    const [ratings, setRatings] = useState<RatingResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [hoveredStar, setHoveredStar] = useState<number | null>(null);
     const [selectedStar, setSelectedStar] = useState<number | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [summary, setSummary] = useState<RatingSummaryResponse | null>(null);
+    const [userRatingValue, setUserRatingValue] = useState<number | null>(null);
 
     const isLessonMode = Boolean(lessonId);
     const targetId = lessonId ?? docId;
 
     useEffect(() => {
-        const fetchRatings = async () => {
+        const fetchRatingSummary = async () => {
             if (!targetId) {
-                setRatings([]);
+                setSummary(null);
                 setLoading(false);
                 setError(ERROR_MESSAGES.CONTENT_NOT_FOUND);
                 return;
@@ -43,35 +44,55 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
             setLoading(true);
             setError(null);
             try {
-                const response = isLessonMode
-                    ? await getRatingsByLesson(targetId)
-                    : await getRatingsByDocument(targetId);
-                setRatings(response.resultList ?? []);
+                if (isLessonMode) {
+                    const response = await getRatingSummaryByLesson(targetId)
+                    setSummary(response.result ?? null);
+                } else {
+                    const response = await getRatingSummaryByDocument(targetId)
+                    setSummary(response.result ?? null);
+                }
             } catch (err: any) {
                 setError(handleApiError(err, ERROR_MESSAGES.RATING_LOAD_FAILED));
             } finally {
                 setLoading(false);
             }
         };
-        fetchRatings();
+        fetchRatingSummary();
     }, [isLessonMode, targetId]);
 
-    const totalRatings = ratings.length;
-    const averageRating = useMemo(() => {
-        if (!ratings.length) return 0;
-        const total = ratings.reduce((sum, item) => sum + (item.rating ?? 0), 0);
-        return total / ratings.length;
-    }, [ratings]);
 
-    const userRatingValue = useMemo(() => {
-        if (!currentUserId) return null;
-        return ratings.find((r) => r.userId === currentUserId)?.rating ?? null;
-    }, [ratings, currentUserId]);
+    useEffect(() => {
+        const fetchMyRating = async () => {
+            if (!targetId || !isAuthenticated) {
+                setUserRatingValue(null);
+                return;
+            }
+            setLoading(true);
+            setError(null);
+            try {
+                if (isLessonMode) {
+                    const response = await getMyRatingByLesson(targetId || 0)
+                    setUserRatingValue(response.result ?? null);
+                } else {
+                    const response = await getMyRatingByDocument(targetId || 0)
+                    setUserRatingValue(response.result ?? null);
+                }
+            } catch (err: any) {
+                setError(handleApiError(err, ERROR_MESSAGES.RATING_LOAD_FAILED));
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMyRating();
+    }, [isLessonMode, targetId]);
+
+    const totalRatings = summary?.total ?? 0;
+    const averageRating = summary?.average ?? 0;
 
     const activeStarLevel = hoveredStar ?? selectedStar ?? userRatingValue ?? Math.round(averageRating);
 
     const handleSubmitRating = async () => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             alert(ERROR_MESSAGES.LOGIN_REQUIRED_RATING);
             return;
         }
@@ -93,23 +114,21 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
                 const response = await createRatingLesson({
                     rating: selectedStar,
                     contentId: targetId,
-                    userId: currentUserId,
                     type: 'LESSON',
                 });
-                const created = response.result;
-                if (created) {
-                    setRatings((prev) => [...prev, created]);
+                if (response.result) {
+                    setUserRatingValue(selectedStar);
+                    setSelectedStar(null);
                 }
             } else {
                 const response = await createRatingDocument({
                     rating: selectedStar,
                     contentId: targetId,
-                    userId: currentUserId,
                     type: 'DOCUMENT',
                 });
-                const created = response.result;
-                if (created) {
-                    setRatings((prev) => [...prev, created]);
+                if (response.result) {
+                    setUserRatingValue(selectedStar);
+                    setSelectedStar(null);
                 }
             }
         } catch (err: any) {

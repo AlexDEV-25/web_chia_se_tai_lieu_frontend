@@ -60,11 +60,10 @@ const UploadLesson: React.FC = () => {
             return;
         }
 
-        const status: string = "PENDING";
         const lesson: LessonRequest = {
             title,
             description,
-            status,
+            status: "PENDING",
             hide: false,
             categoryId: categoryId === -1 ? undefined : categoryId
         };

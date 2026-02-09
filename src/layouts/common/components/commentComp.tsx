@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
     getCommentsByDocument,
@@ -9,7 +9,6 @@ import {
 } from "../../../apis/CommentApi";
 import type { CommentRequest } from "../../../models/request/CommentRequest";
 import type { CommentTreeResponse } from "../../../models/response/CommentTreeResponse";
-import { UserContext } from "../../../AppContext";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 
@@ -21,8 +20,8 @@ interface CommentCompProps {
 const INDENT_PER_LEVEL = 24;
 
 const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
-    const { currentUser } = useContext(UserContext) ?? {};
-    const isAuthenticated = Boolean(currentUser);
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
 
     const isLessonMode = Boolean(lessonId);
     const targetId = lessonId ?? docId;
@@ -64,17 +63,15 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
     /* ================= SUBMIT ================= */
 
     const submitComment = async (content: string, idParent: number) => {
-        if (!currentUser || !targetId) return;
+        if (!isAuthenticated || !targetId) return;
 
         const payload: CommentRequest = {
             content: content.trim(),
             idParent,
             hide: false,
             contentId: targetId,
-            userId: currentUser.id,
             type: isLessonMode ? "LESSON" : "DOCUMENT",
         };
-        console.log(payload);
         isLessonMode
             ? await createLessonComment(payload)
             : await createDocumentComment(payload);

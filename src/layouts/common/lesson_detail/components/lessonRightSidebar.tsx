@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 
 import { getAllLessonByUser } from "../../../../apis/LessonApi";
 import {
@@ -6,7 +6,6 @@ import {
     getLessonFavoritesByUser,
     removeFavorite,
 } from "../../../../apis/FavoriteApi";
-import { UserContext } from "../../../../AppContext";
 import type { LessonResponse } from "../../../../models/response/LessonResponse";
 import GrindItem from "../../components/GrindItem";
 import { handleApiError } from "../../../../utils/errorHandler";
@@ -20,9 +19,8 @@ interface LessonRightSidebarProps {
 type FavoriteMap = Record<number, { favoriteId: number }>;
 
 const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, currentLessonId }) => {
-    const userCtx = useContext(UserContext);
-    const currentUser = userCtx?.currentUser;
-    const currentUserId = currentUser?.id ?? null;
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
 
     const [lessons, setLessons] = useState<LessonResponse[]>([]);
     const [loading, setLoading] = useState(false);
@@ -51,7 +49,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
     }, [userId, currentLessonId]);
 
     useEffect(() => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             setFavoriteMap({});
             return;
         }
@@ -74,10 +72,10 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
         };
 
         fetchFavorites();
-    }, [currentUserId]);
+    }, [isAuthenticated]);
 
     const handleToggleFavorite = async (lesson: LessonResponse) => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             alert(ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE);
             return;
         }
@@ -94,7 +92,6 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
                 });
             } else {
                 const response = await addFavoriteLesson({
-                    userId: currentUserId,
                     contentId: lesson.id,
                     type: 'LESSON',
                 });

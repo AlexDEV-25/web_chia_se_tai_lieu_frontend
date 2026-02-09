@@ -9,7 +9,7 @@ export interface LessonResponse {
     viewsCount: number;
     createdAt: string;
     updatedAt: string;
-    status: Status;
+    status: 'PENDING' | 'PUBLISHED';
     hide: boolean;
     categoryId: number;
     categoryName: string;
@@ -17,4 +17,4 @@ export interface LessonResponse {
     userName: string;
 }
 
-export type Status = 'PENDING' | 'PUBLISHED';
+

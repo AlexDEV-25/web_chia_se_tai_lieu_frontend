@@ -5,7 +5,6 @@ import type { DocumentResponse } from "../../../models/response/DocumentResponse
 import type { LessonResponse } from "../../../models/response/LessonResponse";
 import DocumentComp from "./components/DocumentComp";
 import LessonComp from "./components/LessonComp";
-import axios from "axios";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 

@@ -8,7 +8,7 @@ export interface DocumentResponse {
     downloadsCount: number;
     createdAt: string;
     updatedAt: string;
-    status: Status;
+    status: 'PENDING' | 'PUBLISHED';
     hide: boolean;
     categoryId: number;
     categoryName: string;
@@ -16,4 +16,3 @@ export interface DocumentResponse {
     userName: string;
 }
 
-export type Status = 'PENDING' | 'PUBLISHED';

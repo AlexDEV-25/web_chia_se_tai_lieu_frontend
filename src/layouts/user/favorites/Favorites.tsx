@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { FavoriteResponse } from "../../../models/response/FavoriteResponse";
 import {
@@ -9,15 +9,12 @@ import {
 import FavoritesComp from "./components/FavoritesComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import { UserContext } from "../../../AppContext";
 
 type TabKey = "document" | "lesson";
 
 const Favorites: React.FC = () => {
-    const userCtx = useContext(UserContext);
-    const currentUser = userCtx?.currentUser ?? null;
-    const isLoadingUser = userCtx?.isLoadingUser ?? false;
-    const isAuthenticated = Boolean(currentUser);
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
 
     const [documentFavorites, setDocumentFavorites] = useState<FavoriteResponse[]>([]);
     const [lessonFavorites, setLessonFavorites] = useState<FavoriteResponse[]>([]);
@@ -37,7 +34,6 @@ const Favorites: React.FC = () => {
     };
 
     useEffect(() => {
-        if (isLoadingUser) return;
 
         if (!isAuthenticated) {
             setLoading(false);
@@ -76,7 +72,7 @@ const Favorites: React.FC = () => {
         return () => {
             isMounted = false;
         };
-    }, [isAuthenticated, isLoadingUser]);
+    }, [isAuthenticated]);
 
     const handleRemove = async (favoriteId: number) => {
         setRemovingId(favoriteId);
@@ -112,17 +108,6 @@ const Favorites: React.FC = () => {
             </Link>
         </div>
     );
-
-    if (isLoadingUser) {
-        return (
-            <div className="container py-5 text-center">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Đang kiểm tra phiên đăng nhập...</span>
-                </div>
-                <p className="mt-3 text-muted">Đang kiểm tra phiên đăng nhập...</p>
-            </div>
-        );
-    }
 
     if (!isAuthenticated) {
         return (

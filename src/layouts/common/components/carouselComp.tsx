@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
 import { getAllLessonByCategory } from "../../../apis/LessonApi";
 
@@ -7,7 +7,6 @@ import type { LessonResponse } from "../../../models/response/LessonResponse";
 import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import { addFavoriteLesson, getLessonFavoritesByUser } from "../../../apis/FavoriteApi";
 import type { FavoriteRequest } from "../../../models/request/FavoriteRequest";
-import { UserContext } from "../../../AppContext";
 import GrindItem from "./GrindItem";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
@@ -22,9 +21,8 @@ type Item = DocumentResponse | LessonResponse;
 type FavoriteMap = Record<number, { favoriteId: number }>;
 
 const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type }) => {
-    const userCtx = useContext(UserContext);
-    const currentUser = userCtx?.currentUser;
-    const currentUserId = currentUser?.id ?? null;
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
 
     const [items, setItems] = useState<Item[]>([]);
     const [loading, setLoading] = useState(false);
@@ -59,7 +57,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
     }, [categoryId, currentItemId, type]);
 
     useEffect(() => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             setFavoriteMap({});
             return;
         }
@@ -88,10 +86,10 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
         };
 
         fetchFavorites();
-    }, [currentUserId, type]);
+    }, [isAuthenticated, type]);
 
     const handleToggleFavorite = async (item: Item) => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             alert(`Vui lòng đăng nhập để lưu ${type === 'document' ? 'tài liệu' : 'bài giảng'} yêu thích.`);
             return;
         }
@@ -111,7 +109,6 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                 let data: FavoriteRequest;
                 if (type === 'document') {
                     data = {
-                        userId: currentUserId,
                         contentId: item.id,
                         type: 'DOCUMENT',
                     };
@@ -119,7 +116,6 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                     response = await addFavoriteDocument(data);
                 } else {
                     data = {
-                        userId: currentUserId,
                         contentId: item.id,
                         type: 'LESSON',
                     };

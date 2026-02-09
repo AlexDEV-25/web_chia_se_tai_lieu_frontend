@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useContext } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import CenterComp from "./components/CenterComp";
 import { downloadFile, getPublicDocumentById, increaseDownload, increaseView } from "../../../apis/DocumentApi";
@@ -9,18 +9,16 @@ import RightSidebar from "./components/RightSidebar";
 import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
 import ReportComp from "../components/ReportComp";
-import { UserContext } from "../../../AppContext";
 import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 
 const DocumentDetail: React.FC = () => {
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
+
     const { id } = useParams<{ id: string }>();
     const docId = Number(id);
-
-    const userCtx = useContext(UserContext);
-    const currentUser = userCtx?.currentUser;
-    const currentUserId = currentUser?.id ?? null;
 
     const [documentDetail, setDocumentDetail] = useState<DocumentResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -73,7 +71,7 @@ const DocumentDetail: React.FC = () => {
     }, [docId]);
 
     useEffect(() => {
-        if (!docId || !currentUserId) {
+        if (!docId || !isAuthenticated) {
             setFavoriteId(null);
             return;
         }
@@ -101,11 +99,11 @@ const DocumentDetail: React.FC = () => {
         return () => {
             isMounted = false;
         };
-    }, [docId, currentUserId]);
+    }, [docId, isAuthenticated]);
 
     const handleToggleFavorite = async () => {
         if (!docId) return;
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             alert(ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE);
             return;
         }
@@ -118,7 +116,6 @@ const DocumentDetail: React.FC = () => {
                 setFavoriteId(null);
             } else {
                 const response = await addFavoriteDocument({
-                    userId: currentUserId,
                     contentId: docId,
                     type: 'DOCUMENT',
                 });

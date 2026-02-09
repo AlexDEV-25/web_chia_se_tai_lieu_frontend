@@ -1,7 +1,8 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { documentReport, lessonReport } from "../../../apis/ReportApi";
-import { UserContext } from "../../../AppContext";
+
 import { handleApiError } from "../../../utils/errorHandler";
+import type { ReportRequest } from "../../../models/request/ReportRequest";
 
 interface ReportCompProps {
     contentId: number;
@@ -9,9 +10,8 @@ interface ReportCompProps {
 }
 
 const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
-    const userCtx = useContext(UserContext);
-    const currentUser = userCtx?.currentUser;
-    const currentUserId = currentUser?.id ?? null;
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [reportReason, setReportReason] = useState("SPAM");
@@ -28,7 +28,7 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
     ];
 
     const handleOpenModal = () => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             alert("Vui lòng đăng nhập để báo cáo nội dung");
             return;
         }
@@ -43,7 +43,7 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
     };
 
     const handleSubmitReport = async () => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             setSubmitMessage({
                 type: "error",
                 text: "Vui lòng đăng nhập để báo cáo",
@@ -54,8 +54,7 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
         setIsSubmitting(true);
 
         try {
-            const reportData = {
-                userId: currentUserId,
+            const reportData: ReportRequest = {
                 contentId,
                 reason: reportReason,
                 type: contentType,

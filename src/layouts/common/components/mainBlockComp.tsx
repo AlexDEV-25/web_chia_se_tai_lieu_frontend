@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import {
     addFavoriteDocument,
     addFavoriteLesson,
@@ -8,7 +8,6 @@ import {
     removeFavorite,
 } from "../../../apis/FavoriteApi";
 
-import { UserContext } from "../../../AppContext";
 import GrindItem from "./GrindItem";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
@@ -55,16 +54,15 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
     emptyMessage,
     emptyIcon,
 }: MainBlockCompProps) => {
-    const userCtx = useContext(UserContext);
-    const currentUser = userCtx?.currentUser;
-    const currentUserId = currentUser?.id ?? null;
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
 
     const hasItems = items.length > 0;
     const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
 
     useEffect(() => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             setFavoriteMap({});
             return;
         }
@@ -97,10 +95,10 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
         };
 
         fetchFavorites();
-    }, [currentUserId, itemType]);
+    }, [isAuthenticated, itemType]);
 
     const handleToggleFavorite = async (itemId: number) => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             alert(`${ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE} ${itemType === "document" ? "tài liệu" : "bài giảng"} yêu thích.`);
             return;
         }
@@ -120,12 +118,10 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                 const response =
                     itemType === "document"
                         ? await addFavoriteDocument({
-                            userId: currentUserId,
                             contentId: itemId,
                             type: 'DOCUMENT',
                         })
                         : await addFavoriteLesson({
-                            userId: currentUserId,
                             contentId: itemId,
                             type: 'LESSON',
                         });

@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 
 import { getAllDocumentByUser } from "../../../../apis/DocumentApi";
 import {
@@ -6,7 +6,6 @@ import {
     getDocumentFavoritesByUser,
     removeFavorite,
 } from "../../../../apis/FavoriteApi";
-import { UserContext } from "../../../../AppContext";
 import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
 import GrindItem from "../../components/GrindItem";
 import { handleApiError } from "../../../../utils/errorHandler";
@@ -20,9 +19,8 @@ interface RightSidebarProps {
 type FavoriteMap = Record<number, { favoriteId: number }>;
 
 const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }) => {
-    const userCtx = useContext(UserContext);
-    const currentUser = userCtx?.currentUser;
-    const currentUserId = currentUser?.id ?? null;
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
 
     const [documents, setDocuments] = useState<DocumentResponse[]>([]);
     const [loading, setLoading] = useState(false);
@@ -52,7 +50,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
     }, [userId, currentDocumentId]);
 
     useEffect(() => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             setFavoriteMap({});
             return;
         }
@@ -75,10 +73,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
         };
 
         fetchFavorites();
-    }, [currentUserId]);
+    }, [isAuthenticated]);
 
     const handleToggleFavorite = async (doc: DocumentResponse) => {
-        if (!currentUserId) {
+        if (!isAuthenticated) {
             alert(ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE);
             return;
         }
@@ -95,7 +93,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                 });
             } else {
                 const response = await addFavoriteDocument({
-                    userId: currentUserId,
                     contentId: doc.id,
                     type: 'DOCUMENT',
                 });

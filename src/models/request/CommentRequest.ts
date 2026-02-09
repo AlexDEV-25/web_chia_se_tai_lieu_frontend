@@ -3,6 +3,5 @@ export interface CommentRequest {
     idParent: number;
     hide: boolean;
     contentId: number;
-    userId: number;
     type: 'DOCUMENT' | 'LESSON';
 }
