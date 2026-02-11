@@ -118,4 +118,6 @@ export const deleteMyLesson = async (id: number): Promise<APIResponse<void>> => 
     return response.data;
 };
 
-
+export const getListLessonByUser = async (userId: number) => {
+    return await httpGet<APIResponse<LessonResponse>>(`/lessons/user/${userId}`);
+};

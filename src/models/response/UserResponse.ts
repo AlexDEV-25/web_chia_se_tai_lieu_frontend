@@ -5,6 +5,7 @@ export interface UserResponse {
     username: string;
     email: string;
     password: string;
+    bio: string;
     verified: boolean;
     avatarUrl: string | null;
     createdAt: string;

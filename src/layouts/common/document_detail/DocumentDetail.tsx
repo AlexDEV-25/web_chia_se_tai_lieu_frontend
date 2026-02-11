@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import CenterComp from "./components/CenterComp";
 import { downloadFile, getPublicDocumentById, increaseDownload, increaseView } from "../../../apis/DocumentApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
@@ -255,10 +255,9 @@ const DocumentDetail: React.FC = () => {
                         <i className={`fa ${favoriteId ? "fa-heart" : "fa-heart-o"}`} />{" "}
                         {favoriteId ? "Đã lưu" : "Lưu vào kho"}
                     </button>
-
-                    <button onClick={() => window.history.back()} className="btn-outline">
-                        Quay lại thư viện
-                    </button>
+                    <Link to={`/profile/${documentDetail.userId}`} className="btn-outline">
+                        Đến bio tác giả
+                    </Link>
                 </div>
             </section>
 

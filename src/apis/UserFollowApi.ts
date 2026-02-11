@@ -1,3 +1,4 @@
+import type { FollowCountResponse } from '../models/response/FollowCountResponse';
 import type { UserFollowResponse } from '../models/response/UserFollowResponse';
 import type { APIResponse } from './../models/response/APIResponse';
 import { httpGet, httpPost, httpDelete } from "./HttpClient";
@@ -19,3 +20,14 @@ export const getFollowing = async () => {
 export const getFollowers = async () => {
     return await httpGet<APIResponse<UserFollowResponse>>(`/follows/followers`);
 }
+
+// lấy danh sách người đang theo dõi mình
+export const getmyFollowCount = async () => {
+    return await httpGet<APIResponse<FollowCountResponse>>(`/follows/my-follow-count`);
+}
+
+// lấy danh sách người đang theo dõi mình
+export const getFollowCount = async (userId: number) => {
+    return await httpGet<APIResponse<FollowCountResponse>>(`/follows/follow-count/${userId}`);
+}
+

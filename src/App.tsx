@@ -32,6 +32,8 @@ import DocumentEdit from './layouts/admin/contents/documents/DocumentEdit';
 import LessonEdit from './layouts/admin/contents/lessons/LessonEdit';
 import UserAdd from './layouts/admin/users/UserAdd';
 import Dashboard from './layouts/admin/dashboard/Dashboard';
+import CommentList from './layouts/admin/interactions/comments/CommentList';
+import Profile from './layouts/user/profile/Profile';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -93,7 +95,8 @@ function App() {
             <Route path="/document/:id" element={<DocumentDetail />} />
             <Route path="/lesson/:id" element={<LessonDetail />} />
             <Route path="/favorites" element={<Favorites />} />
-            <Route path="/profile" element={<MyProfile />} />
+            <Route path="/myprofile" element={<MyProfile />} />
+            <Route path="/profile/:id" element={<Profile />} />
             <Route path="/uploadHistory" element={<UploadHistory />} />
             {/* {admin} */}
             <Route path="/dashboard" element={<Dashboard />} />
@@ -106,6 +109,7 @@ function App() {
             <Route path="/lessons/edit/:id" element={<LessonEdit />} />
             <Route path="/users" element={<UserList />} />
             <Route path="/users/add" element={<UserAdd />} />
+            <Route path="/comments" element={<CommentList />} />
           </Routes>
           <ChatGemini />
         </AppContext.Provider>

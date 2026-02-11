@@ -11,6 +11,7 @@ export const checkEmailExist = async (email: string) => {
 export const checkUsernameExist = async (username: string) => {
     return await httpGet<APIResponse<boolean>>(`/users/username/${username}`);
 }
+
 export const getMyInfo = async () => {
     return await httpGet<APIResponse<UserResponse>>(`/users/my-info`);
 }
@@ -33,4 +34,8 @@ export const hideUser = async (id: number, data: HideRequest) => {
 
 export const getAllUser = async () => {
     return await httpGet<APIResponse<UserResponse>>(`/users`);
+}
+
+export const getInfo = async (id: number) => {
+    return await httpGet<APIResponse<UserResponse>>(`/users/info/${id}`);
 }

@@ -97,3 +97,7 @@ export const deleteMyDocument = async (id: number): Promise<APIResponse<void>> =
     const response = await api.delete<APIResponse<void>>(`/documents/my-document/${id}`);
     return response.data;
 };
+
+export const getListDocumentByUser = async (userId: number) => {
+    return await httpGet<APIResponse<DocumentResponse>>(`/documents/user/${userId}`);
+};
