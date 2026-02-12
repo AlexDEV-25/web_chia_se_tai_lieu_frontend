@@ -158,14 +158,3 @@ export const getLessonDocument = async (lessonId: number): Promise<Blob> => {
     return response.data;
 };
 
-export const getPublicLessonDocument = async (lessonId: number): Promise<Blob> => {
-    if (!lessonId) {
-        throw new Error("Thiếu ID lesson để tải document");
-    }
-
-    const response = await api.get<Blob>(`/lessons/${lessonId}/document`, {
-        responseType: "blob",
-    });
-
-    return response.data;
-};

@@ -113,15 +113,3 @@ export const getDocumentFile = async (documentId: number): Promise<Blob> => {
 
     return response.data;
 };
-
-export const getPublicDocumentFile = async (documentId: number): Promise<Blob> => {
-    if (!documentId) {
-        throw new Error("Thiếu ID document để tải file");
-    }
-
-    const response = await api.get<Blob>(`/documents/${documentId}/file`, {
-        responseType: "blob",
-    });
-
-    return response.data;
-};

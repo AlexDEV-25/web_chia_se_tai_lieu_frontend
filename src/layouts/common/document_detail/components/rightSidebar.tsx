@@ -35,7 +35,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
             try {
                 const response = await getAllDocumentByUser(currentDocumentId, userId);
                 const list = (response.resultList ?? []);
-                setDocuments(list.slice(0, 6));
+                setDocuments(list.slice(0, 4));
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.AUTHOR_DOCUMENTS_LOAD_FAILED);
                 setError(message);

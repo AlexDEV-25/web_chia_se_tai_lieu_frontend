@@ -35,7 +35,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
             try {
                 const response = await getAllLessonByUser(currentLessonId, userId);
                 const list = (response.resultList ?? []);
-                setLessons(list.slice(0, 6));
+                setLessons(list.slice(0, 4));
             } catch (err: any) {
                 setError(handleApiError(err, ERROR_MESSAGES.LESSON_AUTHOR_LOAD_FAILED));
             } finally {
