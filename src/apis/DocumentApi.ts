@@ -101,3 +101,27 @@ export const deleteMyDocument = async (id: number): Promise<APIResponse<void>> =
 export const getListDocumentByUser = async (userId: number) => {
     return await httpGet<APIResponse<DocumentResponse>>(`/documents/user/${userId}`);
 };
+
+export const getDocumentFile = async (documentId: number): Promise<Blob> => {
+    if (!documentId) {
+        throw new Error("Thiếu ID document để tải file");
+    }
+
+    const response = await api.get<Blob>(`/documents/admin/${documentId}/file`, {
+        responseType: "blob",
+    });
+
+    return response.data;
+};
+
+export const getPublicDocumentFile = async (documentId: number): Promise<Blob> => {
+    if (!documentId) {
+        throw new Error("Thiếu ID document để tải file");
+    }
+
+    const response = await api.get<Blob>(`/documents/${documentId}/file`, {
+        responseType: "blob",
+    });
+
+    return response.data;
+};

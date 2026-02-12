@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Document, Page } from "react-pdf";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import ZoomComp from "./zoomComp";
+import { getDocumentFile, getPublicDocumentFile } from "../../../apis/DocumentApi";
+import { getLessonDocument, getPublicLessonDocument } from "../../../apis/LessonApi";
 
 interface Props {
-    fileUrl: string | null;
+    docId?: number;
     maxRenderWidth?: number;
 
     /** controlled page (optional) */
@@ -16,15 +18,21 @@ interface Props {
 
     /** empty state */
     emptyFallback?: React.ReactNode;
+
+    /** admin mode - use admin API to load all documents including hidden/pending */
+    isAdmin?: boolean;
+    isLessonDocument?: boolean;
 }
 
 const DocumentViewComp: React.FC<Props> = ({
-    fileUrl,
+    docId,
     maxRenderWidth = 860,
     page,
     onPageChange,
     onLoadPages,
     emptyFallback,
+    isAdmin,
+    isLessonDocument,
 }) => {
     const [numPages, setNumPages] = useState<number>();
     const [internalPage, setInternalPage] = useState<number>(page ?? 1);
@@ -35,13 +43,57 @@ const DocumentViewComp: React.FC<Props> = ({
     const [isDragging, setIsDragging] = useState<boolean>(false);
     const dragStartRef = useRef<{ x: number; y: number } | null>(null);
     const [activePointer, setActivePointer] = useState<number | null>(null);
-
-    const stageRef = useRef<HTMLDivElement | null>(null);
     const [renderWidth, setRenderWidth] = useState<number>();
     const [pageDimensions, setPageDimensions] = useState<{ width: number; height: number } | null>(null);
+    const [fileData, setFileData] = useState<string | null>(null);
+    const [loadingFile, setLoadingFile] = useState<boolean>(false);
+    const stageRef = useRef<HTMLDivElement | null>(null);
 
     const isControlled = page !== undefined;
     const currentPage = isControlled ? page! : internalPage;
+    // Fetch file with Authorization header
+    useEffect(() => {
+        if (!docId) return;
+
+        const fetchFile = async () => {
+            setLoadingFile(true);
+            setErrorMessage(null);
+            try {
+                let blob: Blob;
+                if (isAdmin === true) {
+                    if (isLessonDocument === true) {
+                        blob = await getLessonDocument(docId);
+                    } else {
+                        blob = await getDocumentFile(docId);
+                    }
+                } else {
+                    if (isLessonDocument === true) {
+                        blob = await getPublicLessonDocument(docId);
+                    } else {
+                        blob = await getPublicDocumentFile(docId);
+                    }
+                }
+
+                const url = URL.createObjectURL(blob);
+                setFileData(url);
+            } catch (error) {
+                console.error('Error fetching PDF file:', error);
+                setErrorMessage(ERROR_MESSAGES.PDF_LOAD_ERROR);
+            } finally {
+                setLoadingFile(false);
+            }
+        };
+
+        fetchFile();
+
+        // Cleanup blob URL when component unmounts or docId changes
+        return () => {
+            if (fileData) {
+                URL.revokeObjectURL(fileData);
+                setFileData(null);
+            }
+        };
+    }, [docId, isAdmin, isLessonDocument]);
 
     /* sync controlled page */
     useEffect(() => {
@@ -108,8 +160,17 @@ const DocumentViewComp: React.FC<Props> = ({
         }
     };
 
-    if (!fileUrl) {
+    if (!docId) {
         return <>{emptyFallback ?? null}</>;
+    }
+
+    if (loadingFile) {
+        return (
+            <div className="pdf-loading">
+                <i className="fa fa-spinner fa-spin" />
+                <p>Đang tải tài liệu...</p>
+            </div>
+        );
     }
 
     const goToPage = (target: number) => {
@@ -212,21 +273,28 @@ const DocumentViewComp: React.FC<Props> = ({
                             transition: isDragging ? "none" : "transform 0.2s ease-out",
                         }}
                     >
-                        <Document
-                            file={fileUrl}
-                            onLoadSuccess={onDocumentLoadSuccess}
-                            onLoadError={onDocumentLoadError}
-                            loading="Đang tải PDF..."
-                            error={ERROR_MESSAGES.PDF_LOAD_ERROR}
-                        >
-                            <Page
-                                pageNumber={currentPage}
-                                width={renderWidth ? Math.min(renderWidth, maxRenderWidth) : undefined}
-                                renderAnnotationLayer={false}
-                                renderTextLayer={false}
-                                onRenderSuccess={handlePageRenderSuccess}
-                            />
-                        </Document>
+                        {fileData && !loadingFile && !errorMessage ? (
+                            <Document
+                                file={fileData}
+                                onLoadSuccess={onDocumentLoadSuccess}
+                                onLoadError={onDocumentLoadError}
+                                loading="Đang tải PDF..."
+                                error={ERROR_MESSAGES.PDF_LOAD_ERROR}
+                            >
+                                <Page
+                                    pageNumber={currentPage}
+                                    width={renderWidth ? Math.min(renderWidth, maxRenderWidth) : undefined}
+                                    renderAnnotationLayer={false}
+                                    renderTextLayer={false}
+                                    onRenderSuccess={handlePageRenderSuccess}
+                                />
+                            </Document>
+                        ) : (
+                            <div className="pdf-loading">
+                                <i className="fa fa-spinner fa-spin" />
+                                <p>{errorMessage || "Đang tải tài liệu..."}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

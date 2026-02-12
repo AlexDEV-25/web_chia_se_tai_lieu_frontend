@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
-import { getByReceiver, read } from "../../../../apis/UserNotificationApi";
+import { useNavigate } from "react-router-dom";
+import { getByReceiver, read, readAll } from "../../../../apis/UserNotificationApi";
 import type { UserNotificationResponse } from "../../../../models/response/UserNotificationResponse";
 import { handleApiError } from "../../../../utils/errorHandler";
 
 const ListNotification: React.FC = () => {
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<UserNotificationResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [markingAllAsRead, setMarkingAllAsRead] = useState(false);
 
     const fetchNotifications = async () => {
         setLoading(true);
@@ -24,6 +27,10 @@ const ListNotification: React.FC = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
@@ -47,6 +54,39 @@ const ListNotification: React.FC = () => {
         }
     };
 
+    const handleMarkAllAsRead = async () => {
+        if (unreadCount === 0) return;
+
+        try {
+            setMarkingAllAsRead(true);
+            // Get current user ID from notifications (assuming all notifications are for the same user)
+            const userId = notifications[0]?.receiverId;
+            if (userId) {
+                await readAll(userId);
+                // Update all notifications as read
+                setNotifications((prev) =>
+                    prev.map((n) => ({ ...n, read: true }))
+                );
+                setUnreadCount(0);
+            }
+        } catch (error: any) {
+            const message = handleApiError(error, "Không thể đánh dấu tất cả đã đọc");
+            console.error(message);
+        } finally {
+            setMarkingAllAsRead(false);
+        }
+    };
+
+    const handleNotificationClick = (notification: UserNotificationResponse) => {
+        // Close notification dropdown
+        setIsOpen(false);
+
+        // Navigate to link if exists
+        if (notification.notificationLink) {
+            navigate(notification.notificationLink);
+        }
+    };
+
     const getNotificationIcon = (type: string) => {
         switch (type) {
             case "SUCCESS":
@@ -62,21 +102,16 @@ const ListNotification: React.FC = () => {
     };
 
     return (
-        <div style={{ position: "relative", display: "inline-block" }}>
+        <div className="notification-wrapper">
             {/* Notification Bell */}
             <button
-                className="btn btn-link position-relative"
+                className="notification-bell"
                 onClick={() => setIsOpen(!isOpen)}
                 title="Thông báo"
-                style={{ color: "rgba(255, 255, 255, 0.7)", padding: "0.5rem" }}
             >
-
-                <i
-                    className="fa fa-bell-o"
-                    style={{ fontSize: "1.25rem", color: "#ffc107" }}
-                />
+                <i className="fa fa-bell-o" />
                 {unreadCount > 0 && (
-                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    <span className="notification-badge">
                         {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                 )}
@@ -84,75 +119,81 @@ const ListNotification: React.FC = () => {
 
             {/* Notification Dropdown */}
             {isOpen && (
-                <div
-                    className="card position-absolute border shadow-lg"
-                    style={{
-                        top: "calc(100% + 10px)",
-                        right: 0,
-                        width: "380px",
-                        maxHeight: "600px",
-                        zIndex: 1050,
-                        maxWidth: "95vw",
-                    }}
-                >
-                    <div className="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h5 className="mb-0">Thông báo</h5>
-                        <button
-                            className="btn-close"
-                            onClick={() => setIsOpen(false)}
-                            aria-label="Close"
-                        />
+                <div className="notification-dropdown">
+                    <div className="notification-header">
+                        <h5 className="notification-title">Thông báo</h5>
+                        <div className="notification-header-actions">
+                            {unreadCount > 0 && (
+                                <button
+                                    className="mark-all-read-btn"
+                                    onClick={handleMarkAllAsRead}
+                                    disabled={markingAllAsRead}
+                                >
+                                    {markingAllAsRead ? "Đang xử lý..." : "Đọc tất cả"}
+                                </button>
+                            )}
+                            <button
+                                className="notification-close"
+                                onClick={() => setIsOpen(false)}
+                                aria-label="Close"
+                            >
+                                <i className="fa fa-times" />
+                            </button>
+                        </div>
                     </div>
 
-                    <div style={{ maxHeight: "480px", overflowY: "auto" }}>
+                    <div className="notification-list">
                         {loading ? (
-                            <div className="text-center text-muted py-5">
-                                <p>Đang tải...</p>
+                            <div className="notification-loading">
+                                <i className="fa fa-spinner fa-spin" />
+                                <p>Đang tải thông báo...</p>
                             </div>
                         ) : notifications.length === 0 ? (
-                            <div className="text-center text-muted py-5">
-                                <i className="fa fa-inbox" style={{ fontSize: "2.5rem", opacity: 0.5 }} />
-                                <p className="mt-2">Không có thông báo nào</p>
+                            <div className="notification-empty">
+                                <i className="fa fa-inbox" />
+                                <p>Không có thông báo nào</p>
                             </div>
                         ) : (
                             notifications.map((notification) => (
                                 <div
                                     key={notification.id}
-                                    className={`p-3 border-bottom ${!notification.read ? "bg-light" : ""}`}
+                                    className={`notification-item ${!notification.read ? `unread ${notification.notificationType.toLowerCase()}` : ""}`}
                                 >
-                                    <div className="d-flex justify-content-between align-items-start mb-2">
-                                        <div className="d-flex align-items-center gap-2">
-                                            <i
-                                                className={`fa ${getNotificationIcon(
-                                                    notification.notificationType
-                                                )}`}
-                                            />
-                                            <strong>{notification.senderName}</strong>
+                                    <div className="notification-item-header">
+                                        <div className="notification-sender">
+                                            <i className={`fa ${getNotificationIcon(notification.notificationType)}`} />
+                                            <span className="sender-name">{notification.senderName}</span>
                                         </div>
                                         {!notification.read && (
-                                            <span
-                                                className="rounded-circle bg-primary"
-                                                style={{ width: "8px", height: "8px" }}
-                                            />
+                                            <span className="unread-indicator" />
                                         )}
                                     </div>
-                                    <p className="mb-2 text-dark small">
-                                        {notification.notificationContent}
-                                    </p>
-                                    <small className="text-muted d-block mb-2">
-                                        {new Date(notification.createdAt).toLocaleDateString(
-                                            "vi-VN"
-                                        )}{" "}
-                                        {new Date(notification.createdAt).toLocaleTimeString(
-                                            "vi-VN",
-                                            { hour: "2-digit", minute: "2-digit" }
-                                        )}
-                                    </small>
+                                    <div
+                                        className={`notification-content-wrapper ${notification.notificationLink ? 'clickable' : ''}`}
+                                        onClick={() => handleNotificationClick(notification)}
+                                    >
+                                        <p className="notification-content">{notification.notificationContent}</p>
+                                    </div>
+                                    <div className="notification-time">
+                                        {new Date(notification.createdAt).toLocaleDateString("vi-VN", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric"
+                                        })}{" "}
+                                        {new Date(notification.createdAt).toLocaleTimeString("vi-VN", {
+                                            hour: "2-digit",
+                                            minute: "2-digit"
+                                        })}
+                                    </div>
                                     {!notification.read && (
                                         <button
-                                            className="btn btn-sm btn-outline-primary"
-                                            onClick={() => handleMarkAsRead(notification.id)}
+                                            className="mark-read-btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevent triggering notification click
+                                                handleMarkAsRead(notification.id);
+                                            }}
                                         >
+                                            <i className="fa fa-check" />
                                             Đánh dấu đã đọc
                                         </button>
                                     )}

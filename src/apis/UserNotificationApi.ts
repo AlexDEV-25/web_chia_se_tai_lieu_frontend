@@ -10,9 +10,12 @@ export const getByReceiverIdAndReadFalse = async () => {
     return await httpGet<APIResponse<void>>(`/user-notifications/receiver/unread`);
 }
 
-
 export const read = async (id: number) => {
     return await httpPut<APIResponse<UserNotificationResponse>>(`/user-notifications/read/${id}`);
+}
+
+export const readAll = async (id: number) => {
+    return await httpPut<APIResponse<void>>(`/user-notifications/read-all/${id}`);
 }
 
 

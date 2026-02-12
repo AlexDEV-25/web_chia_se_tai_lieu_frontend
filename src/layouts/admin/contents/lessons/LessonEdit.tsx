@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getLessonById, updateLesson } from '../../../../apis/LessonApi';
-import VideoComp from '../../../common/lesson_detail/components/VideoComp';
+import VideoComp from '../../../common/components/VideoComp';
 import DocumentViewComp from '../../../common/components/DocumentViewComp';
 import RightProperties from '../components/RightProperties';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
@@ -151,7 +151,8 @@ const LessonEdit: React.FC = () => {
                         <div className="document-preview-card">
                             <h3 className="document-section-title">Video bài giảng</h3>
                             <VideoComp
-                                source={`http://localhost:8080/api/lessons/admin/${lesson.id}/video`}
+                                lessonId={lesson.id}
+                                isAdmin={true}
                                 thumbnailUrl={lesson.thumbnailUrl}
                             />
                         </div>
@@ -161,7 +162,9 @@ const LessonEdit: React.FC = () => {
                             <div className="document-preview-card">
                                 <h3 className="document-section-title">Tài liệu bài giảng</h3>
                                 <DocumentViewComp
-                                    fileUrl={`http://localhost:8080/api/lessons/admin/${lesson.id}/document`}
+                                    docId={lesson.id}
+                                    isAdmin={true}
+                                    isLessonDocument={true}
                                     maxRenderWidth={860}
                                     emptyFallback={
                                         <div className="document-empty-preview">

@@ -7,11 +7,9 @@ interface Props {
 const DocumentComp: React.FC<Props> = ({ lessonId }) => {
     return (
         <DocumentViewComp
-            fileUrl={
-                lessonId
-                    ? `http://localhost:8080/api/lessons/${lessonId}/document`
-                    : null
-            }
+            docId={lessonId}
+            isAdmin={false}
+            isLessonDocument={true}
             maxRenderWidth={520}
             emptyFallback={
                 <div className="lesson-document-empty">

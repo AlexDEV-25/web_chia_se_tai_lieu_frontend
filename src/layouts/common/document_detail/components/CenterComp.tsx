@@ -15,7 +15,9 @@ const CenterComp: React.FC<Props> = ({
 }) => {
     return (
         <DocumentViewComp
-            fileUrl={`http://localhost:8080/api/documents/${docId}/file`}
+            docId={docId}
+            isAdmin={false}
+            isLessonDocument={false}
             page={pageNumber}
             onPageChange={onPageChange}
             onLoadPages={onLoadPages}

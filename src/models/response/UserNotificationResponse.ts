@@ -6,6 +6,7 @@ export interface UserNotificationResponse {
     receiverName: string;
     notificationId: number;
     notificationContent: string;
+    notificationLink: string;
     notificationType: 'INFO' | 'WARNING' | 'SUCCESS' | 'ERROR';
     read: boolean;
     createdAt: string;

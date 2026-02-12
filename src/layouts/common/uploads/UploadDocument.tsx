@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { DocumentRequest } from "./../../../models/request/DocumentReques";
-import { getAllCategory } from "./../../../apis/CategoryApi";
+import { getAllPublicCategory } from "./../../../apis/CategoryApi";
 import { uploadDocument } from "./../../../apis/DocumentApi";
 import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
 import { useRef } from "react";
@@ -26,7 +26,7 @@ const UploadDocument: React.FC = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await getAllCategory();
+                const response = await getAllPublicCategory();
                 setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED);

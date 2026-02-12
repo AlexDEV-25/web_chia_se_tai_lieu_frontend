@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { LessonRequest } from "./../../../models/request/LessonRequest";
-import { getAllCategory } from "./../../../apis/CategoryApi";
+import { getAllPublicCategory } from "./../../../apis/CategoryApi";
 import { uploadLesson } from "./../../../apis/LessonApi";
 import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
 import { useRef } from "react";
@@ -30,7 +30,7 @@ const UploadLesson: React.FC = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await getAllCategory();
+                const response = await getAllPublicCategory();
                 setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED);

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import VideoComp from "./components/VideoComp";
+import VideoComp from "../components/VideoComp";
 import DocumentComp from "./components/DocumentComp";
 import { downloadDocument, downloadSubFile, getPublicLessonById, increaseView } from "../../../apis/LessonApi";
 import type { LessonResponse } from "../../../models/response/LessonResponse";
@@ -273,7 +273,8 @@ const LessonDetail: React.FC = () => {
             <section className="lesson-content-layout">
                 <div className="rail-pane lesson-video-pane">
                     <VideoComp
-                        source={`http://localhost:8080/api/lessons/${lessonId}/video`}
+                        lessonId={lessonId}
+                        isAdmin={false}
                         thumbnailUrl={lessonDetail.thumbnailUrl}
                     />
                 </div>
