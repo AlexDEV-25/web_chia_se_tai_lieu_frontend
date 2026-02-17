@@ -18,9 +18,24 @@ export const getDocumentFavoritesByUser = async () => {
 export const getLessonFavoritesByUser = async () => {
     return await httpGet<APIResponse<FavoriteResponse>>(`/favorites/lesson/user`);
 };
-
 export const removeFavorite = async (id: number) => {
     return await httpDelete<APIResponse<void>>(`/favorites/${id}`);
+};
+
+export const removeDocumentFavorite = async (documentId: number) => {
+    return await httpDelete<APIResponse<void>>(`/favorites/document/${documentId}`);
+};
+
+export const removeLessonFavorite = async (lessonId: number) => {
+    return await httpDelete<APIResponse<void>>(`/favorites/lesson/${lessonId}`);
+};
+
+export const checkDocumentFavorite = async (documentId: number) => {
+    return await httpGet<APIResponse<boolean>>(`/favorites/document/user/check/${documentId}`);
+};
+
+export const checkLessonFavorite = async (lessonId: number) => {
+    return await httpGet<APIResponse<boolean>>(`/favorites/lesson/user/check/${lessonId}`);
 };
 
 // Backwards-compatible exports for existing document-only flows

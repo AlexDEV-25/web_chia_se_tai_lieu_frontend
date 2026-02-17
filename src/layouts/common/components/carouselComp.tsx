@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
 import { getAllLessonByCategory } from "../../../apis/LessonApi";
-
-import type { DocumentResponse } from "../../../models/response/DocumentResponse";
-import type { LessonResponse } from "../../../models/response/LessonResponse";
-import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
-import { addFavoriteLesson, getLessonFavoritesByUser } from "../../../apis/FavoriteApi";
+import { addFavoriteDocument, removeDocumentFavorite, addFavoriteLesson, removeLessonFavorite } from "../../../apis/FavoriteApi";
 import type { FavoriteRequest } from "../../../models/request/FavoriteRequest";
 import GrindItem from "./GrindItem";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import type { DocumentFavoriteResponse } from "../../../models/response/DocumentFavoriteResponse";
+import type { LessonFavoriteResponse } from "../../../models/response/LessonFavoriteResponse";
 
 interface CarouselProps {
     categoryId: number;
@@ -17,8 +15,7 @@ interface CarouselProps {
     type: 'document' | 'lesson';
 }
 
-type Item = DocumentResponse | LessonResponse;
-type FavoriteMap = Record<number, { favoriteId: number }>;
+type Item = DocumentFavoriteResponse | LessonFavoriteResponse;
 
 const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type }) => {
     const token = localStorage.getItem("token");
@@ -27,7 +24,6 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
     const [items, setItems] = useState<Item[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -56,37 +52,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
         }
     }, [categoryId, currentItemId, type]);
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            setFavoriteMap({});
-            return;
-        }
 
-        const fetchFavorites = async () => {
-            try {
-                let favoritesResponse;
-                if (type === 'document') {
-                    favoritesResponse = await getDocumentFavoritesByUser();
-                } else {
-                    favoritesResponse = await getLessonFavoritesByUser();
-                }
-
-                const map: FavoriteMap = {};
-                (favoritesResponse.resultList ?? []).forEach((fav: any) => {
-                    const itemId = fav.contentId;
-                    if (itemId) {
-                        map[itemId] = { favoriteId: fav.id };
-                    }
-                });
-                setFavoriteMap(map);
-            } catch (err: any) {
-                console.error(handleApiError(err, ERROR_MESSAGES.FAVORITES_LOAD_FAILED));
-                setFavoriteMap({});
-            }
-        };
-
-        fetchFavorites();
-    }, [isAuthenticated, type]);
 
     const handleToggleFavorite = async (item: Item) => {
         if (!isAuthenticated) {
@@ -94,42 +60,41 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
             return;
         }
 
-        const existing = favoriteMap[item.id];
         setFavoriteLoadingId(item.id);
 
         try {
-            if (existing) {
-                await removeFavorite(existing.favoriteId);
-                setFavoriteMap((prev) => {
-                    const { [item.id]: _removed, ...rest } = prev;
-                    return rest;
-                });
+            if (item.favorite === true) {
+                if (type === 'document') {
+                    await removeDocumentFavorite(item.id);
+                } else {
+                    await removeLessonFavorite(item.id);
+                }
+                setItems((prev) =>
+                    prev.map((i) =>
+                        i.id === item.id ? { ...i, favorite: false } : i
+                    )
+                );
             } else {
-                let response;
                 let data: FavoriteRequest;
                 if (type === 'document') {
                     data = {
                         contentId: item.id,
                         type: 'DOCUMENT',
                     };
-                    console.log(data);
-                    response = await addFavoriteDocument(data);
+                    await addFavoriteDocument(data);
                 } else {
                     data = {
                         contentId: item.id,
                         type: 'LESSON',
                     };
-                    response = await addFavoriteLesson(data);
+                    await addFavoriteLesson(data);
                 }
 
-                const saved = response.result;
-
-                if (saved) {
-                    setFavoriteMap((prev) => ({
-                        ...prev,
-                        [item.id]: { favoriteId: saved.id },
-                    }));
-                }
+                setItems((prev) =>
+                    prev.map((i) =>
+                        i.id === item.id ? { ...i, favorite: true } : i
+                    )
+                );
             }
         } catch (err: any) {
             alert(handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED));
@@ -211,7 +176,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                     </div>
                     <div className="row g-3">
                         {currentItems.map((item) => {
-                            const isFavorite = Boolean(favoriteMap[item.id]);
+
                             const isLoadingFavorite = favoriteLoadingId === item.id;
                             const thumbnailUrl = 'thumbnailUrl' in item && item.thumbnailUrl
                                 ? `http://localhost:8080/api/images/thumbnail/${item.thumbnailUrl}`
@@ -230,7 +195,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                                         viewsCount={item.viewsCount}
                                         downloadsCount={'downloadsCount' in item ? item.downloadsCount : undefined}
                                         showInlineFavorite
-                                        isFavorite={isFavorite}
+                                        isFavorite={item.favorite}
                                         favoriteDisabled={isLoadingFavorite}
                                         onToggleFavorite={() => handleToggleFavorite(item)}
                                     />

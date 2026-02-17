@@ -3,13 +3,14 @@ import { useParams } from "react-router-dom";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import { handleApiError } from "../../../utils/errorHandler";
 import { getInfo } from "../../../apis/UserApi";
-import type { DocumentResponse } from "../../../models/response/DocumentResponse";
-import type { LessonResponse } from "../../../models/response/LessonResponse";
-import { getListDocumentByUser, } from "../../../apis/DocumentApi";
+import type { DocumentFavoriteResponse } from "../../../models/response/DocumentFavoriteResponse";
+// import { getListDocumentByUser, } from "../../../apis/DocumentApi";
 import { getListLessonByUser } from "../../../apis/LessonApi";
 import type { UserBioResponse } from "../../../models/response/UserBioResponse";
 import type { FollowCountResponse } from "../../../models/response/FollowCountResponse";
-import { getFollowCount } from "../../../apis/UserFollowApi";
+import { followUser, getFollowCount } from "../../../apis/UserFollowApi";
+import { getListDocumentByUser } from "../../../apis/DocumentApi";
+import type { LessonFavoriteResponse } from "../../../models/response/LessonFavoriteResponse";
 
 const Profile: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -20,8 +21,8 @@ const Profile: React.FC = () => {
     const [user, setUser] = useState<UserBioResponse | null>(null);
     const [infoMessage, setInfoMessage] = useState("");
     const [activeTab, setActiveTab] = useState<"documents" | "lessons">("documents");
-    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
-    const [lessons, setLessons] = useState<LessonResponse[]>([]);
+    const [documents, setDocuments] = useState<DocumentFavoriteResponse[]>([]);
+    const [lessons, setLessons] = useState<LessonFavoriteResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +41,13 @@ const Profile: React.FC = () => {
             const response = await getInfo(userId);
             setUser(response.result);
 
+        } catch (err: any) {
+            setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_LOAD_FAILED))
+        }
+    };
+    const handleFollow = async () => {
+        try {
+            await followUser(userId);
         } catch (err: any) {
             setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_LOAD_FAILED))
         }
@@ -76,6 +84,9 @@ const Profile: React.FC = () => {
     return (
         <div>
             <h1>Profile</h1>
+            <button onClick={() => setActiveTab("documents")}>Documents</button>
+            <button onClick={() => setActiveTab("lessons")}>Lessons</button>
+            <button onClick={() => handleFollow()}></button>
         </div>
     );
 }

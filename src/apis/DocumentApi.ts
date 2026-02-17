@@ -4,13 +4,14 @@ import type { DocumentResponse } from "./../models/response/DocumentResponse";
 import type { DocumentRequest } from "./../models/request/DocumentReques";
 import type { HideRequest } from '../models/request/HideRequest';
 import type { DocumentStatsResponse } from '../models/response/DocumentStatsResponse';
+import type { DocumentFavoriteResponse } from '../models/response/DocumentFavoriteResponse';
 
 export const stats = async () => {
     return await httpGet<APIResponse<DocumentStatsResponse>>(`/documents/stats`);
 };
 
 export const search = async (keyword: string, categoryId: number) => {
-    return await httpGet<APIResponse<DocumentResponse>>(`/documents/search?keyword=${keyword}&categoryId=${categoryId}`);
+    return await httpGet<APIResponse<DocumentFavoriteResponse>>(`/documents/search?keyword=${keyword}&categoryId=${categoryId}`);
 };
 
 export const getDocumentById = async (id: number) => {
@@ -25,21 +26,9 @@ export const getAllDocument = async () => {
     return await httpGet<APIResponse<DocumentResponse>>(`/documents/admin`);
 };
 
-export const getAllPublicDocument = async () => {
-    return await httpGet<APIResponse<DocumentResponse>>(`/documents`);
-};
-
 export const deleteDocument = async (id: number): Promise<APIResponse<void>> => {
     const response = await api.delete<APIResponse<void>>(`/documents/admin/${id}`);
     return response.data;
-};
-
-export const getAllDocumentByUser = async (documentId: number, userId: number) => {
-    return await httpGet<APIResponse<DocumentResponse>>(`/documents/user?documentId=${documentId}&userId=${userId}`);
-};
-
-export const getAllDocumentByCategory = async (documentId: number, categoryId: number) => {
-    return await httpGet<APIResponse<DocumentResponse>>(`/documents/category?documentId=${documentId}&categoryId=${categoryId}`);
 };
 
 export const hideDocument = async (id: number, data: HideRequest): Promise<APIResponse<DocumentResponse>> => {
@@ -98,10 +87,6 @@ export const deleteMyDocument = async (id: number): Promise<APIResponse<void>> =
     return response.data;
 };
 
-export const getListDocumentByUser = async (userId: number) => {
-    return await httpGet<APIResponse<DocumentResponse>>(`/documents/user/${userId}`);
-};
-
 export const getDocumentFile = async (documentId: number): Promise<Blob> => {
     if (!documentId) {
         throw new Error("Thiếu ID document để tải file");
@@ -112,4 +97,24 @@ export const getDocumentFile = async (documentId: number): Promise<Blob> => {
     });
 
     return response.data;
+};
+
+// lấy danh sách các document công khai và check xem đã favorite hay chưa
+export const getAllPublicDocument = async () => {
+    return await httpGet<APIResponse<DocumentFavoriteResponse>>(`/documents`);
+};
+
+// lấy danh sách tất cả các document công khai của 1 user và check xem đã favorite hay chưa
+export const getListDocumentByUser = async (userId: number) => {
+    return await httpGet<APIResponse<DocumentFavoriteResponse>>(`/documents/user/${userId}`);
+};
+
+// lấy danh sách các document công khai cùng 1 user trừ document hiện tại và check xem đã favorite hay chưa
+export const getAllDocumentByUser = async (documentId: number, userId: number) => {
+    return await httpGet<APIResponse<DocumentFavoriteResponse>>(`/documents/user?documentId=${documentId}&userId=${userId}`);
+};
+
+// lấy danh sách các document công khai cùng 1 category trừ document hiện tại và check xem đã favorite hay chưa
+export const getAllDocumentByCategory = async (documentId: number, categoryId: number) => {
+    return await httpGet<APIResponse<DocumentFavoriteResponse>>(`/documents/category?documentId=${documentId}&categoryId=${categoryId}`);
 };

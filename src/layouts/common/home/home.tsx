@@ -1,18 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { search, stats, getAllPublicDocument } from "../../../apis/DocumentApi";
 import { getAllPublicCategory } from "../../../apis/CategoryApi";
-import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import type { CategoryResponse } from "../../../models/response/CategoryResponse";
 import HeroBlockComp from "../components/HeroBlockComp";
 import CategoryBlockComp from "../components/CategoryBlockComp";
 import MainBlockComp from "../components/MainBlockComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import type { DocumentFavoriteResponse } from "../../../models/response/DocumentFavoriteResponse";
 interface Props {
     keyWords: string
 }
 const Home = ({ keyWords }: Props) => {
-    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
+    const [documents, setDocuments] = useState<DocumentFavoriteResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [statsData, setStatsData] = useState<any>(null);
     const [loadingDocs, setLoadingDocs] = useState(true);

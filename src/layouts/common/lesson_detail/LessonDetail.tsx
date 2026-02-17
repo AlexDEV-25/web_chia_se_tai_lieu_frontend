@@ -9,7 +9,7 @@ import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
 import CommentComp from "../components/CommentComp";
 import ReportComp from "../components/ReportComp";
-import { addFavoriteLesson, getLessonFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
+import { addFavoriteLesson, checkLessonFavorite, removeLessonFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 
@@ -25,7 +25,7 @@ const LessonDetail: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [downloadingDoc, setDownloadingDoc] = useState(false);
     const [downloadingSub, setDownloadingSub] = useState(false);
-    const [favoriteId, setFavoriteId] = useState<number | null>(null);
+    const [isFavorite, setIsFavorite] = useState(false);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
 
     useEffect(() => {
@@ -38,7 +38,8 @@ const LessonDetail: React.FC = () => {
         const fetchDetail = async () => {
             try {
                 const response = await getPublicLessonById(lessonId);
-                setLessonDetail(response?.result ?? null);
+                const detail = response?.result ?? null;
+                setLessonDetail(detail);
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.LESSON_DETAIL_LOAD_FAILED);
                 setError(message);
@@ -47,6 +48,27 @@ const LessonDetail: React.FC = () => {
             }
         };
         fetchDetail();
+    }, [lessonId]);
+
+    useEffect(() => {
+        if (!lessonId) {
+            setError(ERROR_MESSAGES.LESSON_NOT_FOUND);
+            setLoading(false);
+            return;
+        }
+        const fetchFavoriteResponseDetail = async () => {
+            try {
+                const isFavoriteResponse = await checkLessonFavorite(lessonId);
+                setIsFavorite(isFavoriteResponse.result ?? false);
+
+            } catch (err: any) {
+                const message = handleApiError(err, ERROR_MESSAGES.LESSON_LOAD_FAILED);
+                setError(message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchFavoriteResponseDetail();
     }, [lessonId]);
 
     useEffect(() => {
@@ -64,37 +86,6 @@ const LessonDetail: React.FC = () => {
         return () => clearTimeout(timer);
     }, [lessonId]);
 
-    useEffect(() => {
-        if (!lessonId || !isAuthenticated) {
-            setFavoriteId(null);
-            return;
-        }
-
-        let isMounted = true;
-
-        const fetchFavoriteState = async () => {
-            try {
-                const favoritesResponse = await getLessonFavoritesByUser();
-                if (!isMounted) return;
-                const favorites = favoritesResponse.resultList ?? [];
-                const existing = favorites.find((fav) => fav.contentId === lessonId);
-                setFavoriteId(existing ? existing.id : null);
-            } catch (err: any) {
-                const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_ADD_FAILED);
-                console.error(message);
-                if (isMounted) {
-                    setFavoriteId(null);
-                }
-            }
-        };
-
-        fetchFavoriteState();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [lessonId, isAuthenticated]);
-
     const handleToggleFavorite = async () => {
         if (!lessonId) return;
         if (!isAuthenticated) {
@@ -105,19 +96,15 @@ const LessonDetail: React.FC = () => {
         setFavoriteLoading(true);
 
         try {
-            if (favoriteId) {
-                await removeFavorite(favoriteId);
-                setFavoriteId(null);
+            if (isFavorite) {
+                await removeLessonFavorite(lessonId);
+                setIsFavorite(false);
             } else {
-                const response = await addFavoriteLesson({
+                await addFavoriteLesson({
                     contentId: lessonId,
                     type: 'LESSON',
                 });
-
-                const saved = response.result;
-                if (saved) {
-                    setFavoriteId(saved.id);
-                }
+                setIsFavorite(true);
             }
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_ADD_FAILED);
@@ -258,11 +245,11 @@ const LessonDetail: React.FC = () => {
                     <button
                         type="button"
                         onClick={handleToggleFavorite}
-                        className={`btn-outline favorite-toggle ${favoriteId ? "active" : ""}`}
+                        className={`btn-outline favorite-toggle ${isFavorite ? "active" : ""}`}
                         disabled={favoriteLoading}
                     >
-                        <i className={`fa ${favoriteId ? "fa-heart" : "fa-heart-o"}`} />{" "}
-                        {favoriteId ? "Đã lưu" : "Lưu vào kho"}
+                        <i className={`fa ${isFavorite ? "fa-heart" : "fa-heart-o"}`} />{" "}
+                        {isFavorite ? "Đã lưu" : "Lưu vào kho"}
                     </button>
                     <button onClick={() => window.history.back()} className="btn-outline">
                         Quay lại thư viện

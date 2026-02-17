@@ -1,20 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { search, stats, getPublicAllLesson } from "../../../apis/LessonApi";
+import { search, stats, getAllPublicLesson } from "../../../apis/LessonApi";
 import { getAllPublicCategory } from "../../../apis/CategoryApi";
-import type { LessonResponse } from "../../../models/response/LessonResponse";
 import type { CategoryResponse } from "../../../models/response/CategoryResponse";
 import HeroBlockComp from "../components/HeroBlockComp";
 import CategoryBlockComp from "../components/CategoryBlockComp";
 import MainBlockComp from "../components/MainBlockComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import type { LessonFavoriteResponse } from "../../../models/response/LessonFavoriteResponse";
 
 interface Props {
     keyWords: string
 }
 
 const Lesson = ({ keyWords }: Props) => {
-    const [lessons, setLessons] = useState<LessonResponse[]>([]);
+    const [lessons, setLessons] = useState<LessonFavoriteResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [statsData, setStatsData] = useState<any>(null);
     const [loadingLessons, setLoadingLessons] = useState(true);
@@ -43,7 +43,7 @@ const Lesson = ({ keyWords }: Props) => {
                 const hasCategory = selectedCategory !== "all";
 
                 if (!hasKeyword && !hasCategory) {
-                    const response = await getPublicAllLesson();
+                    const response = await getAllPublicLesson();
                     setLessons(response?.resultList ?? []);
                 } else {
                     const categoryId = selectedCategory === "all" ? 0 : (selectedCategory as number);

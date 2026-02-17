@@ -3,108 +3,97 @@ import { useEffect, useState } from "react";
 import { getAllLessonByUser } from "../../../../apis/LessonApi";
 import {
     addFavoriteLesson,
-    getLessonFavoritesByUser,
-    removeFavorite,
+    removeLessonFavorite,
 } from "../../../../apis/FavoriteApi";
-import type { LessonResponse } from "../../../../models/response/LessonResponse";
 import GrindItem from "../../components/GrindItem";
 import { handleApiError } from "../../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../../constants/messages";
+import type { LessonFavoriteResponse } from "../../../../models/response/LessonFavoriteResponse";
 
 interface LessonRightSidebarProps {
     userId: number;
     currentLessonId: number;
 }
 
-type FavoriteMap = Record<number, { favoriteId: number }>;
-
-const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, currentLessonId }) => {
+const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({
+    userId,
+    currentLessonId,
+}) => {
     const token = localStorage.getItem("token");
     const isAuthenticated = Boolean(token);
 
-    const [lessons, setLessons] = useState<LessonResponse[]>([]);
+    const [lessons, setLessons] = useState<LessonFavoriteResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
 
+    // Fetch lessons
     useEffect(() => {
-        const fetchByUser = async () => {
+        if (!userId) return;
+
+        const fetchLessons = async () => {
             setLoading(true);
             setError(null);
+
             try {
-                const response = await getAllLessonByUser(currentLessonId, userId);
-                const list = (response.resultList ?? []);
+                const response = await getAllLessonByUser(
+                    currentLessonId,
+                    userId
+                );
+                const list = response.resultList ?? [];
                 setLessons(list.slice(0, 4));
             } catch (err: any) {
-                setError(handleApiError(err, ERROR_MESSAGES.LESSON_AUTHOR_LOAD_FAILED));
+                const message = handleApiError(
+                    err,
+                    ERROR_MESSAGES.LESSON_AUTHOR_LOAD_FAILED
+                );
+                setError(message);
             } finally {
                 setLoading(false);
             }
         };
 
-        if (userId) {
-            fetchByUser();
-        }
+        fetchLessons();
     }, [userId, currentLessonId]);
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            setFavoriteMap({});
-            return;
-        }
-
-        const fetchFavorites = async () => {
-            try {
-                const favoritesResponse = await getLessonFavoritesByUser();
-                const map: FavoriteMap = {};
-                (favoritesResponse.resultList ?? []).forEach((fav: any) => {
-                    if (fav.contentId) {
-                        map[fav.contentId] = { favoriteId: fav.id };
-                    }
-                });
-                setFavoriteMap(map);
-            } catch (err: any) {
-                const message = handleApiError(err, ERROR_MESSAGES.FAVORITES_LOAD_FAILED);
-                console.error(message);
-                setFavoriteMap({});
-            }
-        };
-
-        fetchFavorites();
-    }, [isAuthenticated]);
-
-    const handleToggleFavorite = async (lesson: LessonResponse) => {
+    // Toggle favorite
+    const handleToggleFavorite = async (lesson: LessonFavoriteResponse) => {
         if (!isAuthenticated) {
             alert(ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE);
             return;
         }
 
-        const existing = favoriteMap[lesson.id];
         setFavoriteLoadingId(lesson.id);
 
         try {
-            if (existing) {
-                await removeFavorite(existing.favoriteId);
-                setFavoriteMap((prev) => {
-                    const { [lesson.id]: _removed, ...rest } = prev;
-                    return rest;
-                });
+            if (lesson.favorite) {
+                await removeLessonFavorite(lesson.id);
+                setLessons((prev) =>
+                    prev.map((item) =>
+                        item.id === lesson.id
+                            ? { ...item, isFavorite: false }
+                            : item
+                    )
+                );
             } else {
-                const response = await addFavoriteLesson({
+                await addFavoriteLesson({
                     contentId: lesson.id,
-                    type: 'LESSON',
+                    type: "LESSON",
                 });
-                const saved = response.result;
-                if (saved) {
-                    setFavoriteMap((prev) => ({
-                        ...prev,
-                        [lesson.id]: { favoriteId: saved.id },
-                    }));
-                }
+
+                setLessons((prev) =>
+                    prev.map((item) =>
+                        item.id === lesson.id
+                            ? { ...item, isFavorite: true }
+                            : item
+                    )
+                );
             }
         } catch (err: any) {
-            const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED);
+            const message = handleApiError(
+                err,
+                ERROR_MESSAGES.FAVORITE_UPDATE_FAILED
+            );
             alert(message);
         } finally {
             setFavoriteLoadingId(null);
@@ -133,7 +122,9 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
             {error && <div className="alert alert-danger">{error}</div>}
 
             {!loading && lessons.length === 0 && (
-                <div className="empty-state">Giảng viên chưa có thêm video công khai.</div>
+                <div className="empty-state">
+                    Giảng viên chưa có thêm video công khai.
+                </div>
             )}
 
             <div className="document-grid two-col">
@@ -148,19 +139,26 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({ userId, current
                                 ? `http://localhost:8080/api/images/thumbnail/${lesson.thumbnailUrl}`
                                 : undefined
                         }
-                        subtitle={<p>by: {lesson.userName ?? "Giảng viên ẩn danh"}</p>}
+                        subtitle={
+                            <p>
+                                by: {lesson.username ?? "Giảng viên ẩn danh"}
+                            </p>
+                        }
                         viewsCount={lesson.viewsCount}
                         variant="compact"
                         simple
                         showVideoOverlay
                         showInlineFavorite
-                        isFavorite={Boolean(favoriteMap[lesson.id])}
+                        isFavorite={lesson.favorite}
                         favoriteDisabled={favoriteLoadingId === lesson.id}
-                        onToggleFavorite={() => handleToggleFavorite(lesson)}
+                        onToggleFavorite={() =>
+                            handleToggleFavorite(lesson)
+                        }
                         metaExtras={
-                            lesson.documentUrl ? (
+                            lesson.thumbnailUrl ? (
                                 <span>
-                                    <i className="fa fa-file-pdf-o me-1" /> Tài liệu
+                                    <i className="fa fa-file-pdf-o me-1" /> Tài
+                                    liệu
                                 </span>
                             ) : undefined
                         }

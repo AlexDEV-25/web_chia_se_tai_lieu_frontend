@@ -5,7 +5,8 @@ import {
     addFavoriteLesson,
     getDocumentFavoritesByUser,
     getLessonFavoritesByUser,
-    removeFavorite,
+    removeDocumentFavorite,
+    removeLessonFavorite,
 } from "../../../apis/FavoriteApi";
 
 import GrindItem from "./GrindItem";
@@ -108,7 +109,11 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
 
         try {
             if (existing) {
-                await removeFavorite(existing.favoriteId);
+                if (itemType === "document") {
+                    await removeDocumentFavorite(existing.favoriteId);
+                } else {
+                    await removeLessonFavorite(existing.favoriteId);
+                }
 
                 setFavoriteMap((prev) => {
                     const { [itemId]: _removed, ...rest } = prev;

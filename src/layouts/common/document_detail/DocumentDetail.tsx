@@ -9,7 +9,7 @@ import RightSidebar from "./components/RightSidebar";
 import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
 import ReportComp from "../components/ReportComp";
-import { addFavoriteDocument, getDocumentFavoritesByUser, removeFavorite } from "../../../apis/FavoriteApi";
+import { addFavoriteDocument, checkDocumentFavorite, removeDocumentFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 
@@ -30,10 +30,9 @@ const DocumentDetail: React.FC = () => {
     // Trang đang hiển thị (1-based)
     const [activeSlide, setActiveSlide] = useState<number>(1);
     const [downloading, setDownloading] = useState(false);
-    const [favoriteId, setFavoriteId] = useState<number | null>(null);
+    const [isFavorite, setIsFavorite] = useState(false);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
 
-    // Tải thông tin document
     useEffect(() => {
         if (!docId) {
             setError(ERROR_MESSAGES.DOCUMENT_NOT_FOUND);
@@ -44,7 +43,9 @@ const DocumentDetail: React.FC = () => {
         const fetchDetail = async () => {
             try {
                 const response = await getPublicDocumentById(docId);
-                setDocumentDetail(response?.result ?? null);
+
+                const detail = response?.result ?? null;
+                setDocumentDetail(detail);
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_LOAD_FAILED);
                 setError(message);
@@ -53,6 +54,27 @@ const DocumentDetail: React.FC = () => {
             }
         };
         fetchDetail();
+    }, [docId]);
+
+    useEffect(() => {
+        if (!docId) {
+            setError(ERROR_MESSAGES.DOCUMENT_NOT_FOUND);
+            setLoading(false);
+            return;
+        }
+        const fetchFavoriteResponseDetail = async () => {
+            try {
+                const isFavoriteResponse = await checkDocumentFavorite(docId);
+                setIsFavorite(isFavoriteResponse.result ?? false);
+
+            } catch (err: any) {
+                const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_LOAD_FAILED);
+                setError(message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchFavoriteResponseDetail();
     }, [docId]);
 
     useEffect(() => {
@@ -68,37 +90,6 @@ const DocumentDetail: React.FC = () => {
         }, 30000); // 30 seconds
 
         return () => clearTimeout(timer);
-    }, [docId]);
-
-    useEffect(() => {
-        if (!docId || !isAuthenticated) {
-            setFavoriteId(null);
-            return;
-        }
-
-        let isMounted = true;
-
-        const fetchFavoriteState = async () => {
-            try {
-                const favoritesResponse = await getDocumentFavoritesByUser();
-                if (!isMounted) return;
-                const favorites = favoritesResponse.resultList ?? [];
-                const existing = favorites.find((fav) => fav.contentId === docId);
-                setFavoriteId(existing ? existing.id : null);
-            } catch (err: any) {
-                const message = handleApiError(err, ERROR_MESSAGES.FAVORITES_LOAD_FAILED);
-                console.error(message);
-                if (isMounted) {
-                    setFavoriteId(null);
-                }
-            }
-        };
-
-        fetchFavoriteState();
-
-        return () => {
-            isMounted = false;
-        };
     }, [docId, isAuthenticated]);
 
     const handleToggleFavorite = async () => {
@@ -111,19 +102,15 @@ const DocumentDetail: React.FC = () => {
         setFavoriteLoading(true);
 
         try {
-            if (favoriteId) {
-                await removeFavorite(favoriteId);
-                setFavoriteId(null);
+            if (isFavorite) {
+                await removeDocumentFavorite(docId);
+                setIsFavorite(false);
             } else {
-                const response = await addFavoriteDocument({
+                await addFavoriteDocument({
                     contentId: docId,
                     type: 'DOCUMENT',
                 });
-                const saved = response.result;
-                console.log('Added favorite:', saved);
-                if (saved) {
-                    setFavoriteId(saved.id);
-                }
+                setIsFavorite(true);
             }
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED);
@@ -249,11 +236,11 @@ const DocumentDetail: React.FC = () => {
                     <button
                         type="button"
                         onClick={handleToggleFavorite}
-                        className={`btn-outline favorite-toggle ${favoriteId ? "active" : ""}`}
+                        className={`btn-outline favorite-toggle ${isFavorite ? "active" : ""}`}
                         disabled={favoriteLoading}
                     >
-                        <i className={`fa ${favoriteId ? "fa-heart" : "fa-heart-o"}`} />{" "}
-                        {favoriteId ? "Đã lưu" : "Lưu vào kho"}
+                        <i className={`fa ${isFavorite ? "fa-heart" : "fa-heart-o"}`} />{" "}
+                        {isFavorite ? "Đã lưu" : "Lưu vào kho"}
                     </button>
                     <Link to={`/profile/${documentDetail.userId}`} className="btn-outline">
                         Đến bio tác giả

@@ -4,13 +4,14 @@ import type { LessonResponse } from "./../models/response/LessonResponse";
 import type { LessonRequest } from "./../models/request/LessonRequest";
 import type { HideRequest } from '../models/request/HideRequest';
 import type { LessonStatsResponse } from '../models/response/LessonStatsResponse';
+import type { LessonFavoriteResponse } from '../models/response/LessonFavoriteResponse';
 
 export const stats = async () => {
     return await httpGet<APIResponse<LessonStatsResponse>>(`/lessons/stats`);
 };
 
 export const search = async (keyword: string, categoryId: number) => {
-    return await httpGet<APIResponse<LessonResponse>>(`/lessons/search?keyword=${keyword}&categoryId=${categoryId}`);
+    return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons/search?keyword=${keyword}&categoryId=${categoryId}`);
 };
 
 export const getLessonById = async (id: number) => {
@@ -25,22 +26,12 @@ export const getAllLesson = async () => {
     return await httpGet<APIResponse<LessonResponse>>(`/lessons/admin`);
 };
 
-export const getPublicAllLesson = async () => {
-    return await httpGet<APIResponse<LessonResponse>>(`/lessons`);
-};
-
 export const deleteLesson = async (id: number): Promise<APIResponse<void>> => {
     const response = await api.delete<APIResponse<void>>(`/lessons/admin/${id}`);
     return response.data;
 };
 
-export const getAllLessonByUser = async (lessonId: number, userId: number) => {
-    return await httpGet<APIResponse<LessonResponse>>(`/lessons/user?lessonId=${lessonId}&userId=${userId}`);
-};
 
-export const getAllLessonByCategory = async (lessonId: number, categoryId: number) => {
-    return await httpGet<APIResponse<LessonResponse>>(`/lessons/category?lessonId=${lessonId}&categoryId=${categoryId}`);
-};
 
 export const hideLesson = async (id: number, data: HideRequest): Promise<APIResponse<LessonResponse>> => {
     const response = await api.put<APIResponse<LessonResponse>>(`/lessons/admin/hide/${id}`, data);
@@ -118,9 +109,7 @@ export const deleteMyLesson = async (id: number): Promise<APIResponse<void>> => 
     return response.data;
 };
 
-export const getListLessonByUser = async (userId: number) => {
-    return await httpGet<APIResponse<LessonResponse>>(`/lessons/user/${userId}`);
-};
+
 
 export const getLessonVideo = async (lessonId: number): Promise<Blob> => {
     if (!lessonId) {
@@ -156,5 +145,25 @@ export const getLessonDocument = async (lessonId: number): Promise<Blob> => {
     });
 
     return response.data;
+};
+
+// lấy danh sách các document công khai và check xem đã favorite hay chưa
+export const getAllPublicLesson = async () => {
+    return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons`);
+};
+
+// lấy danh sách tất cả các document công khai của 1 user và check xem đã favorite hay chưa
+export const getListLessonByUser = async (userId: number) => {
+    return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons/user/${userId}`);
+};
+
+// lấy danh sách các document công khai cùng 1 user trừ document hiện tại và check xem đã favorite hay chưa
+export const getAllLessonByUser = async (lessonId: number, userId: number) => {
+    return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons/user?lessonId=${lessonId}&userId=${userId}`);
+};
+
+// lấy danh sách các document công khai cùng 1 category trừ document hiện tại và check xem đã favorite hay chưa
+export const getAllLessonByCategory = async (lessonId: number, categoryId: number) => {
+    return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons/category?lessonId=${lessonId}&categoryId=${categoryId}`);
 };
 
