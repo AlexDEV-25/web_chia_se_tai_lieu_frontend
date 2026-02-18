@@ -7,13 +7,11 @@ interface FilterProps {
     onSearchChange: (term: string) => void;
     filterValue: FilterType;
     onFilterChange: (filter: FilterType) => void;
-    onRefresh: () => void;
     placeholder?: string;
     containerClass?: string;
     searchClass?: string;
     filterActionsClass?: string;
     filterChipClass?: string;
-    buttonClass?: string;
 }
 
 const Filter: React.FC<FilterProps> = ({
@@ -21,13 +19,11 @@ const Filter: React.FC<FilterProps> = ({
     onSearchChange,
     filterValue,
     onFilterChange,
-    onRefresh,
     placeholder = 'Tìm kiếm theo tên hoặc mô tả…',
     containerClass = 'filters',
     searchClass = 'search',
     filterActionsClass = 'filter-actions',
-    filterChipClass = 'filter-chip',
-    buttonClass = 'btn ghost'
+    filterChipClass = 'filter-chip'
 }) => {
     const filters: FilterType[] = ['all', 'visible', 'hidden'];
     const filterLabels: Record<FilterType, string> = {
@@ -60,13 +56,7 @@ const Filter: React.FC<FilterProps> = ({
                         </button>
                     ))}
                 </div>
-                <button
-                    type="button"
-                    onClick={onRefresh}
-                    className={buttonClass}
-                >
-                    Làm mới
-                </button>
+
             </div>
         </div>
     );

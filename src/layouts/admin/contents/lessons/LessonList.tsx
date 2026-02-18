@@ -4,7 +4,6 @@ import { getAllLesson, deleteLesson, hideLesson } from '../../../../apis/LessonA
 import PageHeader from '../../components/PageHeader';
 import Stats from '../../components/Stats';
 import Filter from '../../components/Filter';
-import Table from '../../components/Table';
 import LoadingState from '../../components/LoadingState';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
@@ -21,7 +20,6 @@ const LessonList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
-    const [refreshKey, setRefreshKey] = useState<number>(0);
     const [updatingId, setUpdatingId] = useState<number | null>(null);
 
     const fetchLessons = useCallback(async () => {
@@ -40,7 +38,7 @@ const LessonList: React.FC = () => {
 
     useEffect(() => {
         fetchLessons();
-    }, [fetchLessons, refreshKey]);
+    }, [fetchLessons]);
 
     const handleToggleVisibility = useCallback(async (lesson: LessonResponse) => {
         const { id, title, hide } = lesson;
@@ -119,69 +117,6 @@ const LessonList: React.FC = () => {
         );
     };
 
-    const tableColumns = [
-        {
-            key: 'id',
-            header: 'Mã',
-            render: (les: LessonResponse) => <span className="muted-cell">#{les.id}</span>
-        },
-        {
-            key: 'title',
-            header: 'Tiêu đề',
-            render: (les: LessonResponse) => (
-                <div>
-                    <p className="lesson-title">{les.title}</p>
-                    <span className="lesson-meta">{les.hide ? 'Ẩn khỏi công khai' : 'Công khai'}</span>
-                </div>
-            )
-        },
-        {
-            key: 'description',
-            header: 'Nội dung',
-            render: (les: LessonResponse) => (
-                <span className="description-cell">
-                    {les.description ? les.description.substring(0, 50) + '...' : '—'}
-                </span>
-            )
-        },
-        {
-            key: 'categoryName',
-            header: 'Danh mục',
-            render: (les: LessonResponse) => <span>{les.categoryName || 'Chưa phân loại'}</span>
-        },
-        {
-            key: 'status',
-            header: 'Trạng thái',
-            render: (les: LessonResponse) => renderStatusPill(les.status)
-        },
-        {
-            key: 'actions',
-            header: 'Thao tác',
-            align: 'right' as const,
-            render: (les: LessonResponse) => (
-                <div className="lesson-row-actions">
-                    <Link to={`/lessons/edit/${les.id}`} className="lesson-btn subtle">
-                        Chi tiết
-                    </Link>
-                    <button
-                        onClick={() => handleToggleVisibility(les)}
-                        disabled={updatingId === les.id}
-                        className={`lesson-btn ${les.hide ? 'primary' : 'danger'}`}
-                    >
-                        {updatingId === les.id ? 'Đang cập nhật...' : les.hide ? 'Hiển thị' : 'Ẩn'}
-                    </button>
-                    <button
-                        onClick={() => handleDelete(les)}
-                        disabled={updatingId === les.id}
-                        className="lesson-btn danger"
-                    >
-                        {updatingId === les.id ? 'Đang xóa...' : 'Xóa'}
-                    </button>
-                </div>
-            )
-        }
-    ];
-
     return (
         <div className="admin-page-layout">
             <LeftSidebar />
@@ -210,13 +145,11 @@ const LessonList: React.FC = () => {
                         onSearchChange={setSearchTerm}
                         filterValue={visibilityFilter}
                         onFilterChange={setVisibilityFilter}
-                        onRefresh={() => setRefreshKey((prev) => prev + 1)}
                         placeholder="Tìm kiếm theo tiêu đề hoặc nội dung…"
                         containerClass="lesson-filters"
                         searchClass="lesson-search"
                         filterActionsClass="lesson-filter-actions"
                         filterChipClass="lesson-filter-chip"
-                        buttonClass="lesson-btn ghost"
                     />
 
                     {loading && <LoadingState />}
@@ -227,7 +160,59 @@ const LessonList: React.FC = () => {
 
                     {!loading && filteredLessons.length > 0 && (
                         <div className="lesson-table-wrapper">
-                            <Table columns={tableColumns} data={filteredLessons} keyField="id" />
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã</th>
+                                        <th>Tiêu đề</th>
+                                        <th>Nội dung</th>
+                                        <th>Danh mục</th>
+                                        <th>Trạng thái</th>
+                                        <th className="text-right">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredLessons.map((les) => (
+                                        <tr key={les.id}>
+                                            <td><span className="muted-cell">#{les.id}</span></td>
+                                            <td>
+                                                <div>
+                                                    <p className="lesson-title">{les.title}</p>
+                                                    <span className="lesson-meta">{les.hide ? 'Ẩn khỏi công khai' : 'Công khai'}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className="description-cell">
+                                                    {les.description ? les.description.substring(0, 50) + '...' : '—'}
+                                                </span>
+                                            </td>
+                                            <td><span>{les.categoryName || 'Chưa phân loại'}</span></td>
+                                            <td>{renderStatusPill(les.status)}</td>
+                                            <td className="text-right">
+                                                <div className="lesson-row-actions">
+                                                    <Link to={`/lessons/edit/${les.id}`} className="lesson-btn subtle">
+                                                        Chi tiết
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleToggleVisibility(les)}
+                                                        disabled={updatingId === les.id}
+                                                        className={`lesson-btn ${les.hide ? 'primary' : 'danger'}`}
+                                                    >
+                                                        {updatingId === les.id ? 'Đang cập nhật...' : les.hide ? 'Hiển thị' : 'Ẩn'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(les)}
+                                                        disabled={updatingId === les.id}
+                                                        className="lesson-btn danger"
+                                                    >
+                                                        {updatingId === les.id ? 'Đang xóa...' : 'Xóa'}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>

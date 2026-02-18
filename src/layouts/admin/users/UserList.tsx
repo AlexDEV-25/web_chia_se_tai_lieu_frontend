@@ -3,7 +3,6 @@ import { getAllUser, hideUser } from '../../../apis/UserApi';
 import PageHeader from '../components/PageHeader';
 import Stats from '../components/Stats';
 import Filter from '../components/Filter';
-import Table from '../components/Table';
 import LoadingState from '../components/LoadingState';
 import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
@@ -20,7 +19,6 @@ const UserList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-    const [refreshKey, setRefreshKey] = useState<number>(0);
     const [updatingId, setUpdatingId] = useState<number | null>(null);
 
     const fetchUsers = useCallback(async () => {
@@ -39,7 +37,7 @@ const UserList: React.FC = () => {
 
     useEffect(() => {
         fetchUsers();
-    }, [fetchUsers, refreshKey]);
+    }, [fetchUsers]);
 
     const handleToggleStatus = useCallback(async (user: UserResponse) => {
         const { id, username, hide } = user;
@@ -108,62 +106,6 @@ const UserList: React.FC = () => {
         );
     };
 
-    const tableColumns = [
-        {
-            key: 'id',
-            header: 'Mã',
-            render: (usr: UserResponse) => <span className="muted-cell">#{usr.id}</span>
-        },
-        {
-            key: 'username',
-            header: 'Tên người dùng',
-            render: (usr: UserResponse) => (
-                <div>
-                    <p className="user-name">{usr.username}</p>
-                    <span className="user-meta">{!usr.hide ? 'Đang hoạt động' : 'Không hoạt động'}</span>
-                </div>
-            )
-        },
-        {
-            key: 'email',
-            header: 'Email',
-            render: (usr: UserResponse) => <span className="email-cell">{usr.email || '—'}</span>
-        },
-        {
-            key: 'roles',
-            header: 'Vai trò',
-            render: (usr: UserResponse) => renderRoleBadge(usr.roles)
-        },
-        {
-            key: 'hide',
-            header: 'Trạng thái',
-            render: (usr: UserResponse) => renderStatusPill(usr.hide)
-        },
-        {
-            key: 'createdAt',
-            header: 'Ngày tham gia',
-            render: (usr: UserResponse) => (
-                <span>{usr.createdAt ? new Date(usr.createdAt).toLocaleDateString('vi-VN') : '—'}</span>
-            )
-        },
-        {
-            key: 'actions',
-            header: 'Thao tác',
-            align: 'right' as const,
-            render: (usr: UserResponse) => (
-                <div className="user-row-actions">
-                    <button
-                        onClick={() => handleToggleStatus(usr)}
-                        disabled={updatingId === usr.id}
-                        className={`user-btn ${usr.hide ? 'primary' : 'danger'}`}
-                    >
-                        {updatingId === usr.id ? 'Đang cập nhật...' : usr.hide ? 'Kích hoạt' : 'Vô hiệu hóa'}
-                    </button>
-                </div>
-            )
-        }
-    ];
-
     return (
         <div className="admin-page-layout">
             <LeftSidebar />
@@ -192,13 +134,11 @@ const UserList: React.FC = () => {
                         onSearchChange={setSearchTerm}
                         filterValue={statusFilter}
                         onFilterChange={setStatusFilter}
-                        onRefresh={() => setRefreshKey((prev) => prev + 1)}
                         placeholder="Tìm kiếm theo tên hoặc email…"
                         containerClass="user-filters"
                         searchClass="user-search"
                         filterActionsClass="user-filter-actions"
                         filterChipClass="user-filter-chip"
-                        buttonClass="user-btn ghost"
                     />
                     {loading && <LoadingState />}
 
@@ -208,7 +148,47 @@ const UserList: React.FC = () => {
 
                     {!loading && filteredUsers.length > 0 && (
                         <div className="user-table-wrapper">
-                            <Table columns={tableColumns} data={filteredUsers} keyField="id" />
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã</th>
+                                        <th>Tên người dùng</th>
+                                        <th>Email</th>
+                                        <th>Vai trò</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày tham gia</th>
+                                        <th className="text-right">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredUsers.map((usr) => (
+                                        <tr key={usr.id}>
+                                            <td><span className="muted-cell">#{usr.id}</span></td>
+                                            <td>
+                                                <div>
+                                                    <p className="user-name">{usr.username}</p>
+                                                    <span className="user-meta">{!usr.hide ? 'Đang hoạt động' : 'Không hoạt động'}</span>
+                                                </div>
+                                            </td>
+                                            <td><span className="email-cell">{usr.email || '—'}</span></td>
+                                            <td>{renderRoleBadge(usr.roles)}</td>
+                                            <td>{renderStatusPill(usr.hide)}</td>
+                                            <td><span>{usr.createdAt ? new Date(usr.createdAt).toLocaleDateString('vi-VN') : '—'}</span></td>
+                                            <td className="text-right">
+                                                <div className="user-row-actions">
+                                                    <button
+                                                        onClick={() => handleToggleStatus(usr)}
+                                                        disabled={updatingId === usr.id}
+                                                        className={`user-btn ${usr.hide ? 'primary' : 'danger'}`}
+                                                    >
+                                                        {updatingId === usr.id ? 'Đang cập nhật...' : usr.hide ? 'Kích hoạt' : 'Vô hiệu hóa'}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>

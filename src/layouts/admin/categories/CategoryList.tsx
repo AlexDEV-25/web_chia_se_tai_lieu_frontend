@@ -4,7 +4,6 @@ import type { CategoryResponse } from '../../../models/response/CategoryResponse
 import PageHeader from '../components/PageHeader';
 import Stats from '../components/Stats';
 import Filter from '../components/Filter';
-import Table from '../components/Table';
 import LoadingState from '../components/LoadingState';
 import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
@@ -20,7 +19,6 @@ const CategoryList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
-    const [refreshKey, setRefreshKey] = useState<number>(0);
     const [updatingId, setUpdatingId] = useState<number | null>(null);
 
     const fetchCategories = useCallback(async () => {
@@ -39,15 +37,15 @@ const CategoryList: React.FC = () => {
 
     useEffect(() => {
         fetchCategories();
-    }, [fetchCategories, refreshKey]);
+    }, [fetchCategories]);
 
-    const handleToggleVisibility = useCallback(async (category: CategoryResponse) => {
+    const handleToggleVisibility = async (category: CategoryResponse) => {
         const { id, name, hide } = category;
         const confirmMessage = hide
             ? `Bạn có muốn hiển thị lại danh mục "${name}"?`
             : `Bạn có chắc chắn muốn ẩn danh mục "${name}"?`;
 
-        const confirmToggle = window.confirm(confirmMessage);
+        const confirmToggle: boolean = window.confirm(confirmMessage);
         if (!confirmToggle) return;
 
         try {
@@ -65,7 +63,7 @@ const CategoryList: React.FC = () => {
         } finally {
             setUpdatingId(null);
         }
-    }, [categories]);
+    };
 
     const filteredCategories = useMemo(() => {
         const lowerSearch = searchTerm.trim().toLowerCase();
@@ -95,73 +93,6 @@ const CategoryList: React.FC = () => {
         </span>
     );
 
-    const tableColumns = [
-        {
-            key: 'id',
-            header: 'Mã',
-            render: (cat: CategoryResponse) => <span className="muted-cell">#{cat.id}</span>
-        },
-        {
-            key: 'name',
-            header: 'Tên danh mục',
-            render: (cat: CategoryResponse) => (
-                <>
-                    <p className="category-name">{cat.name}</p>
-                    <span className="category-meta">
-                        {cat.hide ? 'Ẩn khỏi trang chủ' : 'Hiển thị cho học viên'}
-                    </span>
-                </>
-            )
-        },
-        {
-            key: 'description',
-            header: 'Mô tả',
-            render: (cat: CategoryResponse) => <span className="description-cell">{cat.description || '—'}</span>
-        },
-        {
-            key: 'hide',
-            header: 'Trạng thái',
-            render: (cat: CategoryResponse) => renderStatusPill(cat.hide)
-        },
-        {
-            key: 'actions',
-            header: 'Thao tác',
-            align: 'right' as const,
-            render: (cat: CategoryResponse) => (
-                <div className="category-row-actions">
-                    <Link to={`/categories/edit/${cat.id}`} className="category-btn subtle">
-                        Chỉnh sửa
-                    </Link>
-                    <button
-                        onClick={() => handleToggleVisibility(cat)}
-                        disabled={updatingId === cat.id}
-                        className={`category-btn ${cat.hide ? 'primary' : 'danger'}`}
-                    >
-                        {updatingId === cat.id ? 'Đang cập nhật...' : cat.hide ? 'Hiển thị' : 'Ẩn'}
-                    </button>
-                </div>
-            )
-        }
-    ];
-
-    const renderTable = () => {
-        if (loading) {
-            return <LoadingState rows={4} variant="card" />;
-        }
-
-        if (!loading && filteredCategories.length === 0) {
-            return (
-                <EmptyState
-                    icon="📂"
-                    title="Chưa có danh mục phù hợp"
-                    description="Thử thay đổi bộ lọc hoặc tạo mới một danh mục để giúp người dùng tìm kiếm tài liệu nhanh hơn."
-                />
-            );
-        }
-
-        return <Table data={filteredCategories} columns={tableColumns} keyField="id" className="category-table" />;
-    };
-
     return (
         <div className="admin-page-layout">
             <LeftSidebar />
@@ -187,16 +118,62 @@ const CategoryList: React.FC = () => {
                         onSearchChange={setSearchTerm}
                         filterValue={visibilityFilter}
                         onFilterChange={setVisibilityFilter}
-                        onRefresh={() => setRefreshKey((prev) => prev + 1)}
                         placeholder="Tìm kiếm theo tên hoặc mô tả…"
                         containerClass="category-filters"
                         searchClass="category-search"
                         filterActionsClass="category-filter-actions"
                         filterChipClass="category-filter-chip"
-                        buttonClass="category-btn ghost"
                     />
 
-                    {renderTable()}
+                    {loading && <LoadingState rows={4} variant="card" />}
+
+                    {!loading && filteredCategories.length === 0 && (
+                        <EmptyState
+                            icon="📂"
+                            title="Chưa có danh mục phù hợp"
+                            description="Thử thay đổi bộ lọc hoặc tạo mới một danh mục để giúp người dùng tìm kiếm tài liệu nhanh hơn."
+                        />
+                    )}
+
+                    {!loading && filteredCategories.length > 0 && (
+                        <div className="table-wrapper category-table">
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã</th>
+                                        <th>Tên danh mục</th>
+                                        <th>Mô tả</th>
+                                        <th>Trạng thái</th>
+                                        <th className="text-right">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredCategories.map((cat) => (
+                                        <tr key={cat.id}>
+                                            <td><span className="muted-cell">#{cat.id}</span></td>
+                                            <td><p className="category-name">{cat.name}</p></td>
+                                            <td><span className="description-cell">{cat.description || '—'}</span></td>
+                                            <td>{renderStatusPill(cat.hide)}</td>
+                                            <td className="text-right">
+                                                <div className="category-row-actions">
+                                                    <Link to={`/categories/edit/${cat.id}`} className="category-btn subtle">
+                                                        Chỉnh sửa
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleToggleVisibility(cat)}
+                                                        disabled={updatingId === cat.id}
+                                                        className={`category-btn ${cat.hide ? 'primary' : 'danger'}`}
+                                                    >
+                                                        {updatingId === cat.id ? 'Đang cập nhật...' : cat.hide ? 'Hiển thị' : 'Ẩn'}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

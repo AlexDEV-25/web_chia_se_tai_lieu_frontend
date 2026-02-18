@@ -4,7 +4,6 @@ import { getAllDocument, deleteDocument, hideDocument } from '../../../../apis/D
 import PageHeader from '../../components/PageHeader';
 import Stats from '../../components/Stats';
 import Filter from '../../components/Filter';
-import Table from '../../components/Table';
 import LoadingState from '../../components/LoadingState';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
@@ -21,7 +20,6 @@ const DocumentList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
-    const [refreshKey, setRefreshKey] = useState<number>(0);
     const [updatingId, setUpdatingId] = useState<number | null>(null);
 
     const fetchDocuments = useCallback(async () => {
@@ -40,7 +38,7 @@ const DocumentList: React.FC = () => {
 
     useEffect(() => {
         fetchDocuments();
-    }, [fetchDocuments, refreshKey]);
+    }, [fetchDocuments]);
 
     const handleToggleVisibility = useCallback(async (document: DocumentResponse) => {
         const { id, title, hide } = document;
@@ -118,65 +116,6 @@ const DocumentList: React.FC = () => {
         );
     };
 
-    const tableColumns = [
-        {
-            key: 'id',
-            header: 'Mã',
-            render: (doc: DocumentResponse) => <span className="muted-cell">#{doc.id}</span>
-        },
-        {
-            key: 'title',
-            header: 'Tiêu đề',
-            render: (doc: DocumentResponse) => (
-                <div>
-                    <p className="document-title">{doc.title}</p>
-                    <span className="document-meta">{doc.hide ? 'Ẩn khỏi công khai' : 'Công khai'}</span>
-                </div>
-            )
-        },
-        {
-            key: 'description',
-            header: 'Mô tả',
-            render: (doc: DocumentResponse) => <span className="description-cell">{doc.description || '—'}</span>
-        },
-        {
-            key: 'categoryName',
-            header: 'Loại',
-            render: (doc: DocumentResponse) => <span>{doc.categoryName || 'Chưa phân loại'}</span>
-        },
-        {
-            key: 'status',
-            header: 'Trạng thái',
-            render: (doc: DocumentResponse) => renderStatusPill(doc.status)
-        },
-        {
-            key: 'actions',
-            header: 'Thao tác',
-            align: 'right' as const,
-            render: (doc: DocumentResponse) => (
-                <div className="document-row-actions">
-                    <Link to={`/documents/edit/${doc.id}`} className="document-btn subtle">
-                        Chi tiết
-                    </Link>
-                    <button
-                        onClick={() => handleToggleVisibility(doc)}
-                        disabled={updatingId === doc.id}
-                        className={`document-btn ${doc.hide ? 'primary' : 'danger'}`}
-                    >
-                        {updatingId === doc.id ? 'Đang cập nhật...' : doc.hide ? 'Hiển thị' : 'Ẩn'}
-                    </button>
-                    <button
-                        onClick={() => handleDelete(doc)}
-                        disabled={updatingId === doc.id}
-                        className="document-btn danger"
-                    >
-                        {updatingId === doc.id ? 'Đang xóa...' : 'Xóa'}
-                    </button>
-                </div>
-            )
-        }
-    ];
-
     return (
         <div className="admin-page-layout">
             <LeftSidebar />
@@ -205,13 +144,11 @@ const DocumentList: React.FC = () => {
                         onSearchChange={setSearchTerm}
                         filterValue={visibilityFilter}
                         onFilterChange={setVisibilityFilter}
-                        onRefresh={() => setRefreshKey((prev) => prev + 1)}
                         placeholder="Tìm kiếm theo tiêu đề hoặc mô tả…"
                         containerClass="document-filters"
                         searchClass="document-search"
                         filterActionsClass="document-filter-actions"
                         filterChipClass="document-filter-chip"
-                        buttonClass="document-btn ghost"
                     />
 
                     {loading && <LoadingState />}
@@ -222,7 +159,55 @@ const DocumentList: React.FC = () => {
 
                     {!loading && filteredDocuments.length > 0 && (
                         <div className="document-table-wrapper">
-                            <Table columns={tableColumns} data={filteredDocuments} keyField="id" />
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã</th>
+                                        <th>Tiêu đề</th>
+                                        <th>Mô tả</th>
+                                        <th>Loại</th>
+                                        <th>Trạng thái</th>
+                                        <th className="text-right">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredDocuments.map((doc) => (
+                                        <tr key={doc.id}>
+                                            <td><span className="muted-cell">#{doc.id}</span></td>
+                                            <td>
+                                                <div>
+                                                    <p className="document-title">{doc.title}</p>
+                                                    <span className="document-meta">{doc.hide ? 'Ẩn khỏi công khai' : 'Công khai'}</span>
+                                                </div>
+                                            </td>
+                                            <td><span className="description-cell">{doc.description || '—'}</span></td>
+                                            <td><span>{doc.categoryName || 'Chưa phân loại'}</span></td>
+                                            <td>{renderStatusPill(doc.status)}</td>
+                                            <td className="text-right">
+                                                <div className="document-row-actions">
+                                                    <Link to={`/documents/edit/${doc.id}`} className="document-btn subtle">
+                                                        Chi tiết
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleToggleVisibility(doc)}
+                                                        disabled={updatingId === doc.id}
+                                                        className={`document-btn ${doc.hide ? 'primary' : 'danger'}`}
+                                                    >
+                                                        {updatingId === doc.id ? 'Đang cập nhật...' : doc.hide ? 'Hiển thị' : 'Ẩn'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(doc)}
+                                                        disabled={updatingId === doc.id}
+                                                        className="document-btn danger"
+                                                    >
+                                                        {updatingId === doc.id ? 'Đang xóa...' : 'Xóa'}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface ErrorAlertProps {
     message: string;
@@ -16,4 +16,4 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({ message, onRetry }) => {
     );
 };
 
-export default ErrorAlert;
+export default memo(ErrorAlert);
