@@ -41,6 +41,7 @@ export const ERROR_MESSAGES = {
     LESSON_UPDATE_FAILED: "Không thể cập nhật trạng thái bài giảng. Vui lòng thử lại.",
     LESSON_DELETE_FAILED: "Không thể xóa bài giảng. Vui lòng thử lại.",
     LESSON_UPDATE_FAILED_FORM: "Update thất bại. Vui lòng thử lại.",
+    COUNT_LESSON_ERROR: "Không thể lấy số lượng bài giảng.",
 
     /* LESSON AUTH / ACTION */
     DOWNLOAD_LOGIN_REQUIRED_LESSON: "Vui lòng đăng nhập để tải tài liệu",
@@ -77,6 +78,7 @@ export const ERROR_MESSAGES = {
     DOCUMENT_NOT_FOUND: "Không tìm thấy tài liệu. Vui lòng thử lại.",
     AUTHOR_DOCUMENTS_LOAD_FAILED: "Không thể tải thêm tài liệu của tác giả này. Vui lòng thử lại.",
     PDF_LOAD_ERROR: "Không thể mở tài liệu PDF.",
+    COUNT_DOCUMENT_ERROR: "Không thể lấy số lượng tài liệu.",
 
     /* DOCUMENT AUTH */
     DOWNLOAD_LOGIN_REQUIRED: "Vui lòng đăng nhập để tải tài liệu",

@@ -104,16 +104,8 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, roles
                                 </span>
                             </summary>
                             <div className="user-dropdown">
-                                <Link to="/profile">Thông tin cá nhân</Link>
-                                <details className="upload-submenu">
-                                    <summary>
-                                        Khác
-                                        <i className="fa fa-chevron-right" />
-                                    </summary>
-                                    <div className="submenu-content">
-                                        <Link to="/uploadHistory">Lịch sử Upload</Link>
-                                    </div>
-                                </details>
+                                <Link to="/myprofile">Thông tin cá nhân</Link>
+
                                 {roles.length > 0 && roles.find((role: string) => role === "ADMIN") && (
                                     <Link to="/dashboard" className="admin-link">
                                         Trang Admin

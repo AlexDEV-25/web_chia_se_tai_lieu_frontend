@@ -57,6 +57,8 @@ const DocumentDetail: React.FC = () => {
     }, [docId]);
 
     useEffect(() => {
+        if (!isAuthenticated) return;
+
         if (!docId) {
             setError(ERROR_MESSAGES.DOCUMENT_NOT_FOUND);
             setLoading(false);

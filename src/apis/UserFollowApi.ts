@@ -31,3 +31,12 @@ export const getFollowCount = async (userId: number) => {
     return await httpGet<APIResponse<FollowCountResponse>>(`/follows/follow-count/${userId}`);
 }
 
+// kiển tra xem mình đã theo dõi người dùng này chưa
+export const checkFollowed = async (userId: number) => {
+    return await httpGet<APIResponse<boolean>>(`/follows/check/${userId}`);
+}
+
+// kiển tra xem mình đã theo dõi người dùng này chưa
+export const checkIsMe = async (userId: number) => {
+    return await httpGet<APIResponse<boolean>>(`/follows/check-is-me/${userId}`);
+}

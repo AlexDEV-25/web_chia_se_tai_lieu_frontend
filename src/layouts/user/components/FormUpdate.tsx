@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
-import type { LessonResponse } from "../../../../models/response/LessonResponse";
-import type { DocumentRequest } from "../../../../models/request/DocumentReques";
-import type { LessonRequest } from "../../../../models/request/LessonRequest";
-import { getAllCategory } from "../../../../apis/CategoryApi";
-import type { CategoryResponse } from "../../../../models/response/CategoryResponse";
-import { handleApiError } from "../../../../utils/errorHandler";
-import { ERROR_MESSAGES } from "../../../../constants/messages";
+import type { DocumentRequest } from "../../../models/request/DocumentReques";
+import type { LessonRequest } from "../../../models/request/LessonRequest";
+import type { DocumentResponse } from "../../../models/response/DocumentResponse";
+import type { LessonResponse } from "../../../models/response/LessonResponse";
+import type { CategoryResponse } from "../../../models/response/CategoryResponse";
+import { getAllCategory } from "../../../apis/CategoryApi";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
+
 
 export type FormDataType = DocumentRequest | LessonRequest;
 export type ItemType = "document" | "lesson";

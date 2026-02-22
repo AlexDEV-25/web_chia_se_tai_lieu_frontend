@@ -16,7 +16,7 @@ import Login from './layouts/common/auth/Login';
 import Activate from './layouts/common/auth/Activate';
 import ForgotPassword from './layouts/common/auth/ForgotPassword';
 import ChangePassword from './layouts/common/auth/ChangePassword';
-import MyProfile from './layouts/user/profile/MyProfile';
+import MyProfile from './layouts/user/MyProfile/MyProfile';
 import Favorites from './layouts/user/favorites/Favorites';
 import LessonDetail from './layouts/common/lesson_detail/LessonDetail';
 import Lesson from './layouts/common/lesson/Lesson';
@@ -24,7 +24,6 @@ import ChatGemini from './layouts/common/chatbot/ChatGemini';
 import { pdfjs } from 'react-pdf';
 import { introspect, refreshToken } from './apis/AuthApi';
 import UploadLesson from './layouts/common/uploads/UploadLesson';
-import UploadHistory from './layouts/user/upload_history/UploadHistory';
 import DocumentList from './layouts/admin/contents/documents/DocumentList';
 import LessonList from './layouts/admin/contents/lessons/LessonList';
 import UserList from './layouts/admin/users/UserList';
@@ -97,7 +96,6 @@ function App() {
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/myprofile" element={<MyProfile />} />
             <Route path="/profile/:id" element={<Profile />} />
-            <Route path="/uploadHistory" element={<UploadHistory />} />
             {/* {admin} */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/categories" element={<CategoryList />} />

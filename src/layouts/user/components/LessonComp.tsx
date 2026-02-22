@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { updateMyLesson } from "../../../../apis/LessonApi";
-import type { LessonResponse } from "../../../../models/response/LessonResponse";
-import type { LessonRequest } from "../../../../models/request/LessonRequest";
+
 import FormUpdate, { type FormDataType } from "./FormUpdate";
 import DeleteAlert from "./DeleteAlert";
-import { handleApiError } from "../../../../utils/errorHandler";
-import { ERROR_MESSAGES } from "../../../../constants/messages";
+import type { LessonResponse } from "../../../models/response/LessonResponse";
+import { updateMyLesson } from "../../../apis/LessonApi";
+import type { LessonRequest } from "../../../models/request/LessonRequest";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
 
 interface Props {
     lessons: LessonResponse[];

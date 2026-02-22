@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { getMyDocument, deleteMyDocument } from "../../../apis/DocumentApi";
-import { getMyLesson, deleteMyLesson } from "../../../apis/LessonApi";
+import { getMyDocument, deleteMyDocument, countMyDocument } from "../../../apis/DocumentApi";
+import { getMyLesson, deleteMyLesson, countMyLesson } from "../../../apis/LessonApi";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import type { LessonResponse } from "../../../models/response/LessonResponse";
-import DocumentComp from "./components/DocumentComp";
-import LessonComp from "./components/LessonComp";
+import DocumentComp from "./DocumentComp";
+import LessonComp from "./LessonComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 
@@ -14,6 +14,8 @@ const UploadHistory: React.FC = () => {
     const [lessons, setLessons] = useState<LessonResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [documentQuantity, setDocumentQuantity] = useState<number>(0);
+    const [lessonQuantity, setLessonQuantity] = useState<number>(0);
 
     useEffect(() => {
         loadData();
@@ -64,6 +66,34 @@ const UploadHistory: React.FC = () => {
         }
     };
 
+    const fetchCountMyDocument = async () => {
+        try {
+            const response = await countMyDocument();
+            setDocumentQuantity(response?.result || 0);
+        } catch (err: any) {
+            setError(handleApiError(err, ERROR_MESSAGES.COUNT_DOCUMENT_ERROR))
+        }
+    };
+    const fetchCountMyLesson = async () => {
+        try {
+            const response = await countMyLesson();
+            setLessonQuantity(response?.result || 0);
+        } catch (err: any) {
+            setError(handleApiError(err, ERROR_MESSAGES.COUNT_LESSON_ERROR))
+        }
+    };
+
+    useEffect(() => {
+        const CountDocumentAndLesson = async () => {
+            setLoading(true);
+            await Promise.all([
+                fetchCountMyDocument(),
+                fetchCountMyLesson(),
+            ]);
+        };
+        CountDocumentAndLesson();
+    }, []);
+
     return (
         <div className="upload-history">
             <div className="upload-history-header">
@@ -73,13 +103,13 @@ const UploadHistory: React.FC = () => {
                         className={`tab-button ${activeTab === "documents" ? "active" : ""}`}
                         onClick={() => setActiveTab("documents")}
                     >
-                        Tài liệu ({documents.length})
+                        Tài liệu ({documentQuantity})
                     </button>
                     <button
                         className={`tab-button ${activeTab === "lessons" ? "active" : ""}`}
                         onClick={() => setActiveTab("lessons")}
                     >
-                        Bài học ({lessons.length})
+                        Bài học ({lessonQuantity})
                     </button>
                 </div>
             </div>

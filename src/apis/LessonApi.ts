@@ -167,3 +167,13 @@ export const getAllLessonByCategory = async (lessonId: number, categoryId: numbe
     return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons/category?lessonId=${lessonId}&categoryId=${categoryId}`);
 };
 
+// lấy số lượng lesson của chính mình
+export const countMyLesson = async () => {
+    return await httpGet<APIResponse<number>>(`/lessons/my-lesson/count`);
+};
+
+// lấy số lượng lessons của user đã duyệt và không bị ẩn
+export const countLessonOfUser = async (userId: number) => {
+    return await httpGet<APIResponse<number>>(`/lessons/count/${userId}`);
+};
+

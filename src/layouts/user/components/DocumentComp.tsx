@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { updateMyDocument } from "../../../../apis/DocumentApi";
-import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
-import type { DocumentRequest } from "../../../../models/request/DocumentReques";
 import FormUpdate, { type FormDataType } from "./FormUpdate";
 import DeleteAlert from "./DeleteAlert";
-import { handleApiError } from "../../../../utils/errorHandler";
-import { ERROR_MESSAGES } from "../../../../constants/messages";
+import type { DocumentResponse } from "../../../models/response/DocumentResponse";
+import { updateMyDocument } from "../../../apis/DocumentApi";
+
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
+import type { DocumentRequest } from "../../../models/request/DocumentReques";
 
 interface Props {
     documents: DocumentResponse[];

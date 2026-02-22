@@ -1,4 +1,4 @@
 export interface FollowCountResponse {
-    Follower: number;
-    Following: string;
+    follower: number;
+    following: string;
 }

@@ -51,6 +51,8 @@ const LessonDetail: React.FC = () => {
     }, [lessonId]);
 
     useEffect(() => {
+        if (!isAuthenticated) return;
+
         if (!lessonId) {
             setError(ERROR_MESSAGES.LESSON_NOT_FOUND);
             setLoading(false);

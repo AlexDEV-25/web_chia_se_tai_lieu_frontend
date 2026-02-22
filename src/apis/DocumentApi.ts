@@ -118,3 +118,13 @@ export const getAllDocumentByUser = async (documentId: number, userId: number) =
 export const getAllDocumentByCategory = async (documentId: number, categoryId: number) => {
     return await httpGet<APIResponse<DocumentFavoriteResponse>>(`/documents/category?documentId=${documentId}&categoryId=${categoryId}`);
 };
+
+// lấy số lượng document của chính mình
+export const countMyDocument = async () => {
+    return await httpGet<APIResponse<number>>(`/documents/my-document/count`);
+};
+
+// lấy số lượng document của user đã duyệt và không bị ẩn
+export const countDocumentOfUser = async (userId: number) => {
+    return await httpGet<APIResponse<number>>(`/documents/count/${userId}`);
+};

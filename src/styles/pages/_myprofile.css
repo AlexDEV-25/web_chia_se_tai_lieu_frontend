@@ -1,0 +1,67 @@
+/* ========================================
+   PROFILE PAGE STYLES
+   ======================================== */
+.profile-uploads-page {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Grid 30% / 70% cho profile và lịch sử upload */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 30% 70%;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+@media (max-width: 992px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+
+.avatar-ring {
+    width: 160px;
+    height: 160px;
+    border-radius: 999px;
+    border: 4px solid rgba(25, 118, 210, 0.3);
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.profile-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.meta-card {
+    border-radius: 20px;
+    padding: 1rem;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+}
+
+.profile-sidebar {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.uploads-main {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+@media (max-width: 768px) {
+
+    .profile-sidebar,
+    .uploads-main {
+        border-radius: 8px;
+    }
+}

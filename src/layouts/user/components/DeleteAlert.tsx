@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { handleApiError } from "../../../../utils/errorHandler";
-import { ERROR_MESSAGES } from "../../../../constants/messages";
+import { handleApiError } from "../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../constants/messages";
+
 
 
 interface Props {
