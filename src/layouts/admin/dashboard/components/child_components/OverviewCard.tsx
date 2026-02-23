@@ -5,16 +5,10 @@ interface OverviewCardProps {
     title: string;
     value: number;
     subtitle?: string;
-    color: 'blue' | 'green' | 'orange' | 'red' | 'purple';
+    color: 'blue' | 'green' | 'orange' | 'purple';
 }
 
-const OverviewCard: React.FC<OverviewCardProps> = ({
-    icon,
-    title,
-    value,
-    subtitle,
-    color
-}) => (
+const OverviewCard: React.FC<OverviewCardProps> = ({ icon, title, value, subtitle, color }) => (
     <div className={`overview-card overview-card--${color}`}>
         <div className="overview-card-icon">{icon}</div>
         <div className="overview-card-content">

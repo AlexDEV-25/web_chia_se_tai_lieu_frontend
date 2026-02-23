@@ -1,0 +1,1 @@
+export type VisibilityFilter = 'all' | 'visible' | 'hidden';

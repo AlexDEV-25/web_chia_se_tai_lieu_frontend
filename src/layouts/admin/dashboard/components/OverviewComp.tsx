@@ -6,6 +6,7 @@ import type { UserResponse } from '../../../../models/response/UserResponse';
 import type { DailyCountResponse } from '../../../../models/response/DailyCountResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
+import LoadingState from '../../components/LoadingState';
 
 const OverviewComp: React.FC = () => {
     const [loading, setLoading] = useState(true);
@@ -66,7 +67,7 @@ const OverviewComp: React.FC = () => {
     const stats = calculateStats();
 
     if (loading) {
-        return <div className="overview-loading">Đang tải dữ liệu...</div>;
+        return <LoadingState rows={5} variant="card" />;
     }
 
     return (

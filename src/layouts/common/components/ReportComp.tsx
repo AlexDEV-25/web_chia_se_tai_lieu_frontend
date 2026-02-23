@@ -15,6 +15,7 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [reportReason, setReportReason] = useState("SPAM");
+    const [customReason, setCustomReason] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -34,11 +35,13 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
         }
         setIsModalOpen(true);
         setReportReason("SPAM");
+        setCustomReason("");
         setSubmitMessage(null);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
+        setCustomReason("");
         setSubmitMessage(null);
     };
 
@@ -51,12 +54,22 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
             return;
         }
 
+        if (reportReason === "OTHER" && customReason.trim() === "") {
+            setSubmitMessage({
+                type: "error",
+                text: "Vui lòng nhập nội dung báo cáo khi chọn 'Khác'",
+            });
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
+            const reasonToSend = reportReason === "OTHER" ? customReason.trim() : reportReason;
+
             const reportData: ReportRequest = {
                 contentId,
-                reason: reportReason,
+                reason: reasonToSend,
                 type: contentType,
             };
 
@@ -100,7 +113,7 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
             {isModalOpen && (
                 <div className="modal show d-block" style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
                     <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
+                        <div className="modal-content report-modal">
                             <div className="modal-header">
                                 <h5 className="modal-title">Báo cáo nội dung</h5>
                                 <button
@@ -130,6 +143,23 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
                                         ))}
                                     </select>
                                 </div>
+
+                                {reportReason === "OTHER" && (
+                                    <div className="mb-3">
+                                        <label htmlFor="customReason" className="form-label">
+                                            Nội dung báo cáo
+                                        </label>
+                                        <textarea
+                                            id="customReason"
+                                            value={customReason}
+                                            onChange={(e) => setCustomReason(e.target.value)}
+                                            className="form-control"
+                                            rows={3}
+                                            placeholder="Mô tả lý do báo cáo..."
+                                            disabled={isSubmitting}
+                                        />
+                                    </div>
+                                )}
 
                                 {submitMessage && (
                                     <div className={`alert alert-${submitMessage.type === "success" ? "success" : "danger"} mb-3`}>

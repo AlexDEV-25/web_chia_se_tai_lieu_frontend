@@ -6,15 +6,14 @@ import { getCategoryById, updateCategory } from "../../../apis/CategoryApi";
 import type { CategoryRequest } from "../../../models/request/CategoryRequest";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import LoadingState from "../components/LoadingState";
 
 const CategoryEdit: React.FC = () => {
     const { id } = useParams<{ id: string | undefined }>();
     const navigate = useNavigate();
-
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
-    const [nameError, setNameError] = useState<string>("");
-    const [formError, setFormError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -31,33 +30,20 @@ const CategoryEdit: React.FC = () => {
                 setDescription(response.result?.description ?? "");
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_NOT_FOUND);
-                setFormError(message);
+                setError(message);
             } finally {
                 setLoading(false);
             }
         };
         fetchCategory();
-    }, [id, navigate]);
+    }, [id]);
 
-    const validateForm = () => {
-        let isValid = true;
-        let localNameError = "";
-
-        if (name.trim() === "") {
-            localNameError = "Vui lòng nhập tên danh mục.";
-            isValid = false;
-        }
-        setNameError(localNameError);
-        return isValid;
-    };
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!validateForm() || !id) {
-            return;
-        }
+        if (!id) { return; }
 
-        setFormError(null);
+        setError(null);
         setIsSubmitting(true);
 
         try {
@@ -67,12 +53,10 @@ const CategoryEdit: React.FC = () => {
                 hide: false
             };
             await updateCategory(parseInt(id, 10), updatedCategory);
-
             navigate("/categories");
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_UPDATE_FAILED);
-            setFormError(message);
-        } finally {
+            setError(message);
             setIsSubmitting(false);
         }
     };
@@ -96,17 +80,8 @@ const CategoryEdit: React.FC = () => {
                         </button>
                     </div>
 
-                    {formError && (
-                        <div className="category-alert error">
-                            <p>{formError}</p>
-                        </div>
-                    )}
-
                     {loading ? (
-                        <div className="category-card">
-                            <div className="category-loading-row" />
-                            <div className="category-loading-row" />
-                        </div>
+                        <LoadingState rows={2} variant="card" />
                     ) : (
                         <form className="category-form" onSubmit={handleSubmit} noValidate>
                             <label className="form-field">
@@ -115,10 +90,10 @@ const CategoryEdit: React.FC = () => {
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className={`category-input ${nameError ? "has-error" : ""}`}
+                                    className={`category-input ${error ? "has-error" : ""}`}
                                     placeholder="Ví dụ: Ngôn ngữ"
                                 />
-                                {nameError && <small className="field-error">{nameError}</small>}
+                                {error && <small className="field-error">{error}</small>}
                             </label>
 
                             <label className="form-field">
@@ -146,8 +121,7 @@ const CategoryEdit: React.FC = () => {
                                     onClick={() => {
                                         setName("");
                                         setDescription("");
-                                        setNameError("");
-                                        setFormError(null);
+                                        setError(null);
                                     }}
                                 >
                                     Đặt lại

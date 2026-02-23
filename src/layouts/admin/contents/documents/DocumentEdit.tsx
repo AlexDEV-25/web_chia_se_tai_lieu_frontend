@@ -1,49 +1,46 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { getDocumentById, updateDocument } from '../../../../apis/DocumentApi';
-import DocumentViewComp from '../../../common/components/DocumentViewComp';
-import RightProperties from '../components/RightProperties';
-import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
-import type { DocumentRequest } from '../../../../models/request/DocumentReques';
-import { handleApiError } from '../../../../utils/errorHandler';
-import { ERROR_MESSAGES } from '../../../../constants/messages';
+import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { getDocumentById, updateDocument } from "../../../../apis/DocumentApi";
+import DocumentViewComp from "../../../common/components/DocumentViewComp";
+import RightProperties from "../components/RightProperties";
+import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
+import type { DocumentRequest } from "../../../../models/request/DocumentReques";
+import { handleApiError } from "../../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../../constants/messages";
+import ReturnHeader from "../components/ReturnHeader";
+import ErrorAlert from "../../components/ErrorAlert";
+import Header from "../components/header";
 
 const DocumentEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
     const [document, setDocument] = useState<DocumentResponse | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [saving, setSaving] = useState<boolean>(false);
+    const [saving, setSaving] = useState(false);
 
-    const [formData, setFormData] = useState<DocumentRequest>({
-        title: '',
-        description: '',
-        status: 'PENDING' as 'PENDING' | 'PUBLISHED',
-        hide: false,
-        categoryId: undefined
-    });
-
-    useEffect(() => {
-        fetchDocument();
-    }, [id]);
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [status, setStatus] = useState<"PENDING" | "PUBLISHED">("PENDING");
+    const [hide, setHide] = useState(false);
+    const [categoryId, setCategoryId] = useState<number | undefined>();
 
     const fetchDocument = useCallback(async () => {
         if (!id) return;
+
         setLoading(true);
         setError(null);
+
         try {
-            const response = await getDocumentById(parseInt(id));
+            const response = await getDocumentById(parseInt(id, 10));
             const doc = response.result;
             setDocument(doc);
-            setFormData({
-                title: doc?.title || '',
-                description: doc?.description || '',
-                status: doc?.status || 'PENDING',
-                hide: doc?.hide || false,
-                categoryId: doc?.categoryId
-            });
+            setTitle(doc?.title ?? "");
+            setDescription(doc?.description ?? "");
+            setStatus(doc?.status ?? "PENDING");
+            setHide(doc?.hide ?? false);
+            setCategoryId(doc?.categoryId);
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_LOAD_FAILED);
             setError(message);
@@ -52,99 +49,43 @@ const DocumentEdit: React.FC = () => {
         }
     }, [id]);
 
-    const handleStatusChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newStatus = e.target.value as 'PENDING' | 'PUBLISHED';
-        setFormData(prev => ({ ...prev, status: newStatus }));
-    }, []);
-
-    const handleHideChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newHide = e.target.value === 'true';
-        setFormData(prev => ({ ...prev, hide: newHide }));
-    }, []);
-
-    const handleTitleChange = useCallback((value: string | number | undefined) => {
-        setFormData(prev => ({ ...prev, title: String(value || '') }));
-    }, []);
-
-    const handleDescriptionChange = useCallback((value: string | number | undefined) => {
-        setFormData(prev => ({ ...prev, description: String(value || '') }));
-    }, []);
-
-    const handleCategoryIdChange = useCallback((value: string | number | undefined) => {
-        setFormData(prev => ({ ...prev, categoryId: value ? Number(value) : undefined }));
-    }, []);
+    useEffect(() => {
+        fetchDocument();
+    }, [fetchDocument]);
 
     const handleSave = useCallback(async () => {
         if (!document?.id) return;
 
         setSaving(true);
         try {
-            const response = await updateDocument(document.id, formData);
+            const requestData: DocumentRequest = { title, description, status, hide, categoryId };
+            const response = await updateDocument(document.id, requestData);
             setDocument(response.result);
             setError(null);
+            navigate("/documents");
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_UPDATE_FAILED);
             setError(message);
         } finally {
             setSaving(false);
         }
-    }, [document?.id, formData]);
+    }, [document?.id, title, description, status, hide, categoryId]);
 
     if (loading) {
-        return (
-            <div className="admin-document-edit-page">
-                <div className="document-container">
-                    <div className="loading-skeleton">
-                        <p>Đang tải tài liệu...</p>
-                    </div>
-                </div>
-            </div>
-        );
+        return <div className="loading-skeleton">Đang tải tài liệu...</div>;
     }
 
     if (!document) {
-        return (
-            <div className="admin-document-edit-page">
-                <div className="document-container">
-                    <div className="error-state">
-                        <p>Không tìm thấy tài liệu</p>
-                        <button onClick={() => navigate('/documents')} className="document-btn primary">
-                            Quay lại danh sách
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
+        return (<ReturnHeader target="documents" content="Không tìm thấy tài liệu" />);
     }
 
     return (
         <div className="admin-document-edit-page">
             <div className="document-container">
-                {/* Header */}
-                <div className="document-edit-header">
-                    <div className="document-header-content">
-                        <button onClick={() => navigate('/documents')} className="document-back-btn">
-                            <i className="fa fa-chevron-left" /> Quay lại
-                        </button>
-                        <div className="document-header-info">
-                            <p className="document-eyebrow">Quản trị hệ thống</p>
-                            <h1>Chi tiết tài liệu</h1>
-                        </div>
-                    </div>
-                </div>
+                <Header target="documents" content="Chi tiết tài liệu" />
 
-                {error && (
-                    <div className="document-alert error">
-                        <p>Lỗi: {error}</p>
-                        <button type="button" onClick={fetchDocument} className="document-btn ghost">
-                            Thử lại
-                        </button>
-                    </div>
-                )}
-
-                {/* Main Content Grid */}
+                {error && (<ErrorAlert message={error} onRetry={fetchDocument} />)}
                 <div className="document-edit-grid">
-                    {/* Left: Document Preview */}
                     <div className="document-preview-section">
                         <div className="document-preview-card">
                             <h3 className="document-section-title">Xem trước tài liệu</h3>
@@ -161,30 +102,28 @@ const DocumentEdit: React.FC = () => {
                             />
                         </div>
                     </div>
-
-                    {/* Right: Document Properties */}
                     <RightProperties
-                        basicInfo={[
-                            { label: 'ID', value: document.id, editable: false },
-                            { label: 'Tiêu đề', value: formData.title, editable: true, onChange: handleTitleChange },
-                            { label: 'Mô tả', value: formData.description, editable: true, onChange: handleDescriptionChange },
-                            { label: 'Danh mục', value: formData.categoryId || document.categoryName, editable: true, onChange: handleCategoryIdChange, isCategory: true, currentCategoryName: document.categoryName },
-                            { label: 'Người tải lên', value: document.userName, editable: false }
-                        ]}
-                        stats={[
-                            { label: 'Lượt xem', value: document.viewsCount ?? 0 },
-                            { label: 'Lượt tải', value: document.downloadsCount ?? 0 }
-                        ]}
-                        status={formData.status as 'PENDING' | 'PUBLISHED'}
-                        onStatusChange={handleStatusChange}
-                        hide={formData.hide}
-                        onHideChange={handleHideChange}
-                        createdAt={document.createdAt}
-                        updatedAt={document.updatedAt}
-                        onClose={() => navigate('/documents')}
+                        type="document"
+                        data={{
+                            id: document.id,
+                            title,
+                            description,
+                            categoryId,
+                            status,
+                            hide,
+                            createdAt: document.createdAt,
+                            updatedAt: document.updatedAt,
+                            views: document.viewsCount,
+                            downloads: document.downloadsCount,
+                        }}
+                        setTitle={setTitle}
+                        setDescription={setDescription}
+                        setCategoryId={setCategoryId}
+                        setStatus={setStatus}
+                        setHide={setHide}
                         onSave={handleSave}
+                        onClose={() => navigate("/documents")}
                         saving={saving}
-                        classPrefix="document"
                     />
                 </div>
             </div>

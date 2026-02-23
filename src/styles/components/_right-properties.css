@@ -1,0 +1,169 @@
+/* ---------- Right Properties Panel ---------- */
+.document-properties-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.document-property-card {
+    border-radius: 20px;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.document-section-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+/* Generic property item */
+.property-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin-bottom: 1rem;
+}
+
+.property-item:last-child {
+    margin-bottom: 0;
+}
+
+.property-item label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.property-item p {
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+}
+
+.property-item textarea {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    padding: 0.65rem 0.75rem;
+    font-weight: 500;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+    font-size: 0.9rem;
+    color: #0f172a;
+    background: #fff;
+}
+
+.property-item textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.property-item select {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    padding: 0.65rem 0.75rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #0f172a;
+    background: #fff;
+    cursor: pointer;
+}
+
+.property-item select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Stats */
+.stat-item {
+    background: rgba(59, 130, 246, 0.06);
+    border-radius: 16px;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.stat-item span {
+    display: block;
+    font-size: 0.8rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.stat-item strong {
+    display: block;
+    font-size: 1.4rem;
+    color: #3b82f6;
+    font-weight: 700;
+}
+
+.stats-list {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.stats-list .stat-item {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Actions */
+.document-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.document-btn {
+    padding: 0.65rem 1.25rem;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.document-btn.primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.document-btn.primary:hover {
+    background: #2563eb;
+}
+
+.document-btn.secondary {
+    background: rgba(148, 163, 184, 0.1);
+    color: #475569;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.document-btn.secondary:hover {
+    background: rgba(148, 163, 184, 0.2);
+}
+
+.document-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Specific for description textarea */
+.property-item textarea.description {
+    min-height: 80px;
+}

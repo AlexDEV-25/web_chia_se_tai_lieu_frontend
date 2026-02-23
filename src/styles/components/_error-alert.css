@@ -1,0 +1,64 @@
+/* Container */
+.error-alert {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+/* Icon */
+.error-alert-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+/* Content */
+.error-alert-content {
+    flex: 1;
+}
+
+.error-alert-content h4 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.error-alert-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #7f1d1d;
+}
+
+/* Button */
+.error-alert-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    background: #dc2626;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.error-alert-btn:hover {
+    background: #b91c1c;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

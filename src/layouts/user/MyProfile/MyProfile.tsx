@@ -12,6 +12,7 @@ const MyProfile: React.FC = () => {
     // Input
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
+    const [bio, setBio] = useState("");
     const [avt, setAvt] = useState<File | null>(null);
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,6 +34,7 @@ const MyProfile: React.FC = () => {
             setUser(response.result);
             setUsername(response?.result?.username || "");
             setEmail(response?.result?.email || "");
+            setBio(response?.result?.bio || "");
         } catch (err: any) {
             setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_LOAD_FAILED))
         }
@@ -79,6 +81,7 @@ const MyProfile: React.FC = () => {
         const data = {
             username,
             email,
+            bio: bio.trim(),
             roles: user.roles.map((r) => r.name),
             password: finalPassword,
         };
@@ -98,6 +101,7 @@ const MyProfile: React.FC = () => {
             // reset nếu tắt đổi mật khẩu
             setNewPassword("");
             setConfirmPassword("");
+            setBio(user?.bio || "");
             setShowChangePassword(false);
 
         } catch (err: any) {
@@ -141,6 +145,17 @@ const MyProfile: React.FC = () => {
                         <div className="mb-3">
                             <label className="form-label fw-bold">Email</label>
                             <input type="email" className="form-control" value={email} readOnly />
+                        </div>
+
+                        <div className="mb-3">
+                            <label className="form-label fw-bold">Bio</label>
+                            <textarea
+                                className="form-control"
+                                value={bio}
+                                onChange={(e) => setBio(e.target.value)}
+                                rows={3}
+                                placeholder="Nhập tiểu sử ngắn gọn về bạn..."
+                            />
                         </div>
 
                         <div className="mb-3">

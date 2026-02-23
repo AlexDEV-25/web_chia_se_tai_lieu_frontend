@@ -8,6 +8,7 @@ import LoadingState from '../../components/LoadingState';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
 import LeftSidebar from '../../components/LeftSidebar';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
@@ -21,6 +22,7 @@ const DocumentList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; action: 'toggle' | 'delete'; item: DocumentResponse | null }>({ isOpen: false, action: 'toggle', item: null });
 
     const fetchDocuments = useCallback(async () => {
         setLoading(true);
@@ -40,50 +42,44 @@ const DocumentList: React.FC = () => {
         fetchDocuments();
     }, [fetchDocuments]);
 
-    const handleToggleVisibility = useCallback(async (document: DocumentResponse) => {
-        const { id, title, hide } = document;
-        const confirmMessage = hide
-            ? `Bạn có muốn hiển thị lại tài liệu "${title}"?`
-            : `Bạn có chắc chắn muốn ẩn tài liệu "${title}"?`;
-
-        const confirmToggle = window.confirm(confirmMessage);
-        if (!confirmToggle) return;
-
-        try {
-            setUpdatingId(id);
-            await hideDocument(id, {
-                hide: !hide, updatedAt: new Date()
-            });
-
-            setDocuments((prev) =>
-                prev.map((item) =>
-                    item.id === id ? { ...item, hide: !hide } : item
-                )
-            );
-        } catch (err: any) {
-            const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_UPDATE_FAILED);
-            setError(message);
-        } finally {
-            setUpdatingId(null);
-        }
-    }, [documents]);
-
-    const handleDelete = useCallback(async (document: DocumentResponse) => {
-        const { id, title } = document;
-        const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa tài liệu "${title}"? Hành động này không thể hoàn tác.`);
-        if (!confirmDelete) return;
-
-        try {
-            setUpdatingId(id);
-            await deleteDocument(id);
-            setDocuments((prev) => prev.filter((item) => item.id !== id));
-        } catch (err: any) {
-            const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_DELETE_FAILED);
-            setError(message);
-        } finally {
-            setUpdatingId(null);
-        }
+    const handleToggleVisibility = useCallback((document: DocumentResponse) => {
+        setConfirmDialog({ isOpen: true, action: 'toggle', item: document });
     }, []);
+
+    const handleDelete = useCallback((document: DocumentResponse) => {
+        setConfirmDialog({ isOpen: true, action: 'delete', item: document });
+    }, []);
+
+    const handleConfirm = async () => {
+        if (!confirmDialog.item) return;
+
+        const { id } = confirmDialog.item;
+        try {
+            setUpdatingId(id);
+            if (confirmDialog.action === 'toggle') {
+                const { hide } = confirmDialog.item;
+                await hideDocument(id, { hide: !hide, updatedAt: new Date() });
+                setDocuments((prev) =>
+                    prev.map((item) =>
+                        item.id === id ? { ...item, hide: !hide } : item
+                    )
+                );
+            } else {
+                await deleteDocument(id);
+                setDocuments((prev) => prev.filter((item) => item.id !== id));
+            }
+        } catch (err: any) {
+            const message = handleApiError(err, confirmDialog.action === 'toggle' ? ERROR_MESSAGES.DOCUMENT_UPDATE_FAILED : ERROR_MESSAGES.DOCUMENT_DELETE_FAILED);
+            setError(message);
+        } finally {
+            setUpdatingId(null);
+            setConfirmDialog({ isOpen: false, action: 'toggle', item: null });
+        }
+    };
+
+    const handleCancel = () => {
+        setConfirmDialog({ isOpen: false, action: 'toggle', item: null });
+    };
 
     const filteredDocuments = useMemo(() => {
         const lowerSearch = searchTerm.trim().toLowerCase();
@@ -151,7 +147,7 @@ const DocumentList: React.FC = () => {
                         filterChipClass="document-filter-chip"
                     />
 
-                    {loading && <LoadingState />}
+                    {loading && <LoadingState rows={5} variant="table" />}
 
                     {!loading && filteredDocuments.length === 0 && (
                         <EmptyState icon="📄" title="Chưa có tài liệu phù hợp" description="Thử thay đổi bộ lọc hoặc tải lên một tài liệu mới để phong phú thư viện tài nguyên." />
@@ -212,6 +208,20 @@ const DocumentList: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {confirmDialog.isOpen && confirmDialog.item && (
+                <ConfirmDialog
+                    isOpen={confirmDialog.isOpen}
+                    title="Xác nhận"
+                    message={confirmDialog.action === 'toggle'
+                        ? (confirmDialog.item.hide
+                            ? `Bạn có muốn hiển thị lại tài liệu "${confirmDialog.item.title}"?`
+                            : `Bạn có chắc chắn muốn ẩn tài liệu "${confirmDialog.item.title}"?`)
+                        : `Bạn có chắc chắn muốn xóa tài liệu "${confirmDialog.item.title}"? Hành động này không thể hoàn tác.`}
+                    onConfirm={handleConfirm}
+                    onCancel={handleCancel}
+                />
+            )}
         </div>
     );
 };

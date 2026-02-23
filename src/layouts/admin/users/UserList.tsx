@@ -6,10 +6,12 @@ import Filter from '../components/Filter';
 import LoadingState from '../components/LoadingState';
 import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
+import ConfirmDialog from '../components/ConfirmDialog';
 import LeftSidebar from '../components/LeftSidebar';
 import type { UserResponse } from '../../../models/response/UserResponse';
 import { handleApiError } from '../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../constants/messages';
+import { renderStatusPill } from '../components/StatusPill';
 
 type StatusFilter = 'all' | 'visible' | 'hidden';
 
@@ -20,6 +22,7 @@ const UserList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; user?: UserResponse } | null>(null);
 
     const fetchUsers = useCallback(async () => {
         setLoading(true);
@@ -39,14 +42,15 @@ const UserList: React.FC = () => {
         fetchUsers();
     }, [fetchUsers]);
 
-    const handleToggleStatus = useCallback(async (user: UserResponse) => {
-        const { id, username, hide } = user;
-        const confirmMessage = user.hide
-            ? `Bạn có muốn kích hoạt lại tài khoản "${username}"?`
-            : `Bạn có chắc chắn muốn vô hiệu hóa tài khoản "${username}"?`;
+    const handleToggleStatus = useCallback((user: UserResponse) => {
+        setConfirmDialog({ isOpen: true, user });
+    }, []);
 
-        const confirmToggle = window.confirm(confirmMessage);
-        if (!confirmToggle) return;
+    const handleConfirm = useCallback(async () => {
+        if (!confirmDialog?.user) return;
+
+        const { user } = confirmDialog;
+        const { id, hide } = user;
 
         try {
             setUpdatingId(id);
@@ -62,7 +66,13 @@ const UserList: React.FC = () => {
         } finally {
             setUpdatingId(null);
         }
-    }, [users]);
+
+        setConfirmDialog(null);
+    }, [confirmDialog, users]);
+
+    const handleCancel = useCallback(() => {
+        setConfirmDialog(null);
+    }, []);
 
     const filteredUsers = useMemo(() => {
         const lowerSearch = searchTerm.trim().toLowerCase();
@@ -85,17 +95,6 @@ const UserList: React.FC = () => {
         const hidden = users.filter((usr) => usr.hide).length;
         return { total, visible, hidden };
     }, [users]);
-
-    const renderStatusPill = (isHidden: boolean) => {
-        const statusConfig = isHidden
-            ? { class: 'is-hidden', text: 'Đang ẩn' }
-            : { class: 'is-visible', text: 'Đang hiển thị' };
-        return (
-            <span className={`user-status-pill ${statusConfig.class}`}>
-                {statusConfig.text}
-            </span>
-        );
-    };
 
     const renderRoleBadge = (roles: any[]) => {
         const roleName = roles?.[0]?.name || 'user';
@@ -140,7 +139,7 @@ const UserList: React.FC = () => {
                         filterActionsClass="user-filter-actions"
                         filterChipClass="user-filter-chip"
                     />
-                    {loading && <LoadingState />}
+                    {loading && <LoadingState rows={5} variant="table" />}
 
                     {!loading && filteredUsers.length === 0 && (
                         <EmptyState icon="👥" title="Chưa có người dùng phù hợp" description="Thử thay đổi bộ lọc hoặc mời người dùng mới tham gia nền tảng." />
@@ -193,6 +192,26 @@ const UserList: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {confirmDialog?.isOpen && confirmDialog.user && (
+                <ConfirmDialog
+                    isOpen={true}
+                    title={
+                        confirmDialog.user.hide
+                            ? 'Kích hoạt tài khoản'
+                            : 'Vô hiệu hóa tài khoản'
+                    }
+                    message={
+                        confirmDialog.user.hide
+                            ? `Bạn có muốn kích hoạt lại tài khoản "${confirmDialog.user.username}"?`
+                            : `Bạn có chắc chắn muốn vô hiệu hóa tài khoản "${confirmDialog.user.username}"?`
+                    }
+                    onConfirm={handleConfirm}
+                    onCancel={handleCancel}
+                    confirmText={confirmDialog.user.hide ? 'Kích hoạt' : 'Vô hiệu hóa'}
+                    cancelText="Hủy"
+                />
+            )}
         </div>
     );
 };

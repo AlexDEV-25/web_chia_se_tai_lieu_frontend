@@ -8,6 +8,7 @@ import LoadingState from '../../components/LoadingState';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
 import LeftSidebar from '../../components/LeftSidebar';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
@@ -21,6 +22,7 @@ const LessonList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; action: 'toggle' | 'delete'; item: LessonResponse | null }>({ isOpen: false, action: 'toggle', item: null });
 
     const fetchLessons = useCallback(async () => {
         setLoading(true);
@@ -40,51 +42,44 @@ const LessonList: React.FC = () => {
         fetchLessons();
     }, [fetchLessons]);
 
-    const handleToggleVisibility = useCallback(async (lesson: LessonResponse) => {
-        const { id, title, hide } = lesson;
-        const confirmMessage = hide
-            ? `Bạn có muốn hiển thị lại bài học "${title}"?`
-            : `Bạn có chắc chắn muốn ẩn bài học "${title}"?`;
-
-        const confirmToggle = window.confirm(confirmMessage);
-        if (!confirmToggle) return;
-
-        try {
-            setUpdatingId(id);
-            await hideLesson(id, {
-                hide: !hide,
-                updatedAt: new Date()
-            });
-
-            setLessons((prev) =>
-                prev.map((item) =>
-                    item.id === id ? { ...item, hide: !hide } : item
-                )
-            );
-        } catch (err: any) {
-            const message = handleApiError(err, ERROR_MESSAGES.LESSON_UPDATE_FAILED);
-            setError(message);
-        } finally {
-            setUpdatingId(null);
-        }
-    }, [lessons]);
-
-    const handleDelete = useCallback(async (lesson: LessonResponse) => {
-        const { id, title } = lesson;
-        const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa bài học "${title}"? Hành động này không thể hoàn tác.`);
-        if (!confirmDelete) return;
-
-        try {
-            setUpdatingId(id);
-            await deleteLesson(id);
-            setLessons((prev) => prev.filter((item) => item.id !== id));
-        } catch (err: any) {
-            const message = handleApiError(err, ERROR_MESSAGES.LESSON_DELETE_FAILED);
-            setError(message);
-        } finally {
-            setUpdatingId(null);
-        }
+    const handleToggleVisibility = useCallback((lesson: LessonResponse) => {
+        setConfirmDialog({ isOpen: true, action: 'toggle', item: lesson });
     }, []);
+
+    const handleDelete = useCallback((lesson: LessonResponse) => {
+        setConfirmDialog({ isOpen: true, action: 'delete', item: lesson });
+    }, []);
+
+    const handleConfirm = async () => {
+        if (!confirmDialog.item) return;
+
+        const { id } = confirmDialog.item;
+        try {
+            setUpdatingId(id);
+            if (confirmDialog.action === 'toggle') {
+                const { hide } = confirmDialog.item;
+                await hideLesson(id, { hide: !hide, updatedAt: new Date() });
+                setLessons((prev) =>
+                    prev.map((item) =>
+                        item.id === id ? { ...item, hide: !hide } : item
+                    )
+                );
+            } else {
+                await deleteLesson(id);
+                setLessons((prev) => prev.filter((item) => item.id !== id));
+            }
+        } catch (err: any) {
+            const message = handleApiError(err, confirmDialog.action === 'toggle' ? ERROR_MESSAGES.LESSON_UPDATE_FAILED : ERROR_MESSAGES.LESSON_DELETE_FAILED);
+            setError(message);
+        } finally {
+            setUpdatingId(null);
+            setConfirmDialog({ isOpen: false, action: 'toggle', item: null });
+        }
+    };
+
+    const handleCancel = () => {
+        setConfirmDialog({ isOpen: false, action: 'toggle', item: null });
+    };
 
     const filteredLessons = useMemo(() => {
         const lowerSearch = searchTerm.trim().toLowerCase();
@@ -152,7 +147,7 @@ const LessonList: React.FC = () => {
                         filterChipClass="lesson-filter-chip"
                     />
 
-                    {loading && <LoadingState />}
+                    {loading && <LoadingState rows={5} variant="table" />}
 
                     {!loading && filteredLessons.length === 0 && (
                         <EmptyState icon="📚" title="Chưa có bài học phù hợp" description="Thử thay đổi bộ lọc hoặc tạo một bài học mới để giúp học viên tiếp thu kiến thức." />
@@ -217,6 +212,20 @@ const LessonList: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {confirmDialog.isOpen && confirmDialog.item && (
+                <ConfirmDialog
+                    isOpen={confirmDialog.isOpen}
+                    title="Xác nhận"
+                    message={confirmDialog.action === 'toggle'
+                        ? (confirmDialog.item.hide
+                            ? `Bạn có muốn hiển thị lại bài học "${confirmDialog.item.title}"?`
+                            : `Bạn có chắc chắn muốn ẩn bài học "${confirmDialog.item.title}"?`)
+                        : `Bạn có chắc chắn muốn xóa bài học "${confirmDialog.item.title}"? Hành động này không thể hoàn tác.`}
+                    onConfirm={handleConfirm}
+                    onCancel={handleCancel}
+                />
+            )}
         </div>
     );
 };

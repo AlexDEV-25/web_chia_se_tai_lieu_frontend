@@ -86,6 +86,7 @@ const Register: React.FC = () => {
             username: username,
             email: email,
             password: password,
+            bio: "",
             verified: false,
             roles: ["USER"],
             hide: false

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Document, Page } from "react-pdf";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import ZoomComp from "./zoomComp";
+import ZoomComp from "./ZoomComp";
 import { getDocumentFile } from "../../../apis/DocumentApi";
 import { getLessonDocument } from "../../../apis/LessonApi";
 

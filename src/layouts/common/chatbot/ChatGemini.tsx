@@ -5,6 +5,7 @@ import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import { UserContext } from "../../../AppContext";
 import ChatAuthRequired from "./component/ChatAuthRequired";
+import Loading from "./component/Loading";
 
 interface Message {
     id: string;
@@ -214,17 +215,7 @@ const ChatGemini: React.FC = () => {
                     </>
                 )}
 
-                {isLoading && (
-                    <div className="chatbot-message bot">
-                        <div className="message-content loading">
-                            <div className="typing-indicator">
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                {isLoading && (<Loading />)}
                 <div ref={messagesEndRef} />
             </div>
 

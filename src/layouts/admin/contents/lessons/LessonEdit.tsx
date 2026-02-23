@@ -1,203 +1,148 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { getLessonById, updateLesson } from '../../../../apis/LessonApi';
-import VideoComp from '../../../common/components/VideoComp';
-import DocumentViewComp from '../../../common/components/DocumentViewComp';
-import RightProperties from '../components/RightProperties';
-import type { LessonResponse } from '../../../../models/response/LessonResponse';
-import type { LessonRequest } from '../../../../models/request/LessonRequest';
-import { handleApiError } from '../../../../utils/errorHandler';
-import { ERROR_MESSAGES } from '../../../../constants/messages';
+import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { getLessonById, updateLesson } from "../../../../apis/LessonApi";
+import VideoComp from "../../../common/components/VideoComp";
+import DocumentViewComp from "../../../common/components/DocumentViewComp";
+import RightProperties from "../components/RightProperties";
+import type { LessonResponse } from "../../../../models/response/LessonResponse";
+import type { LessonRequest } from "../../../../models/request/LessonRequest";
+import { handleApiError } from "../../../../utils/errorHandler";
+import { ERROR_MESSAGES } from "../../../../constants/messages";
+import ReturnHeader from "../components/ReturnHeader";
+import ErrorAlert from "../../components/ErrorAlert";
+import Header from "../components/header";
 
 const LessonEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
     const [lesson, setLesson] = useState<LessonResponse | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [saving, setSaving] = useState<boolean>(false);
+    const [saving, setSaving] = useState(false);
 
-    const [formData, setFormData] = useState<LessonRequest>({
-        title: '',
-        description: '',
-        status: 'PENDING' as 'PENDING' | 'PUBLISHED',
-        hide: false,
-        categoryId: undefined
-    });
-
-    useEffect(() => {
-        fetchLesson();
-    }, [id]);
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [status, setStatus] = useState<"PENDING" | "PUBLISHED">("PENDING");
+    const [hide, setHide] = useState(false);
+    const [categoryId, setCategoryId] = useState<number | undefined>();
 
     const fetchLesson = useCallback(async () => {
         if (!id) return;
+
         setLoading(true);
         setError(null);
+
         try {
-            const response = await getLessonById(parseInt(id));
+            const response = await getLessonById(parseInt(id, 10));
             const les = response.result;
+
             setLesson(les);
-            setFormData({
-                title: les?.title || '',
-                description: les?.description || '',
-                status: les?.status || 'PENDING',
-                hide: les?.hide || false,
-                categoryId: les?.categoryId
-            });
+
+            setTitle(les?.title ?? "");
+            setDescription(les?.description ?? "");
+            setStatus(les?.status ?? "PENDING");
+            setHide(les?.hide ?? false);
+            setCategoryId(les?.categoryId);
         } catch (err: any) {
-            const message = handleApiError(err, ERROR_MESSAGES.LESSON_LOAD_FAILED);
+            const message = handleApiError(
+                err,
+                ERROR_MESSAGES.LESSON_LOAD_FAILED
+            );
             setError(message);
         } finally {
             setLoading(false);
         }
     }, [id]);
 
-    const handleStatusChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newStatus = e.target.value as 'PENDING' | 'PUBLISHED';
-        setFormData(prev => ({ ...prev, status: newStatus }));
-    }, []);
-
-    const handleHideChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newHide = e.target.value === 'true';
-        setFormData(prev => ({ ...prev, hide: newHide }));
-    }, []);
-
-    const handleTitleChange = useCallback((value: string | number | undefined) => {
-        setFormData(prev => ({ ...prev, title: String(value || '') }));
-    }, []);
-
-    const handleDescriptionChange = useCallback((value: string | number | undefined) => {
-        setFormData(prev => ({ ...prev, description: String(value || '') }));
-    }, []);
-
-    const handleCategoryIdChange = useCallback((value: string | number | undefined) => {
-        setFormData(prev => ({ ...prev, categoryId: value ? Number(value) : undefined }));
-    }, []);
+    useEffect(() => {
+        fetchLesson();
+    }, [fetchLesson]);
 
     const handleSave = useCallback(async () => {
         if (!lesson?.id) return;
 
         setSaving(true);
         try {
-            const response = await updateLesson(lesson.id, formData);
+            const requestData: LessonRequest = {
+                title,
+                description,
+                status,
+                hide,
+                categoryId,
+            };
+            const response = await updateLesson(lesson.id, requestData);
             setLesson(response.result);
             setError(null);
+            navigate("/lessons");
         } catch (err: any) {
-            const message = handleApiError(err, ERROR_MESSAGES.LESSON_UPDATE_FAILED);
+            const message = handleApiError(
+                err,
+                ERROR_MESSAGES.LESSON_UPDATE_FAILED
+            );
             setError(message);
         } finally {
             setSaving(false);
         }
-    }, [lesson?.id, formData]);
+    }, [lesson?.id, title, description, status, hide, categoryId]);
 
     if (loading) {
-        return (
-            <div className="admin-document-edit-page">
-                <div className="document-container">
-                    <div className="loading-skeleton">
-                        <p>Đang tải bài học...</p>
-                    </div>
-                </div>
-            </div>
-        );
+        return <div className="loading-skeleton">Đang tải bài học...</div>;
     }
 
     if (!lesson) {
-        return (
-            <div className="admin-document-edit-page">
-                <div className="document-container">
-                    <div className="error-state">
-                        <p>Không tìm thấy bài học</p>
-                        <button onClick={() => navigate('/lessons')} className="document-btn primary">
-                            Quay lại danh sách
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
+        return (<ReturnHeader target="lessons" content="Không tìm thấy bài học" />);
     }
 
     return (
         <div className="admin-document-edit-page">
             <div className="document-container">
-                {/* Header */}
-                <div className="document-edit-header">
-                    <div className="document-header-content">
-                        <button onClick={() => navigate('/lessons')} className="document-back-btn">
-                            <i className="fa fa-chevron-left" /> Quay lại
-                        </button>
-                        <div className="document-header-info">
-                            <p className="document-eyebrow">Quản trị hệ thống</p>
-                            <h1>Chi tiết bài học</h1>
-                        </div>
-                    </div>
-                </div>
+                <Header target="documents" content="Chi tiết bài học" />
 
-                {error && (
-                    <div className="document-alert error">
-                        <p>Lỗi: {error}</p>
-                        <button type="button" onClick={fetchLesson} className="document-btn ghost">
-                            Thử lại
-                        </button>
-                    </div>
-                )}
+                {error && (<ErrorAlert message={error} onRetry={fetchLesson} />)}
 
-                {/* Main Content Grid */}
                 <div className="document-edit-grid">
-                    {/* Left: Video & Document Preview */}
+
                     <div className="document-preview-section">
-                        {/* Video Section */}
+
                         <div className="document-preview-card">
                             <h3 className="document-section-title">Video bài giảng</h3>
-                            <VideoComp
-                                lessonId={lesson.id}
-                                isAdmin={true}
-                                thumbnailUrl={lesson.thumbnailUrl}
-                            />
+                            <VideoComp lessonId={lesson.id} isAdmin={true} thumbnailUrl={lesson.thumbnailUrl} />
                         </div>
 
-                        {/* Document Section */}
                         {lesson.documentUrl && (
                             <div className="document-preview-card">
                                 <h3 className="document-section-title">Tài liệu bài giảng</h3>
-                                <DocumentViewComp
-                                    docId={lesson.id}
-                                    isAdmin={true}
-                                    isLessonDocument={true}
-                                    maxRenderWidth={860}
-                                    emptyFallback={
-                                        <div className="document-empty-preview">
-                                            <p>Không có tài liệu đi kèm</p>
-                                        </div>
-                                    }
-                                />
+                                <DocumentViewComp docId={lesson.id} isAdmin={true} isLessonDocument={true} maxRenderWidth={860} emptyFallback={
+                                    <div className="document-empty-preview">
+                                        <p>Không có tài liệu đi kèm</p>
+                                    </div>
+                                } />
                             </div>
                         )}
                     </div>
 
-                    {/* Right: Lesson Properties */}
                     <RightProperties
-                        basicInfo={[
-                            { label: 'ID', value: lesson.id, editable: false },
-                            { label: 'Tiêu đề', value: formData.title, editable: true, onChange: handleTitleChange },
-                            { label: 'Mô tả', value: formData.description, editable: true, onChange: handleDescriptionChange },
-                            { label: 'Danh mục', value: formData.categoryId || lesson.categoryName, editable: true, onChange: handleCategoryIdChange, isCategory: true, currentCategoryName: lesson.categoryName },
-                            { label: 'Người dạy', value: lesson.userName, editable: false }
-                        ]}
-                        stats={[
-                            { label: 'Lượt xem', value: lesson.viewsCount ?? 0 }
-                        ]}
-                        status={formData.status as 'PENDING' | 'PUBLISHED'}
-                        onStatusChange={handleStatusChange}
-                        hide={formData.hide}
-                        onHideChange={handleHideChange}
-                        createdAt={lesson.createdAt}
-                        updatedAt={lesson.updatedAt}
-                        onClose={() => navigate('/lessons')}
+                        type="lesson"
+                        data={{
+                            id: lesson.id,
+                            title,
+                            description,
+                            categoryId,
+                            status,
+                            hide,
+                            createdAt: lesson.createdAt,
+                            updatedAt: lesson.updatedAt,
+                            views: lesson.viewsCount,
+                        }}
+                        setTitle={setTitle}
+                        setDescription={setDescription}
+                        setCategoryId={setCategoryId}
+                        setStatus={setStatus}
+                        setHide={setHide}
                         onSave={handleSave}
+                        onClose={() => navigate("/lessons")}
                         saving={saving}
-                        classPrefix="document"
                     />
                 </div>
             </div>

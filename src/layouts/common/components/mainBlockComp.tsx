@@ -207,7 +207,7 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                                 thumbnailUrl={resolveThumbnailUrl(item)}
                                 subtitle={
                                     <div>
-                                        <i>{item.description ? `${item.description?.substring(0, 20)}...` : "Không có mô tả."}</i>
+                                        <i>{item.description ? item.description : "Không có mô tả."}</i>
                                         <div>
                                             <strong style={{ fontWeight: 500, opacity: 0.7 }}>by:</strong>{" "}
                                             <Link to={getItemLink(item)}>{item.userName ?? "Tác giả ẩn danh"}</Link>

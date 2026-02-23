@@ -1,12 +1,12 @@
 import React from 'react';
+import type { VisibilityFilter } from '../types/common';
 
-type FilterType = 'all' | 'visible' | 'hidden';
 
 interface FilterProps {
     searchTerm: string;
     onSearchChange: (term: string) => void;
-    filterValue: FilterType;
-    onFilterChange: (filter: FilterType) => void;
+    filterValue: VisibilityFilter;
+    onFilterChange: (filter: VisibilityFilter) => void;
     placeholder?: string;
     containerClass?: string;
     searchClass?: string;
@@ -25,8 +25,8 @@ const Filter: React.FC<FilterProps> = ({
     filterActionsClass = 'filter-actions',
     filterChipClass = 'filter-chip'
 }) => {
-    const filters: FilterType[] = ['all', 'visible', 'hidden'];
-    const filterLabels: Record<FilterType, string> = {
+    const filters: VisibilityFilter[] = ['all', 'visible', 'hidden'];
+    const filterLabels: Record<VisibilityFilter, string> = {
         all: 'Tất cả',
         visible: 'Hiển thị',
         hidden: 'Ẩn'

@@ -10,30 +10,14 @@ const CategoryAdd: React.FC = () => {
     const navigate = useNavigate();
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
-    const [nameError, setNameError] = useState<string>("");
-    const [formError, setFormError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-    const validateForm = () => {
-        let isValid = true;
-        let localNameError = "";
-
-        if (name.trim() === "") {
-            localNameError = "Vui lòng nhập tên danh mục.";
-            isValid = false;
-        }
-
-        setNameError(localNameError);
-        return isValid;
-    };
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!validateForm()) {
-            return;
-        }
 
-        setFormError(null);
+        setError(null);
         setIsSubmitting(true);
 
         try {
@@ -46,8 +30,7 @@ const CategoryAdd: React.FC = () => {
             navigate("/categories");
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.CREATE_FAILED);
-            setFormError(message);
-        } finally {
+            setError(message);
             setIsSubmitting(false);
         }
     };
@@ -71,12 +54,6 @@ const CategoryAdd: React.FC = () => {
                         </button>
                     </div>
 
-                    {formError && (
-                        <div className="category-alert error">
-                            <p>{formError}</p>
-                        </div>
-                    )}
-
                     <form className="category-form" onSubmit={handleSubmit} noValidate>
                         <label className="form-field">
                             <span>Tên danh mục</span>
@@ -84,10 +61,10 @@ const CategoryAdd: React.FC = () => {
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className={`category-input ${nameError ? "has-error" : ""}`}
+                                className={`category-input ${error ? "has-error" : ""}`}
                                 placeholder="Ví dụ: Công nghệ thông tin"
                             />
-                            {nameError && <small className="field-error">{nameError}</small>}
+                            {error && <small className="field-error">{error}</small>}
                         </label>
 
                         <label className="form-field">
@@ -115,8 +92,7 @@ const CategoryAdd: React.FC = () => {
                                 onClick={() => {
                                     setName("");
                                     setDescription("");
-                                    setNameError("");
-                                    setFormError(null);
+                                    setError(null);
                                 }}
                             >
                                 Xóa nội dung

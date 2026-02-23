@@ -7,12 +7,14 @@ import Filter from '../../components/Filter';
 import LoadingState from '../../components/LoadingState';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import { getAllComments, hideComment, deleteComment } from '../../../../apis/CommentApi';
 import { filterCommnent } from '../../../../apis/ChatGemini';
 import type { CommentResponse } from '../../../../models/response/CommentResponse';
 import type { HideRequest } from '../../../../models/request/HideRequest';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
+import { renderStatusPill } from '../../components/StatusPill';
 
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 
@@ -24,6 +26,7 @@ const CommentList: React.FC = () => {
     const [updatingId, setUpdatingId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [isInvalidView, setIsInvalidView] = useState<boolean>(false);
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; type: 'visibility' | 'delete'; comment?: CommentResponse } | null>(null);
 
     const fetchComments = useCallback(async (invalidOnly: boolean) => {
         setLoading(true);
@@ -51,17 +54,23 @@ const CommentList: React.FC = () => {
     }, [fetchComments, isInvalidView]);
 
     const handleToggleVisibility = useCallback(
-        async (comment: CommentResponse) => {
-            const { id, content, hide } = comment;
-            const confirmMessage = hide
-                ? `Bạn có muốn hiển thị lại bình luận này?\n\n\"${content.slice(0, 80)}${content.length > 80 ? '…' : ''
-                }\"`
-                : `Bạn có chắc chắn muốn ẩn bình luận này?\n\n\"${content.slice(0, 80)}${content.length > 80 ? '…' : ''
-                }\"`;
+        (comment: CommentResponse) => {
+            setConfirmDialog({ isOpen: true, type: 'visibility', comment });
+        },
+        []
+    );
 
-            const confirmToggle = window.confirm(confirmMessage);
-            if (!confirmToggle) return;
+    const handleDelete = useCallback((comment: CommentResponse) => {
+        setConfirmDialog({ isOpen: true, type: 'delete', comment });
+    }, []);
 
+    const handleConfirm = useCallback(async () => {
+        if (!confirmDialog?.comment) return;
+
+        const { comment, type } = confirmDialog;
+        const { id, hide } = comment;
+
+        if (type === 'visibility') {
             try {
                 setUpdatingId(id);
                 const payload: HideRequest = { hide: !hide, updatedAt: new Date() };
@@ -75,28 +84,24 @@ const CommentList: React.FC = () => {
             } finally {
                 setUpdatingId(null);
             }
-        },
-        []
-    );
-
-    const handleDelete = useCallback(async (comment: CommentResponse) => {
-        const { id, content } = comment;
-        const confirmDelete = window.confirm(
-            `Bạn có chắc chắn muốn xóa bình luận này?\n\n\"${content.slice(0, 80)}${content.length > 80 ? '…' : ''
-            }\"`
-        );
-        if (!confirmDelete) return;
-
-        try {
-            setDeletingId(id);
-            await deleteComment(id);
-            setComments((prev) => prev.filter((item) => item.id !== id));
-        } catch (err: any) {
-            const message = handleApiError(err, ERROR_MESSAGES.DELETE_FAILED);
-            setError(message);
-        } finally {
-            setDeletingId(null);
+        } else if (type === 'delete') {
+            try {
+                setDeletingId(id);
+                await deleteComment(id);
+                setComments((prev) => prev.filter((item) => item.id !== id));
+            } catch (err: any) {
+                const message = handleApiError(err, ERROR_MESSAGES.DELETE_FAILED);
+                setError(message);
+            } finally {
+                setDeletingId(null);
+            }
         }
+
+        setConfirmDialog(null);
+    }, [confirmDialog]);
+
+    const handleCancel = useCallback(() => {
+        setConfirmDialog(null);
     }, []);
 
     const filteredComments = useMemo(() => {
@@ -117,11 +122,6 @@ const CommentList: React.FC = () => {
         return { total, visible, hidden };
     }, [comments]);
 
-    const renderStatusPill = (isHidden: boolean) => (
-        <span className={`category-status-pill ${isHidden ? 'is-hidden' : 'is-visible'}`}>
-            {isHidden ? 'Đang ẩn' : 'Đang hiển thị'}
-        </span>
-    );
 
     return (
         <div className="admin-page-layout">
@@ -140,10 +140,7 @@ const CommentList: React.FC = () => {
                     />
 
                     {error && (
-                        <ErrorAlert
-                            message={error}
-                            onRetry={() => fetchComments(isInvalidView)}
-                        />
+                        <ErrorAlert message={error} onRetry={() => fetchComments(isInvalidView)} />
                     )}
 
                     <Stats stats={stats} containerClass="category-stats" cardClass="category-stat-card" />
@@ -225,11 +222,8 @@ const CommentList: React.FC = () => {
                                                         disabled={updatingId === c.id || deletingId === c.id}
                                                         className={`category-btn ${c.hide ? 'primary' : 'danger'}`}
                                                     >
-                                                        {updatingId === c.id
-                                                            ? 'Đang cập nhật...'
-                                                            : c.hide
-                                                                ? 'Hiển thị'
-                                                                : 'Ẩn'}
+                                                        {updatingId === c.id ? 'Đang cập nhật...'
+                                                            : c.hide ? 'Hiển thị' : 'Ẩn'}
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(c)}
@@ -248,6 +242,28 @@ const CommentList: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {confirmDialog?.isOpen && confirmDialog.comment && (
+                <ConfirmDialog
+                    isOpen={true}
+                    title={
+                        confirmDialog.type === 'visibility'
+                            ? (confirmDialog.comment.hide ? 'Hiển thị bình luận' : 'Ẩn bình luận')
+                            : 'Xóa bình luận'
+                    }
+                    message={
+                        confirmDialog.type === 'visibility'
+                            ? (confirmDialog.comment.hide
+                                ? `Bạn có muốn hiển thị lại bình luận này?\n\n"${confirmDialog.comment.content.slice(0, 80)}${confirmDialog.comment.content.length > 80 ? '…' : ''}"`
+                                : `Bạn có chắc chắn muốn ẩn bình luận này?\n\n"${confirmDialog.comment.content.slice(0, 80)}${confirmDialog.comment.content.length > 80 ? '…' : ''}"`)
+                            : `Bạn có chắc chắn muốn xóa bình luận này?\n\n"${confirmDialog.comment.content.slice(0, 80)}${confirmDialog.comment.content.length > 80 ? '…' : ''}"`
+                    }
+                    onConfirm={handleConfirm}
+                    onCancel={handleCancel}
+                    confirmText={confirmDialog.type === 'visibility' ? (confirmDialog.comment.hide ? 'Hiển thị' : 'Ẩn') : 'Xóa'}
+                    cancelText="Hủy"
+                />
+            )}
         </div>
     );
 };

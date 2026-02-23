@@ -7,6 +7,7 @@ import type { DailyCountResponse } from '../../../../models/response/DailyCountR
 import type { CategoryCountResponse } from '../../../../models/response/CategoryCountResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
+import LoadingState from '../../components/LoadingState';
 const AnalysisChartComp: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [userStats, setUserStats] = useState<DailyCountResponse[]>([]);
@@ -101,7 +102,7 @@ const AnalysisChartComp: React.FC = () => {
     const documentsByCategory = getDocumentsByCategory();
 
     if (loading) {
-        return <div className="analysis-loading">Đang tải biểu đồ...</div>;
+        return <LoadingState rows={5} variant="card" />;
     }
 
     return (

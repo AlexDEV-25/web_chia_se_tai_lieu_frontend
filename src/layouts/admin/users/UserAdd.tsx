@@ -13,58 +13,10 @@ const UserAdd: React.FC = () => {
     const [password, setPassword] = useState<string>("");
     const [roles, setRoles] = useState<string[]>([]);
 
-    const [usernameError, setUsernameError] = useState<string>("");
-    const [emailError, setEmailError] = useState<string>("");
-    const [passwordError, setPasswordError] = useState<string>("");
-    const [rolesError, setRolesError] = useState<string>("");
-    const [formError, setFormError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-    const validateEmail = (email: string): boolean => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
 
-    const validateForm = () => {
-        let isValid = true;
-        let localUsernameError = "";
-        let localEmailError = "";
-        let localPasswordError = "";
-        let localRolesError = "";
-
-        if (username.trim() === "") {
-            localUsernameError = "Vui lòng nhập tên đăng nhập.";
-            isValid = false;
-        }
-
-        if (email.trim() === "") {
-            localEmailError = "Vui lòng nhập email.";
-            isValid = false;
-        } else if (!validateEmail(email)) {
-            localEmailError = "Email không hợp lệ.";
-            isValid = false;
-        }
-
-        if (password.trim() === "") {
-            localPasswordError = "Vui lòng nhập mật khẩu.";
-            isValid = false;
-        } else if (password.length < 6) {
-            localPasswordError = "Mật khẩu phải có ít nhất 6 ký tự.";
-            isValid = false;
-        }
-
-        if (roles.length === 0) {
-            localRolesError = "Vui lòng chọn ít nhất một vai trò.";
-            isValid = false;
-        }
-
-        setUsernameError(localUsernameError);
-        setEmailError(localEmailError);
-        setPasswordError(localPasswordError);
-        setRolesError(localRolesError);
-
-        return isValid;
-    };
 
     const handleRoleChange = (role: string) => {
         setRoles((prev) =>
@@ -74,11 +26,8 @@ const UserAdd: React.FC = () => {
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!validateForm()) {
-            return;
-        }
 
-        setFormError(null);
+        setError(null);
         setIsSubmitting(true);
 
         try {
@@ -86,6 +35,7 @@ const UserAdd: React.FC = () => {
                 username: username.trim(),
                 email: email.trim(),
                 password: password.trim(),
+                bio: "",
                 verified: true,
                 roles: roles,
                 hide: false
@@ -94,7 +44,7 @@ const UserAdd: React.FC = () => {
             navigate("/users");
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.CREATE_FAILED);
-            setFormError(message);
+            setError(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -119,11 +69,7 @@ const UserAdd: React.FC = () => {
                         </button>
                     </div>
 
-                    {formError && (
-                        <div className="user-alert error">
-                            <p>{formError}</p>
-                        </div>
-                    )}
+                    {error && (<div className="user-alert error"><p>{error}</p></div>)}
 
                     <form className="user-form" onSubmit={handleSubmit} noValidate>
                         <label className="form-field">
@@ -132,10 +78,9 @@ const UserAdd: React.FC = () => {
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className={`user-input ${usernameError ? "has-error" : ""}`}
+                                className={`user-input`}
                                 placeholder="Ví dụ: john_doe"
                             />
-                            {usernameError && <small className="field-error">{usernameError}</small>}
                         </label>
 
                         <label className="form-field">
@@ -144,10 +89,9 @@ const UserAdd: React.FC = () => {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className={`user-input ${emailError ? "has-error" : ""}`}
+                                className={`user-input`}
                                 placeholder="Ví dụ: john@example.com"
                             />
-                            {emailError && <small className="field-error">{emailError}</small>}
                         </label>
 
                         <label className="form-field">
@@ -156,10 +100,9 @@ const UserAdd: React.FC = () => {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className={`user-input ${passwordError ? "has-error" : ""}`}
+                                className={`user-input`}
                                 placeholder="Nhập mật khẩu ít nhất 6 ký tự"
                             />
-                            {passwordError && <small className="field-error">{passwordError}</small>}
                         </label>
 
                         <fieldset className="form-field">
@@ -182,7 +125,6 @@ const UserAdd: React.FC = () => {
                                     <span>USER</span>
                                 </label>
                             </div>
-                            {rolesError && <small className="field-error">{rolesError}</small>}
                         </fieldset>
 
                         <div className="user-form-actions">
@@ -201,11 +143,7 @@ const UserAdd: React.FC = () => {
                                     setEmail("");
                                     setPassword("");
                                     setRoles([]);
-                                    setUsernameError("");
-                                    setEmailError("");
-                                    setPasswordError("");
-                                    setRolesError("");
-                                    setFormError(null);
+                                    setError(null);
                                 }}
                             >
                                 Xóa nội dung

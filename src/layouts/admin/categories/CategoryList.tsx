@@ -8,10 +8,12 @@ import LoadingState from '../components/LoadingState';
 import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
 import LeftSidebar from '../components/LeftSidebar';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { handleApiError } from '../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../constants/messages';
 import { Link } from 'react-router-dom';
-type VisibilityFilter = 'all' | 'visible' | 'hidden';
+import type { VisibilityFilter } from '../types/common';
+import { renderStatusPill } from '../components/StatusPill';
 
 const CategoryList: React.FC = () => {
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
@@ -20,6 +22,7 @@ const CategoryList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; category: CategoryResponse | null }>({ isOpen: false, category: null });
 
     const fetchCategories = useCallback(async () => {
         setLoading(true);
@@ -39,15 +42,14 @@ const CategoryList: React.FC = () => {
         fetchCategories();
     }, [fetchCategories]);
 
-    const handleToggleVisibility = async (category: CategoryResponse) => {
-        const { id, name, hide } = category;
-        const confirmMessage = hide
-            ? `Bạn có muốn hiển thị lại danh mục "${name}"?`
-            : `Bạn có chắc chắn muốn ẩn danh mục "${name}"?`;
+    const handleToggleVisibility = (category: CategoryResponse) => {
+        setConfirmDialog({ isOpen: true, category });
+    };
 
-        const confirmToggle: boolean = window.confirm(confirmMessage);
-        if (!confirmToggle) return;
+    const handleConfirm = async () => {
+        if (!confirmDialog.category) return;
 
+        const { id, hide } = confirmDialog.category;
         try {
             setUpdatingId(id);
             await hideCategory(id, { hide: !hide, updatedAt: new Date() });
@@ -56,13 +58,17 @@ const CategoryList: React.FC = () => {
                     item.id === id ? { ...item, hide: !hide } : item
                 )
             );
-
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_UPDATE_FAILED);
             setError(message);
         } finally {
             setUpdatingId(null);
+            setConfirmDialog({ isOpen: false, category: null });
         }
+    };
+
+    const handleCancel = () => {
+        setConfirmDialog({ isOpen: false, category: null });
     };
 
     const filteredCategories = useMemo(() => {
@@ -86,12 +92,6 @@ const CategoryList: React.FC = () => {
         const visible = total - hidden;
         return { total, visible, hidden };
     }, [categories]);
-
-    const renderStatusPill = (isHidden: boolean) => (
-        <span className={`category-status-pill ${isHidden ? 'is-hidden' : 'is-visible'}`}>
-            {isHidden ? 'Đang ẩn' : 'Đang hiển thị'}
-        </span>
-    );
 
     return (
         <div className="admin-page-layout">
@@ -125,7 +125,7 @@ const CategoryList: React.FC = () => {
                         filterChipClass="category-filter-chip"
                     />
 
-                    {loading && <LoadingState rows={4} variant="card" />}
+                    {loading && <LoadingState rows={5} variant="table" />}
 
                     {!loading && filteredCategories.length === 0 && (
                         <EmptyState
@@ -175,6 +175,17 @@ const CategoryList: React.FC = () => {
                         </div>
                     )}
                 </div>
+                {confirmDialog.isOpen && confirmDialog.category && (
+                    <ConfirmDialog
+                        isOpen={confirmDialog.isOpen}
+                        title="Xác nhận"
+                        message={confirmDialog.category.hide
+                            ? `Bạn có muốn hiển thị lại danh mục "${confirmDialog.category.name}"?`
+                            : `Bạn có chắc chắn muốn ẩn danh mục "${confirmDialog.category.name}"?`}
+                        onConfirm={handleConfirm}
+                        onCancel={handleCancel}
+                    />
+                )}
             </div>
         </div>
     );

@@ -36,18 +36,6 @@
     line-height: 1.6;
 }
 
-.category-alert {
-    border-radius: 18px;
-    padding: 0.95rem 1.25rem;
-    font-weight: 600;
-}
-
-.category-alert.error {
-    background: rgba(248, 113, 113, 0.1);
-    border: 1px solid rgba(248, 113, 113, 0.4);
-    color: #b91c1c;
-}
-
 .category-form {
     display: flex;
     flex-direction: column;

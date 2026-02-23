@@ -9,7 +9,7 @@ const Dashboard: React.FC = () => {
             <LeftSidebar />
             <div className="admin-dashboard-page">
                 <div className="dashboard-container">
-                    {/* Header */}
+
                     <div className="dashboard-header">
                         <div>
                             <p className="dashboard-eyebrow">Bảng điều khiển</p>
@@ -20,19 +20,16 @@ const Dashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Overview Section */}
                     <div className="dashboard-section">
                         <h2 className="dashboard-section-title">Tổng quan</h2>
                         <OverviewComp />
                     </div>
 
-                    {/* Analysis Section */}
                     <div className="dashboard-section">
                         <h2 className="dashboard-section-title">Phân tích chi tiết</h2>
                         <AnalysisChartComp />
                     </div>
 
-                    {/* Footer Info */}
                     <div className="dashboard-footer">
                         <p className="dashboard-footer-text">
                             Dữ liệu được cập nhật tự động. Lần cập nhật cuối cùng: {new Date().toLocaleString('vi-VN')}
