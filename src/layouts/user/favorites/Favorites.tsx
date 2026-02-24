@@ -9,6 +9,7 @@ import {
 import FavoritesComp from "./components/FavoritesComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import AlertDialog from "../../common/components/AlertDialog";
 
 type TabKey = "document" | "lesson";
 
@@ -22,6 +23,8 @@ const Favorites: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [removingId, setRemovingId] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState<TabKey>("document");
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
+    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
     const formatSavedDate = (value: string) => {
         const date = new Date(value);
@@ -88,7 +91,11 @@ const Favorites: React.FC = () => {
             );
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_REMOVE_FAILED);
-            alert(message);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi cập nhật',
+                message: message
+            });
         } finally {
             setRemovingId(null);
         }
@@ -206,6 +213,12 @@ const Favorites: React.FC = () => {
                     )}
                 </>
             )}
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                onClose={handleCloseAlert}
+            />
         </div>
     );
 };

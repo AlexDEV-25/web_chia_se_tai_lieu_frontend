@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import ReactDOM from 'react-dom';
 import { documentReport, lessonReport } from "../../../apis/ReportApi";
 
 import { handleApiError } from "../../../utils/errorHandler";
 import type { ReportRequest } from "../../../models/request/ReportRequest";
+import AlertDialog from "./AlertDialog";
 
 interface ReportCompProps {
     contentId: number;
@@ -18,6 +20,9 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
     const [customReason, setCustomReason] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
+
+    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
     const reasons = [
         { value: "SPAM", label: "Spam" },
@@ -30,7 +35,11 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
 
     const handleOpenModal = () => {
         if (!isAuthenticated) {
-            alert("Vui lòng đăng nhập để báo cáo nội dung");
+            setAlertDialog({
+                isOpen: true,
+                title: 'Yêu cầu đăng nhập',
+                message: 'Vui lòng đăng nhập để báo cáo nội dung'
+            });
             return;
         }
         setIsModalOpen(true);
@@ -110,7 +119,7 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
             </button>
 
             {/* Modal Report */}
-            {isModalOpen && (
+            {isModalOpen && ReactDOM.createPortal(
                 <div className="modal show d-block" style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content report-modal">
@@ -118,10 +127,13 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
                                 <h5 className="modal-title">Báo cáo nội dung</h5>
                                 <button
                                     type="button"
-                                    className="btn-close"
+                                    className="close"
                                     onClick={handleCloseModal}
                                     disabled={isSubmitting}
-                                />
+                                    aria-label="Close"
+                                >
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
                             </div>
 
                             <div className="modal-body">
@@ -188,8 +200,15 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                onClose={handleCloseAlert}
+            />
         </>
     );
 };

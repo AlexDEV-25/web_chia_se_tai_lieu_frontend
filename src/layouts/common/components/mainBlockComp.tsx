@@ -12,6 +12,7 @@ import {
 import GrindItem from "./GrindItem";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import AlertDialog from "./AlertDialog";
 
 interface BaseItem {
     id: number;
@@ -61,6 +62,9 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
     const hasItems = items.length > 0;
     const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
+
+    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -100,7 +104,11 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
 
     const handleToggleFavorite = async (itemId: number) => {
         if (!isAuthenticated) {
-            alert(`${ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE} ${itemType === "document" ? "tài liệu" : "bài giảng"} yêu thích.`);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Yêu cầu đăng nhập',
+                message: `${ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE} ${itemType === "document" ? "tài liệu" : "bài giảng"} yêu thích.`
+            });
             return;
         }
 
@@ -141,7 +149,11 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED);
             console.error(message);
-            alert(message);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi cập nhật',
+                message: message
+            });
         } finally {
             setFavoriteLoadingId(null);
         }
@@ -229,6 +241,12 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                     })}
                 </div>
             )}
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                onClose={handleCloseAlert}
+            />
         </section>
     );
 };

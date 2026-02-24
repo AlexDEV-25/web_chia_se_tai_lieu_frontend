@@ -17,6 +17,7 @@ import GrindItem from "../../common/components/GrindItem";
 import { countDocumentOfUser, getListDocumentByUser } from "../../../apis/DocumentApi";
 
 import type { LessonFavoriteResponse } from "../../../models/response/LessonFavoriteResponse";
+import AlertDialog from "../../common/components/AlertDialog";
 
 const Profile: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -39,6 +40,8 @@ const Profile: React.FC = () => {
     const [documentQuantity, setDocumentQuantity] = useState<number>(0);
     const [lessonQuantity, setLessonQuantity] = useState<number>(0);
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
+    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
     const fetchFollowerCount = async () => {
         try {
@@ -51,7 +54,11 @@ const Profile: React.FC = () => {
 
     const handleToggleFavoriteDocument = async (doc: DocumentFavoriteResponse) => {
         if (!isAuthenticated) {
-            alert(ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE + " tài liệu yêu thích.");
+            setAlertDialog({
+                isOpen: true,
+                title: 'Yêu cầu đăng nhập',
+                message: ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE
+            });
             return;
         }
 
@@ -78,7 +85,11 @@ const Profile: React.FC = () => {
                 );
             }
         } catch (err: any) {
-            alert(handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED));
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi',
+                message: handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED)
+            });
         } finally {
             setFavoriteLoadingId(null);
         }
@@ -86,7 +97,11 @@ const Profile: React.FC = () => {
 
     const handleToggleFavoriteLesson = async (lesson: LessonFavoriteResponse) => {
         if (!isAuthenticated) {
-            alert(ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Yêu cầu đăng nhập',
+                message: ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE
+            });
             return;
         }
 
@@ -113,7 +128,11 @@ const Profile: React.FC = () => {
                 );
             }
         } catch (err: any) {
-            alert(handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED));
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi',
+                message: handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED)
+            });
         } finally {
             setFavoriteLoadingId(null);
         }
@@ -166,7 +185,14 @@ const Profile: React.FC = () => {
     };
 
     const handleFollow = async () => {
-        if (!isAuthenticated) return;
+        if (!isAuthenticated) {
+            setAlertDialog({
+                isOpen: true,
+                title: 'Yêu cầu đăng nhập',
+                message: ERROR_MESSAGES.LOGIN_REQUIRED_FOLLOW
+            });
+            return;
+        }
         try {
             setFollowLoading(true);
             await followUser(userId);
@@ -397,6 +423,12 @@ const Profile: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                onClose={handleCloseAlert}
+            />
         </div>
     );
 }

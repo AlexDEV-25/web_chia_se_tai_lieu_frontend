@@ -8,6 +8,7 @@ import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import type { DocumentFavoriteResponse } from "../../../models/response/DocumentFavoriteResponse";
 import type { LessonFavoriteResponse } from "../../../models/response/LessonFavoriteResponse";
+import AlertDialog from "./AlertDialog";
 
 interface CarouselProps {
     categoryId: number;
@@ -26,6 +27,9 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
     const [error, setError] = useState<string | null>(null);
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
+
+    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
     useEffect(() => {
         const fetchByCategory = async () => {
@@ -56,7 +60,11 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
 
     const handleToggleFavorite = async (item: Item) => {
         if (!isAuthenticated) {
-            alert(`Vui lòng đăng nhập để lưu ${type === 'document' ? 'tài liệu' : 'bài giảng'} yêu thích.`);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Yêu cầu đăng nhập',
+                message: `Vui lòng đăng nhập để lưu ${type === 'document' ? 'tài liệu' : 'bài giảng'} yêu thích.`
+            });
             return;
         }
 
@@ -97,7 +105,11 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                 );
             }
         } catch (err: any) {
-            alert(handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED));
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi cập nhật',
+                message: handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED)
+            });
         } finally {
             setFavoriteLoadingId(null);
         }
@@ -205,6 +217,12 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                     </div>
                 </div>
             )}
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                onClose={handleCloseAlert}
+            />
         </section>
     );
 };

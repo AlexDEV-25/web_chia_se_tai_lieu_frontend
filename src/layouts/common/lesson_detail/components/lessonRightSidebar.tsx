@@ -8,6 +8,7 @@ import {
 import GrindItem from "../../components/GrindItem";
 import { handleApiError } from "../../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../../constants/messages";
+import AlertDialog from "../../components/AlertDialog";
 import type { LessonFavoriteResponse } from "../../../../models/response/LessonFavoriteResponse";
 
 interface LessonRightSidebarProps {
@@ -26,6 +27,9 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
+
+    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
     // Fetch lessons
     useEffect(() => {
@@ -59,7 +63,11 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({
     // Toggle favorite
     const handleToggleFavorite = async (lesson: LessonFavoriteResponse) => {
         if (!isAuthenticated) {
-            alert(ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Yêu cầu đăng nhập',
+                message: ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE
+            });
             return;
         }
 
@@ -94,7 +102,11 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({
                 err,
                 ERROR_MESSAGES.FAVORITE_UPDATE_FAILED
             );
-            alert(message);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi cập nhật',
+                message: message
+            });
         } finally {
             setFavoriteLoadingId(null);
         }
@@ -166,6 +178,12 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({
                     />
                 ))}
             </div>
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                onClose={handleCloseAlert}
+            />
         </section>
     );
 };

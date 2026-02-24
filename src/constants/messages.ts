@@ -57,8 +57,6 @@ export const ERROR_MESSAGES = {
     /* RATING */
     RATING_LOAD_FAILED: "Không thể tải đánh giá. Vui lòng thử lại.",
     RATING_SUBMIT_FAILED: "Không thể gửi đánh giá. Vui lòng thử lại.",
-    RATING_ALREADY_EXISTS: "Bạn đã đánh giá tài liệu này.",
-    RATING_SELECT_REQUIRED: "Vui lòng chọn số sao trước khi xác nhận.",
     LOGIN_REQUIRED_RATING: "Vui lòng đăng nhập để đánh giá tài liệu.",
 
     /* COMMENT */
@@ -98,6 +96,9 @@ export const ERROR_MESSAGES = {
     /* CHATBOT */
     CHAT_HISTORY_LOAD_FAILED: "Không thể lấy thông tin lịch sử chat. Vui lòng thử lại.",
     CHAT_SEND_FAILED: "Đã xảy ra lỗi khi gửi tin nhắn. Vui lòng thử lại.",
+
+    /* USER */
+    LOGIN_REQUIRED_FOLLOW: "Vui lòng đăng nhập để theo dõi người dùng.",
 };
 
 export const SUCCESS_MESSAGES = {

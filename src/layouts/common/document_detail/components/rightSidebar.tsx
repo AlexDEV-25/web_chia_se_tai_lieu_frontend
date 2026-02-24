@@ -8,6 +8,7 @@ import type { DocumentFavoriteResponse } from "../../../../models/response/Docum
 import GrindItem from "../../components/GrindItem";
 import { handleApiError } from "../../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../../constants/messages";
+import AlertDialog from "../../components/AlertDialog";
 
 interface RightSidebarProps {
     userId: number;
@@ -22,6 +23,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
+
+    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
     // Fetch documents
     useEffect(() => {
@@ -53,7 +57,11 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
     // Toggle favorite
     const handleToggleFavorite = async (doc: DocumentFavoriteResponse) => {
         if (!isAuthenticated) {
-            alert(ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Yêu cầu đăng nhập',
+                message: ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE
+            });
             return;
         }
 
@@ -88,7 +96,11 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                 err,
                 ERROR_MESSAGES.FAVORITE_UPDATE_FAILED
             );
-            alert(message);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi cập nhật',
+                message: message
+            });
         } finally {
             setFavoriteLoadingId(null);
         }
@@ -148,6 +160,12 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                     />
                 ))}
             </div>
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                onClose={handleCloseAlert}
+            />
         </section>
     );
 };

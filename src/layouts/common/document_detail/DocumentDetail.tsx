@@ -12,6 +12,7 @@ import ReportComp from "../components/ReportComp";
 import { addFavoriteDocument, checkDocumentFavorite, removeDocumentFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import AlertDialog from "../components/AlertDialog";
 
 const DocumentDetail: React.FC = () => {
     const token = localStorage.getItem("token");
@@ -32,6 +33,9 @@ const DocumentDetail: React.FC = () => {
     const [downloading, setDownloading] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
+
+    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
     useEffect(() => {
         if (!docId) {
@@ -97,7 +101,11 @@ const DocumentDetail: React.FC = () => {
     const handleToggleFavorite = async () => {
         if (!docId) return;
         if (!isAuthenticated) {
-            alert(ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Yêu cầu đăng nhập',
+                message: ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE
+            });
             return;
         }
 
@@ -117,7 +125,11 @@ const DocumentDetail: React.FC = () => {
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED);
             console.error(message);
-            alert(message);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi cập nhật',
+                message: message
+            });
         } finally {
             setFavoriteLoading(false);
         }
@@ -166,7 +178,11 @@ const DocumentDetail: React.FC = () => {
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.DOWNLOAD_LOGIN_REQUIRED);
-            alert(message);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi tải xuống',
+                message: message
+            });
         } finally {
             setDownloading(false);
         }
@@ -193,117 +209,125 @@ const DocumentDetail: React.FC = () => {
     const maxShown = Math.min(visibleSlidesCount, 50);
 
     return (
-        <div className="document-detail-shell">
-            <section className="doc-overview glass-card">
-                <div className="doc-overview-main">
-                    <p className="eyebrow text-white-50">StudyShare · Slide deck</p>
-                    <h1>{documentDetail.title}</h1>
-                    <p>{documentDetail.description}</p>
+        <>
+            <div className="document-detail-shell">
+                <section className="doc-overview glass-card">
+                    <div className="doc-overview-main">
+                        <p className="eyebrow text-white-50">StudyShare · Slide deck</p>
+                        <h1>{documentDetail.title}</h1>
+                        <p>{documentDetail.description}</p>
 
-                    <div className="doc-meta-chips">
-                        {documentDetail.categoryName && <span className="chip ghost">{documentDetail.categoryName}</span>}
-                        <span className="chip ghost">
-                            <i className="fa fa-eye" /> {documentDetail.viewsCount?.toLocaleString("vi-VN") ?? 0} lượt xem
-                        </span>
-                        <span className="chip ghost">
-                            <i className="fa fa-download" /> {documentDetail.downloadsCount?.toLocaleString("vi-VN") ?? 0} tải xuống
-                        </span>
-                        <ReportComp contentId={docId} contentType="DOCUMENT" />
+                        <div className="doc-meta-chips">
+                            {documentDetail.categoryName && <span className="chip ghost">{documentDetail.categoryName}</span>}
+                            <span className="chip ghost">
+                                <i className="fa fa-eye" /> {documentDetail.viewsCount?.toLocaleString("vi-VN") ?? 0} lượt xem
+                            </span>
+                            <span className="chip ghost">
+                                <i className="fa fa-download" /> {documentDetail.downloadsCount?.toLocaleString("vi-VN") ?? 0} tải xuống
+                            </span>
+                            <ReportComp contentId={docId} contentType="DOCUMENT" />
+                        </div>
+
+                        <div className="stat-grid">
+                            {meta.map((item) => (
+                                <div className="stat-card" key={item.label}>
+                                    <p className="text-muted">{item.label}</p>
+                                    <strong>{item.value}</strong>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    <div className="stat-grid">
-                        {meta.map((item) => (
-                            <div className="stat-card" key={item.label}>
-                                <p className="text-muted">{item.label}</p>
-                                <strong>{item.value}</strong>
-                            </div>
-                        ))}
+                    <div className="document-actions">
+                        <button
+                            type="button"
+                            onClick={handleDownload}
+                            className="btn-elevated"
+                            disabled={downloading}
+                        >
+                            {downloading ? "Đang xử lý..." : (
+                                <>
+                                    <i className="fa fa-download" /> Tải xuống
+                                </>
+                            )}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleToggleFavorite}
+                            className={`btn-outline favorite-toggle ${isFavorite ? "active" : ""}`}
+                            disabled={favoriteLoading}
+                        >
+                            <i className={`fa ${isFavorite ? "fa-heart" : "fa-heart-o"}`} />{" "}
+                            {isFavorite ? "Đã lưu" : "Lưu vào kho"}
+                        </button>
+                        <Link to={`/profile/${documentDetail.userId}`} className="btn-outline text-center" style={{ textDecoration: 'none' }}>
+                            Đến bio tác giả
+                        </Link>
                     </div>
-                </div>
-
-                <div className="document-actions">
-                    <button
-                        type="button"
-                        onClick={handleDownload}
-                        className="btn-elevated"
-                        disabled={downloading}
-                    >
-                        {downloading ? "Đang xử lý..." : (
-                            <>
-                                <i className="fa fa-download" /> Tải xuống
-                            </>
-                        )}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={handleToggleFavorite}
-                        className={`btn-outline favorite-toggle ${isFavorite ? "active" : ""}`}
-                        disabled={favoriteLoading}
-                    >
-                        <i className={`fa ${isFavorite ? "fa-heart" : "fa-heart-o"}`} />{" "}
-                        {isFavorite ? "Đã lưu" : "Lưu vào kho"}
-                    </button>
-                    <Link to={`/profile/${documentDetail.userId}`} className="btn-outline">
-                        Đến bio tác giả
-                    </Link>
-                </div>
-            </section>
-
-            <section className="document-layout">
-                <div className="slide-panel rail-pane">
-                    <LeftSidebar
-                        activeSlide={activeSlide}
-                        maxShown={maxShown}
-                        visibleSlidesCount={visibleSlidesCount}
-                        totalPages={totalPages}
-                        onSelectSlide={handleSlideSelect}
-                        onJumpToStart={() => setActiveSlide(1)}
-                        onJumpToEnd={() => {
-                            if (totalPages) setActiveSlide(totalPages);
-                        }}
-                    />
-                </div>
-
-                <div className="viewer-panel rail-pane">
-                    <CenterComp
-                        docId={docId}
-                        pageNumber={activeSlide}
-                        onLoadPages={handlePdfLoadedPages}
-                        onPageChange={handleSlideSelect}
-                    />
-                </div>
-
-                <div className="suggestion-panel rail-pane">
-                    <RightSidebar
-                        userId={documentDetail.userId}
-                        currentDocumentId={documentDetail.id}
-                    />
-                </div>
-            </section>
-
-            {documentDetail.categoryId && (
-                <section className="glass-card doc-related">
-                    <CarouselComp
-                        categoryId={documentDetail.categoryId}
-                        currentItemId={documentDetail.id}
-                        type="document"
-                    />
                 </section>
-            )}
 
-            {docId && (
-                <section className="glass-card doc-feedback">
-                    <RatingComp docId={docId} />
-                </section>
-            )}
+                <section className="document-layout">
+                    <div className="slide-panel rail-pane">
+                        <LeftSidebar
+                            activeSlide={activeSlide}
+                            maxShown={maxShown}
+                            visibleSlidesCount={visibleSlidesCount}
+                            totalPages={totalPages}
+                            onSelectSlide={handleSlideSelect}
+                            onJumpToStart={() => setActiveSlide(1)}
+                            onJumpToEnd={() => {
+                                if (totalPages) setActiveSlide(totalPages);
+                            }}
+                        />
+                    </div>
 
-            {docId && (
-                <section className="glass-card doc-feedback">
-                    <CommentComp docId={docId} />
+                    <div className="viewer-panel rail-pane">
+                        <CenterComp
+                            docId={docId}
+                            pageNumber={activeSlide}
+                            onLoadPages={handlePdfLoadedPages}
+                            onPageChange={handleSlideSelect}
+                        />
+                    </div>
+
+                    <div className="suggestion-panel rail-pane">
+                        <RightSidebar
+                            userId={documentDetail.userId}
+                            currentDocumentId={documentDetail.id}
+                        />
+                    </div>
                 </section>
-            )}
-        </div>
+
+                {documentDetail.categoryId && (
+                    <section className="glass-card doc-related">
+                        <CarouselComp
+                            categoryId={documentDetail.categoryId}
+                            currentItemId={documentDetail.id}
+                            type="document"
+                        />
+                    </section>
+                )}
+
+                {docId && (
+                    <section className="glass-card doc-feedback">
+                        <RatingComp docId={docId} />
+                    </section>
+                )}
+
+                {docId && (
+                    <section className="glass-card doc-feedback">
+                        <CommentComp docId={docId} />
+                    </section>
+                )}
+            </div>
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                onClose={handleCloseAlert}
+            />
+        </> // Close the React Fragment properly
     );
 };
 

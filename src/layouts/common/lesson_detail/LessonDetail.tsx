@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import VideoComp from "../components/VideoComp";
 import DocumentComp from "./components/DocumentComp";
 import { downloadDocument, downloadSubFile, getPublicLessonById, increaseView } from "../../../apis/LessonApi";
@@ -12,6 +12,7 @@ import ReportComp from "../components/ReportComp";
 import { addFavoriteLesson, checkLessonFavorite, removeLessonFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import AlertDialog from "../components/AlertDialog";
 
 const LessonDetail: React.FC = () => {
     const token = localStorage.getItem("token");
@@ -27,6 +28,9 @@ const LessonDetail: React.FC = () => {
     const [downloadingSub, setDownloadingSub] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
+
+    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
     useEffect(() => {
         if (!lessonId) {
@@ -91,7 +95,11 @@ const LessonDetail: React.FC = () => {
     const handleToggleFavorite = async () => {
         if (!lessonId) return;
         if (!isAuthenticated) {
-            alert(ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Yêu cầu đăng nhập',
+                message: ERROR_MESSAGES.LOGIN_REQUIRED_LESSON_FAVORITE
+            });
             return;
         }
 
@@ -111,7 +119,11 @@ const LessonDetail: React.FC = () => {
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_ADD_FAILED);
             console.error(message);
-            alert(message);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi cập nhật',
+                message: message
+            });
         } finally {
             setFavoriteLoading(false);
         }
@@ -146,7 +158,11 @@ const LessonDetail: React.FC = () => {
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.DOWNLOAD_LOGIN_REQUIRED_LESSON);
-            alert(message);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi tải xuống',
+                message: message
+            });
         } finally {
             setDownloadingDoc(false);
         }
@@ -166,7 +182,11 @@ const LessonDetail: React.FC = () => {
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.DOWNLOAD_SUBFILE_LOGIN_REQUIRED);
-            alert(message);
+            setAlertDialog({
+                isOpen: true,
+                title: 'Lỗi tải xuống',
+                message: message
+            });
         } finally {
             setDownloadingSub(false);
         }
@@ -190,122 +210,130 @@ const LessonDetail: React.FC = () => {
     const hasSubFile = !!lessonDetail.subFileUrl;
 
     return (
-        <div className="lesson-detail-shell">
-            <section className="doc-overview glass-card">
-                <div className="doc-overview-main">
-                    <p className="eyebrow text-white-50">StudyShare · Video bài giảng</p>
-                    <h1>{lessonDetail.title}</h1>
-                    <p>{lessonDetail.description}</p>
+        <>
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                onClose={handleCloseAlert}
+            />
+            <div className="lesson-detail-shell">
+                <section className="doc-overview glass-card">
+                    <div className="doc-overview-main">
+                        <p className="eyebrow text-white-50">StudyShare · Video bài giảng</p>
+                        <h1>{lessonDetail.title}</h1>
+                        <p>{lessonDetail.description}</p>
 
-                    <div className="doc-meta-chips">
-                        {lessonDetail.categoryName && <span className="chip ghost">{lessonDetail.categoryName}</span>}
-                        <span className="chip ghost">
-                            <i className="fa fa-eye" /> {lessonDetail.viewsCount?.toLocaleString("vi-VN") ?? 0} lượt xem
-                        </span>
-                        <ReportComp contentId={lessonId} contentType="LESSON" />
+                        <div className="doc-meta-chips">
+                            {lessonDetail.categoryName && <span className="chip ghost">{lessonDetail.categoryName}</span>}
+                            <span className="chip ghost">
+                                <i className="fa fa-eye" /> {lessonDetail.viewsCount?.toLocaleString("vi-VN") ?? 0} lượt xem
+                            </span>
+                            <ReportComp contentId={lessonId} contentType="LESSON" />
+                        </div>
+
+                        <div className="stat-grid">
+                            {meta.map((item) => (
+                                <div className="stat-card" key={item.label}>
+                                    <p className="text-muted">{item.label}</p>
+                                    <strong>{item.value}</strong>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    <div className="stat-grid">
-                        {meta.map((item) => (
-                            <div className="stat-card" key={item.label}>
-                                <p className="text-muted">{item.label}</p>
-                                <strong>{item.value}</strong>
-                            </div>
-                        ))}
+                    <div className="document-actions">
+                        {hasDocument && (
+                            <button
+                                type="button"
+                                onClick={handleDownloadDocument}
+                                className="btn-elevated"
+                                disabled={downloadingDoc}
+                            >
+                                {downloadingDoc ? "Đang xử lý..." : (
+                                    <>
+                                        <i className="fa fa-download" /> Tải tài liệu
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        {hasSubFile && (
+                            <button
+                                type="button"
+                                onClick={handleDownloadSubFile}
+                                className="btn-outline"
+                                disabled={downloadingSub}
+                            >
+                                {downloadingSub ? "Đang xử lý..." : (
+                                    <>
+                                        <i className="fa fa-download" /> Tải file bổ sung
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={handleToggleFavorite}
+                            className={`btn-outline favorite-toggle ${isFavorite ? "active" : ""}`}
+                            disabled={favoriteLoading}
+                        >
+                            <i className={`fa ${isFavorite ? "fa-heart" : "fa-heart-o"}`} />{" "}
+                            {isFavorite ? "Đã lưu" : "Lưu vào kho"}
+                        </button>
+                        <Link to={`/profile/${lessonDetail.userId}`} className="btn-outline text-center" style={{ textDecoration: 'none' }}>
+                            Đến bio tác giả
+                        </Link>
                     </div>
-                </div>
+                </section>
 
-                <div className="document-actions">
-                    {hasDocument && (
-                        <button
-                            type="button"
-                            onClick={handleDownloadDocument}
-                            className="btn-elevated"
-                            disabled={downloadingDoc}
-                        >
-                            {downloadingDoc ? "Đang xử lý..." : (
-                                <>
-                                    <i className="fa fa-download" /> Tải tài liệu
-                                </>
-                            )}
-                        </button>
-                    )}
-                    {hasSubFile && (
-                        <button
-                            type="button"
-                            onClick={handleDownloadSubFile}
-                            className="btn-outline"
-                            disabled={downloadingSub}
-                        >
-                            {downloadingSub ? "Đang xử lý..." : (
-                                <>
-                                    <i className="fa fa-download" /> Tải file bổ sung
-                                </>
-                            )}
-                        </button>
-                    )}
-                    <button
-                        type="button"
-                        onClick={handleToggleFavorite}
-                        className={`btn-outline favorite-toggle ${isFavorite ? "active" : ""}`}
-                        disabled={favoriteLoading}
-                    >
-                        <i className={`fa ${isFavorite ? "fa-heart" : "fa-heart-o"}`} />{" "}
-                        {isFavorite ? "Đã lưu" : "Lưu vào kho"}
-                    </button>
-                    <button onClick={() => window.history.back()} className="btn-outline">
-                        Quay lại thư viện
-                    </button>
-                </div>
-            </section>
-
-            <section className="lesson-content-layout">
-                <div className="rail-pane lesson-video-pane">
-                    <VideoComp
-                        lessonId={lessonId}
-                        isAdmin={false}
-                        thumbnailUrl={lessonDetail.thumbnailUrl}
-                    />
-                </div>
-
-                {hasDocument ? (
-                    <div className="rail-pane lesson-document-pane">
-                        <DocumentComp
+                <section className="lesson-content-layout">
+                    <div className="rail-pane lesson-video-pane">
+                        <VideoComp
                             lessonId={lessonId}
+                            isAdmin={false}
+                            thumbnailUrl={lessonDetail.thumbnailUrl}
                         />
                     </div>
-                ) : (
-                    <div className="rail-pane lesson-sidebar-pane compact">
-                        <LessonRightSidebar
-                            userId={lessonDetail.userId}
-                            currentLessonId={lessonDetail.id}
+
+                    {hasDocument ? (
+                        <div className="rail-pane lesson-document-pane">
+                            <DocumentComp
+                                lessonId={lessonId}
+                            />
+                        </div>
+                    ) : (
+                        <div className="rail-pane lesson-sidebar-pane compact">
+                            <LessonRightSidebar
+                                userId={lessonDetail.userId}
+                                currentLessonId={lessonDetail.id}
+                            />
+                        </div>
+                    )}
+                </section>
+
+                {lessonDetail.categoryId && lessonDetail.id && (
+                    <section className="glass-card doc-related">
+                        <CarouselComp
+                            categoryId={lessonDetail.categoryId}
+                            currentItemId={lessonDetail.id}
+                            type="lesson"
                         />
-                    </div>
+                    </section>
                 )}
-            </section>
 
-            {lessonDetail.categoryId && lessonDetail.id && (
-                <section className="glass-card doc-related">
-                    <CarouselComp
-                        categoryId={lessonDetail.categoryId}
-                        currentItemId={lessonDetail.id}
-                        type="lesson"
-                    />
-                </section>
-            )}
+                {lessonId && (
+                    <section className="glass-card doc-feedback">
+                        <RatingComp lessonId={lessonId} />
+                    </section>
+                )}
 
-            {lessonId && (
-                <section className="glass-card doc-feedback">
-                    <RatingComp lessonId={lessonId} />
-                </section>
-            )}
-
-            {lessonId && (
-                <section className="glass-card doc-feedback">
-                    <CommentComp lessonId={lessonId} />
-                </section>
-            )}
-        </div>
+                {lessonId && (
+                    <section className="glass-card doc-feedback">
+                        <CommentComp lessonId={lessonId} />
+                    </section>
+                )}
+            </div>
+        </>
     );
 };
 
