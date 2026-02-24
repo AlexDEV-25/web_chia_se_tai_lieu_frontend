@@ -6,6 +6,7 @@ import type { HideRequest } from '../models/request/HideRequest';
 import type { LessonStatsResponse } from '../models/response/LessonStatsResponse';
 import type { LessonFavoriteResponse } from '../models/response/LessonFavoriteResponse';
 import type { ContentRatingSummaryResponse } from '../models/response/ContentRatingSummaryResponse';
+import type { ContentReportSummaryResponse } from '../models/response/ContentReportSummaryResponse';
 
 export const stats = async () => {
     return await httpGet<APIResponse<LessonStatsResponse>>(`/lessons/stats`);
@@ -171,7 +172,7 @@ export const getAllLessonByUser = async (lessonId: number, userId: number) => {
 
 // lấy danh sách các document công khai cùng 1 category trừ document hiện tại và check xem đã favorite hay chưa
 export const getAllLessonByCategory = async (lessonId: number, categoryId: number) => {
-    return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons/category?lessonId=${lessonId}&categoryId=${categoryId}`);
+    return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons/category?categoryId=${categoryId}&lessonId=${lessonId}`);
 };
 
 // lấy số lượng lesson của chính mình
@@ -186,5 +187,9 @@ export const countLessonOfUser = async (userId: number) => {
 
 export const getAllLessonRatingSummary = async () => {
     return await httpGet<APIResponse<ContentRatingSummaryResponse>>(`/lessons/admin/rating`);
+};
+
+export const getAllLessonReportSummary = async () => {
+    return await httpGet<APIResponse<ContentReportSummaryResponse>>(`/lessons/admin/report`);
 };
 

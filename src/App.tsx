@@ -34,6 +34,8 @@ import Dashboard from './layouts/admin/dashboard/Dashboard';
 import CommentList from './layouts/admin/interactions/comments/CommentList';
 import Profile from './layouts/user/profile/Profile';
 import RatingList from './layouts/admin/interactions/ratings/RatingList';
+import ReportList from './layouts/admin/interactions/reports/ReportList';
+import ReportDetail from './layouts/admin/interactions/reports/ReportDetail';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -110,6 +112,8 @@ function App() {
             <Route path="/users/add" element={<UserAdd />} />
             <Route path="/comments" element={<CommentList />} />
             <Route path="/ratings" element={<RatingList />} />
+            <Route path="/reports" element={<ReportList />} />
+            <Route path="/reports/:type/:id" element={<ReportDetail />} />
           </Routes>
           <ChatGemini />
         </AppContext.Provider>

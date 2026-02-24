@@ -6,6 +6,7 @@ import type { HideRequest } from '../models/request/HideRequest';
 import type { DocumentStatsResponse } from '../models/response/DocumentStatsResponse';
 import type { DocumentFavoriteResponse } from '../models/response/DocumentFavoriteResponse';
 import type { ContentRatingSummaryResponse } from '../models/response/ContentRatingSummaryResponse';
+import type { ContentReportSummaryResponse } from '../models/response/ContentReportSummaryResponse';
 
 export const stats = async () => {
     return await httpGet<APIResponse<DocumentStatsResponse>>(`/documents/stats`);
@@ -138,4 +139,8 @@ export const countDocumentOfUser = async (userId: number) => {
 
 export const getAllDocumentRatingSummary = async () => {
     return await httpGet<APIResponse<ContentRatingSummaryResponse>>(`/documents/admin/rating`);
+};
+
+export const getAllDocumentReportSummary = async () => {
+    return await httpGet<APIResponse<ContentReportSummaryResponse>>(`/documents/admin/report`);
 };

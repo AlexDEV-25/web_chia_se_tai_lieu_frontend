@@ -18,7 +18,8 @@ const LeftSidebar: React.FC = () => {
         { label: 'Bài giảng', path: '/lessons', icon: '🎓' },
         { label: 'Người dùng', path: '/users', icon: '👥' },
         { label: 'Bình luận', path: '/comments', icon: '💬' },
-        { label: 'Đánh giá', path: '/ratings', icon: '⭐' }
+        { label: 'Đánh giá', path: '/ratings', icon: '⭐' },
+        { label: 'Báo cáo', path: '/reports', icon: '📋' }
     ];
 
     const isActive = (path: string) => {
@@ -36,7 +37,6 @@ const LeftSidebar: React.FC = () => {
                     <i className={`fa fa-${isCollapsed ? 'chevron-right' : 'chevron-left'}`} />
                 </button>
             </div>
-
             <nav className="sidebar-nav">
                 <ul className="nav-list">
                     {navItems.map((item) => (
