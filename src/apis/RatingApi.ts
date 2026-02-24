@@ -5,7 +5,7 @@ import type { RatingResponse } from "../models/response/RatingResponse";
 import type { RatingSummaryResponse } from "../models/response/RatingSummaryResponse";
 
 export const getRatingsByDocument = async (documentId: number) => {
-    return await httpGet<APIResponse<RatingResponse>>(`/ratings/document/${documentId}`);
+    return await httpGet<APIResponse<RatingResponse>>(`admin/ratings/document/${documentId}`);
 }
 
 export const createRatingDocument = async (data: RatingRequest) => {
@@ -17,7 +17,7 @@ export const getRatingsByLesson = async (lessonId: number) => {
 }
 
 export const createRatingLesson = async (data: RatingRequest) => {
-    return await httpPost<APIResponse<RatingResponse>>(`admin/ratings/lesson`, data);
+    return await httpPost<APIResponse<RatingResponse>>(`/ratings/lesson`, data);
 }
 
 export const getMyRatingByDocument = async (documentId: number) => {

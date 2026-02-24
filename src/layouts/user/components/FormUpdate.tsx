@@ -4,7 +4,7 @@ import type { LessonRequest } from "../../../models/request/LessonRequest";
 import type { DocumentResponse } from "../../../models/response/DocumentResponse";
 import type { LessonResponse } from "../../../models/response/LessonResponse";
 import type { CategoryResponse } from "../../../models/response/CategoryResponse";
-import { getAllCategory } from "../../../apis/CategoryApi";
+import { getAllPublicCategory } from "../../../apis/CategoryApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 
@@ -36,7 +36,7 @@ const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSav
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await getAllCategory();
+                const response = await getAllPublicCategory();
                 setCategories(response?.resultList ?? []);
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED_FORM);
@@ -156,17 +156,6 @@ const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSav
                         {errors.categoryId && (
                             <div className="error-message">{errors.categoryId}</div>
                         )}
-                    </div>
-
-                    <div className="form-group">
-                        <label>Hiển thị</label>
-                        <input
-                            type="checkbox"
-                            checked={!formData.hide}
-                            onChange={(e) =>
-                                handleInputChange("hide", !e.target.checked)
-                            }
-                        />
                     </div>
                 </div>
 

@@ -12,8 +12,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
-
-type VisibilityFilter = 'all' | 'visible' | 'hidden';
+import type { VisibilityFilter } from '../../types/common';
 
 const DocumentList: React.FC = () => {
     const [documents, setDocuments] = useState<DocumentResponse[]>([]);
@@ -121,8 +120,6 @@ const DocumentList: React.FC = () => {
                         eyebrow="Quản trị hệ thống"
                         title="Quản lý tài liệu"
                         description="Theo dõi và quản lý các tài liệu đã tải lên để đảm bảo chất lượng nội dung."
-                        addButtonText="Tải lên tài liệu"
-                        addButtonLink="/documents/add"
                         containerClass="document-page-header"
                         headingClass="document-heading"
                         eyebrowClass="document-eyebrow"

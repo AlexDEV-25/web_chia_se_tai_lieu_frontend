@@ -9,7 +9,7 @@ import { handleApiError } from "../../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../../constants/messages";
 import ReturnHeader from "../components/ReturnHeader";
 import ErrorAlert from "../../components/ErrorAlert";
-import Header from "../components/header";
+import Header from "../components/Header";
 
 const DocumentEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();

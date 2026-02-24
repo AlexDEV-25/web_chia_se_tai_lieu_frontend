@@ -17,7 +17,8 @@ const LeftSidebar: React.FC = () => {
         { label: 'Tài liệu', path: '/documents', icon: '📄' },
         { label: 'Bài giảng', path: '/lessons', icon: '🎓' },
         { label: 'Người dùng', path: '/users', icon: '👥' },
-        { label: 'Bình luận', path: '/comments', icon: '💬' }
+        { label: 'Bình luận', path: '/comments', icon: '💬' },
+        { label: 'Đánh giá', path: '/ratings', icon: '⭐' }
     ];
 
     const isActive = (path: string) => {

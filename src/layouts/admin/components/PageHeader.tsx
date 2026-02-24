@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 interface PageHeaderProps {
     title: string;
     description: string;
-    addButtonText: string;
-    addButtonLink: string;
+    addButtonText?: string;
+    addButtonLink?: string;
     eyebrow?: string;
     containerClass?: string;
     headingClass?: string;
@@ -31,9 +31,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 <h1>{title}</h1>
                 <p>{description}</p>
             </div>
-            <Link to={addButtonLink} className={buttonClass}>
-                {addButtonText}
-            </Link>
+            {addButtonText && addButtonLink && (
+                <Link to={addButtonLink} className={buttonClass}>
+                    {addButtonText}
+                </Link>
+            )}
         </div>
     );
 };

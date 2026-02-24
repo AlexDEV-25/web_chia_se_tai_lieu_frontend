@@ -99,6 +99,7 @@ export const ERROR_MESSAGES = {
 
     /* USER */
     LOGIN_REQUIRED_FOLLOW: "Vui lòng đăng nhập để theo dõi người dùng.",
+    HIDE_FAILED: "Không thể ẩn nội dung. Vui lòng thử lại.",
 };
 
 export const SUCCESS_MESSAGES = {

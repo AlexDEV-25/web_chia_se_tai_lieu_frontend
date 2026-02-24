@@ -131,8 +131,6 @@ const CommentList: React.FC = () => {
                     <PageHeader
                         title="Quản lý bình luận"
                         description="Theo dõi và kiểm duyệt các bình luận để giữ môi trường học tập lành mạnh."
-                        addButtonText="Làm mới dữ liệu"
-                        addButtonLink="#"
                         containerClass="category-page-header"
                         headingClass="category-heading"
                         eyebrowClass="category-eyebrow"

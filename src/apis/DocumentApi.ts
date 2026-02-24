@@ -5,6 +5,7 @@ import type { DocumentRequest } from "./../models/request/DocumentReques";
 import type { HideRequest } from '../models/request/HideRequest';
 import type { DocumentStatsResponse } from '../models/response/DocumentStatsResponse';
 import type { DocumentFavoriteResponse } from '../models/response/DocumentFavoriteResponse';
+import type { ContentRatingSummaryResponse } from '../models/response/ContentRatingSummaryResponse';
 
 export const stats = async () => {
     return await httpGet<APIResponse<DocumentStatsResponse>>(`/documents/stats`);
@@ -133,4 +134,8 @@ export const countMyDocument = async () => {
 // lấy số lượng document của user đã duyệt và không bị ẩn
 export const countDocumentOfUser = async (userId: number) => {
     return await httpGet<APIResponse<number>>(`/documents/count/${userId}`);
+};
+
+export const getAllDocumentRatingSummary = async () => {
+    return await httpGet<APIResponse<ContentRatingSummaryResponse>>(`/documents/admin/rating`);
 };

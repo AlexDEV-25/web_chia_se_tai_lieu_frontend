@@ -12,8 +12,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import type { LessonResponse } from '../../../../models/response/LessonResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
-
-type VisibilityFilter = 'all' | 'visible' | 'hidden';
+import type { VisibilityFilter } from '../../types/common';
 
 const LessonList: React.FC = () => {
     const [lessons, setLessons] = useState<LessonResponse[]>([]);
@@ -121,8 +120,6 @@ const LessonList: React.FC = () => {
                         eyebrow="Quản trị hệ thống"
                         title="Quản lý bài học"
                         description="Theo dõi và quản lý các bài học để đảm bảo chất lượng giáo dục."
-                        addButtonText="Thêm bài học"
-                        addButtonLink="/lessons/add"
                         containerClass="lesson-page-header"
                         headingClass="lesson-heading"
                         eyebrowClass="lesson-eyebrow"
