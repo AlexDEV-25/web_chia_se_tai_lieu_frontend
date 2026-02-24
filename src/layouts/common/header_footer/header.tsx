@@ -1,4 +1,4 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import UploadDropdown from "./components/UploadDropdown";
@@ -7,13 +7,13 @@ import ListNotification from "./components/ListNotification";
 interface Props {
     token: string | null
     setToken: (value: string | null) => void
-    keyWords: string
     setKeyWords: (value: string) => void
     roles: string[]
     setRoles: (value: string[]) => void
 }
-const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, roles, setRoles }) => {
+const Header: React.FC<Props> = ({ token, setToken, setKeyWords, roles, setRoles }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [valid, setValid] = useState<boolean>(false);
     const [TempKeyWords, setTempKeyWords] = useState("");
 
@@ -33,15 +33,24 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, roles
         }
     }, [token, roles]);
 
-    useEffect(() => {
-        setKeyWords(keyWords);
-    }, [keyWords]);
-
     const navLinks = useMemo(() => ([
         { to: "/", label: "Tài liệu" },
         { to: "/lesson", label: "Bài giảng" },
         { to: "/favorites", label: "Kho lưu" },
     ]), []);
+
+    const searchPlaceholder = location.pathname === "/lesson" ? "Tìm kiếm bài giảng..." : "Tìm kiếm tài liệu...";
+
+    const handleSearch = () => {
+        setKeyWords(TempKeyWords);
+        setTempKeyWords("");
+        if (location.pathname === "/lesson") {
+            navigate("/lesson");
+        } else {
+            navigate("/");
+        }
+    };
+
     return (
         <header className="site-header">
             <Link className="brand" to="/">
@@ -66,17 +75,15 @@ const Header: React.FC<Props> = ({ token, setToken, keyWords, setKeyWords, roles
 
                 <input
                     type="text"
-                    placeholder="Tìm kiếm tài liệu..."
+                    placeholder={searchPlaceholder}
                     value={TempKeyWords}
                     onChange={(e) => setTempKeyWords(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                 />
 
                 <button
                     type="button"
-                    onClick={() => {
-                        setKeyWords(TempKeyWords);
-                        navigate("/");
-                    }}
+                    onClick={handleSearch}
                 >
                     Tìm kiếm
                 </button>

@@ -77,7 +77,7 @@ function App() {
     <>
       <BrowserRouter>
         <AppContext.Provider value={ctxValue}>
-          <Header token={token} setToken={setToken} keyWords={keyWords} setKeyWords={setKeyWords} roles={roles} setRoles={setRoles} />
+          <Header token={token} setToken={setToken} setKeyWords={setKeyWords} roles={roles} setRoles={setRoles} />
           <Routes>
             <Route path="/" element={<Home keyWords={keyWords} />} />
             <Route path="/lesson" element={<Lesson keyWords={keyWords} />} />

@@ -10,8 +10,14 @@ export const stats = async () => {
     return await httpGet<APIResponse<DocumentStatsResponse>>(`/documents/stats`);
 };
 
-export const search = async (keyword: string, categoryId: number) => {
-    return await httpGet<APIResponse<DocumentFavoriteResponse>>(`/documents/search?keyword=${keyword}&categoryId=${categoryId}`);
+export const search = async (keyword: string, categoryId: number | null) => {
+    const url =
+        `/documents/search?` +
+        (keyword?.trim() ? `keyword=${keyword.trim()}` : "") +
+        (keyword?.trim() && categoryId != null ? "&" : "") +
+        (categoryId != null ? `categoryId=${categoryId}` : "");
+
+    return await httpGet<APIResponse<DocumentFavoriteResponse>>(url);
 };
 
 export const getDocumentById = async (id: number) => {

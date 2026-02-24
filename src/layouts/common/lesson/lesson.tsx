@@ -46,7 +46,7 @@ const Lesson = ({ keyWords }: Props) => {
                     const response = await getAllPublicLesson();
                     setLessons(response?.resultList ?? []);
                 } else {
-                    const categoryId = selectedCategory === "all" ? 0 : (selectedCategory as number);
+                    const categoryId = selectedCategory === "all" ? null : (selectedCategory as number);
                     const response = await search(keyWords, categoryId);
                     setLessons(response?.resultList ?? []);
                 }

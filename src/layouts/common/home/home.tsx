@@ -37,6 +37,7 @@ const Home = ({ keyWords }: Props) => {
         const fetchDocuments = async () => {
             setLoadingDocs(true);
             try {
+                console.log(keyWords);
                 const hasKeyword = keyWords.trim() !== "";
                 const hasCategory = selectedCategory !== "all";
 
@@ -44,8 +45,9 @@ const Home = ({ keyWords }: Props) => {
                     const response = await getAllPublicDocument();
                     setDocuments(response?.resultList ?? []);
                 } else {
-                    const categoryId = selectedCategory === "all" ? 0 : (selectedCategory as number);
+                    const categoryId = selectedCategory === "all" ? null : (selectedCategory as number);
                     const response = await search(keyWords, categoryId);
+                    console.log(keyWords, categoryId, response);
                     setDocuments(response?.resultList ?? []);
                 }
             } catch (err: any) {
