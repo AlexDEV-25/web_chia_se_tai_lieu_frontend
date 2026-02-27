@@ -13,13 +13,13 @@ const LeftSidebar: React.FC = () => {
 
     const navItems: NavItem[] = [
         { label: 'Bảng điều khiển', path: '/dashboard', icon: '📊' },
-        { label: 'Danh mục', path: '/categories', icon: '📁' },
-        { label: 'Tài liệu', path: '/documents', icon: '📄' },
-        { label: 'Bài giảng', path: '/lessons', icon: '🎓' },
-        { label: 'Người dùng', path: '/users', icon: '👥' },
-        { label: 'Bình luận', path: '/comments', icon: '💬' },
-        { label: 'Đánh giá', path: '/ratings', icon: '⭐' },
-        { label: 'Báo cáo', path: '/reports', icon: '📋' }
+        { label: 'Quản lý danh mục', path: '/categories', icon: '📁' },
+        { label: 'Quản lý tài liệu', path: '/documents', icon: '📄' },
+        { label: 'Quản lý bài giảng', path: '/lessons', icon: '🎓' },
+        { label: 'Quản lý người dùng', path: '/users', icon: '👥' },
+        { label: 'Quản lý bình luận', path: '/comments', icon: '💬' },
+        { label: 'Quản lý đánh giá', path: '/ratings', icon: '⭐' },
+        { label: 'Quản lý báo cáo', path: '/reports', icon: '📋' }
     ];
 
     const isActive = (path: string) => {
