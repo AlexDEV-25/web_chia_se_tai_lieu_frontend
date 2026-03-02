@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { ERROR_MESSAGES } from "../../../constants/messages";
@@ -42,15 +42,14 @@ const Profile: React.FC = () => {
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
     const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
     const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
-
-    const fetchFollowerCount = async () => {
+    const fetchFollowerCount = useCallback(async () => {
         try {
             const response = await getFollowCount(userId);
             setFollowerCount(response.result);
         } catch (err: any) {
             setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_LOAD_FAILED))
         }
-    };
+    }, [userId]);
 
     const handleToggleFavoriteDocument = async (doc: DocumentFavoriteResponse) => {
         if (!isAuthenticated) {
@@ -138,7 +137,7 @@ const Profile: React.FC = () => {
         }
     };
 
-    const fetchCheckFollowed = async () => {
+    const fetchCheckFollowed = useCallback(async () => {
         if (!isAuthenticated) return;
         try {
             const response = await checkFollowed(userId);
@@ -146,9 +145,9 @@ const Profile: React.FC = () => {
         } catch (err: any) {
             setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_LOAD_FAILED))
         }
-    };
+    }, [userId]);
 
-    const fetchCheckIsMe = async () => {
+    const fetchCheckIsMe = useCallback(async () => {
         if (!isAuthenticated) return;
         try {
             const response = await checkIsMe(userId);
@@ -156,33 +155,33 @@ const Profile: React.FC = () => {
         } catch (err: any) {
             setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_LOAD_FAILED))
         }
-    };
+    }, [userId]);
 
-    const fetchUserInfo = async () => {
+    const fetchUserInfo = useCallback(async () => {
         try {
             const response = await getInfo(userId);
             setUser(response.result);
         } catch (err: any) {
             setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_LOAD_FAILED))
         }
-    };
+    }, [userId]);
 
-    const fetchCountDocument = async () => {
+    const fetchCountDocument = useCallback(async () => {
         try {
             const response = await countDocumentOfUser(userId);
             setDocumentQuantity(response?.result || 0);
         } catch (err: any) {
             setError(handleApiError(err, ERROR_MESSAGES.COUNT_DOCUMENT_ERROR))
         }
-    };
-    const fetchCountLesson = async () => {
+    }, [userId]);
+    const fetchCountLesson = useCallback(async () => {
         try {
             const response = await countLessonOfUser(userId);
             setLessonQuantity(response?.result || 0);
         } catch (err: any) {
             setError(handleApiError(err, ERROR_MESSAGES.COUNT_LESSON_ERROR))
         }
-    };
+    }, [userId]);
 
     const handleFollow = async () => {
         if (!isAuthenticated) {
@@ -234,13 +233,13 @@ const Profile: React.FC = () => {
             setLoading(false);
         };
         initProfile();
-    }, [userId, documents, lessons]);
+    }, [userId]);
 
     useEffect(() => {
         loadData();
     }, [activeTab]);
 
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
         setError(null);
 
@@ -257,7 +256,7 @@ const Profile: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [activeTab, userId]);
 
     return (
         <div className="profile-container">

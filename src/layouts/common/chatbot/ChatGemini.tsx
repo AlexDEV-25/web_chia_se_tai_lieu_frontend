@@ -1,9 +1,8 @@
-import { useState, useRef, useEffect, useContext } from "react";
+import { useState, useRef, useEffect } from "react";
 import { chatbot, getAllHistoryByUser } from "../../../apis/ChatGemini";
 import type { ChatHistoryResponse } from "../../../models/response/ChatHistoryResponse";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import { UserContext } from "../../../AppContext";
 import ChatAuthRequired from "./component/ChatAuthRequired";
 import Loading from "./component/Loading";
 
@@ -15,8 +14,6 @@ interface Message {
 }
 
 const ChatGemini: React.FC = () => {
-    const userCtx = useContext(UserContext);
-    const currentUser = userCtx?.currentUser ?? null;
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputMessage, setInputMessage] = useState("");
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -27,7 +24,7 @@ const ChatGemini: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const token = localStorage.getItem("token");
-    const isAuthenticated = Boolean(currentUser && token);
+    const isAuthenticated = Boolean(token);
 
     const loadChatHistory = async () => {
         setIsLoadingHistory(true);
