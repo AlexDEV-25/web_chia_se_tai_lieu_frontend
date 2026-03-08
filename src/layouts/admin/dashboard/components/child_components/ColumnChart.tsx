@@ -14,23 +14,26 @@ interface ColumnChartProps {
 }
 
 const ColumnChart: React.FC<ColumnChartProps> = ({ data, dataKey, title, color = '#3b82f6' }) => {
-    console.log('ColumnChart data:', data, 'dataKey:', dataKey);
     const maxValue = Math.max(...data.map(item => item[dataKey] || 0), 1);
-    console.log('maxValue:', maxValue);
+    const chartHeight = 280;
+    const steps = 10;
 
     return (
         <ChartCard title={title}>
             <div className="column-chart">
                 {data.map((item, index) => {
-                    const percentage = Math.max((item[dataKey] / maxValue) * 100, 5); // Min 5% to show small bars
-                    console.log(`Item ${index}: value=${item[dataKey]}, percentage=${percentage}%`);
+                    const value = Number(item[dataKey] ?? 0);
+                    const ratio = Math.min(Math.max(value / maxValue, 0), 1);
+                    const steppedRatio = Math.ceil(ratio * steps) / steps;
+                    const heightPx = Math.round(steppedRatio * chartHeight);
+                    const minHeightPx = value > 0 ? 8 : 0;
                     return (
                         <div key={index} className="column-item">
                             <div className="column-bar-wrapper">
                                 <div
                                     className="column-bar"
                                     style={{
-                                        height: `${percentage}%`,
+                                        height: `${Math.max(heightPx, minHeightPx)}px`,
                                         backgroundColor: color
                                     }}
                                     title={`${item.day}: ${item[dataKey]}`}
