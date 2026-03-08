@@ -26,9 +26,9 @@ const OverviewComp: React.FC = () => {
                     lessonLast7Days()
                 ]);
                 setUsers(usersData?.resultList ?? []);
-                setUserStats(userStatsData?.result ? [userStatsData.result] : []);
-                setDocumentStats(documentStatsData?.result ? [documentStatsData.result] : []);
-                setLessonStats(lessonStatsData?.result ? [lessonStatsData.result] : []);
+                setUserStats(userStatsData?.resultList ?? []);
+                setDocumentStats(documentStatsData?.resultList ?? []);
+                setLessonStats(lessonStatsData?.resultList ?? []);
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.LOAD_FAILED);
                 console.error(message);
@@ -41,7 +41,7 @@ const OverviewComp: React.FC = () => {
     }, []);
 
     const calculateStats = () => {
-        const today = new Date().toLocaleDateString('vi-VN');
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
         const usersToday = userStats.find(stat => stat.date === today)?.total ?? 0;
         const documentsToday = documentStats.find(stat => stat.date === today)?.total ?? 0;

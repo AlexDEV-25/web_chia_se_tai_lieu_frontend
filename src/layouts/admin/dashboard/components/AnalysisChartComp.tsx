@@ -25,9 +25,9 @@ const AnalysisChartComp: React.FC = () => {
                     lessonLast7Days(),
                     documentByCategory()
                 ]);
-                setUserStats(userStatsData?.result ? [userStatsData.result] : []);
-                setDocumentStats(documentStatsData?.result ? [documentStatsData.result] : []);
-                setLessonStats(lessonStatsData?.result ? [lessonStatsData.result] : []);
+                setUserStats(userStatsData?.resultList ?? []);
+                setDocumentStats(documentStatsData?.resultList ?? []);
+                setLessonStats(lessonStatsData?.resultList ?? []);
                 setDocumentCategories(documentCategoriesData?.resultList ?? []);
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.LOAD_FAILED);
@@ -45,13 +45,13 @@ const AnalysisChartComp: React.FC = () => {
         if (documentStats.length === 0) {
             // Fallback to empty data if no stats
             return Array.from({ length: 7 }, (_, i) => ({
-                day: `Ngày ${new Date().getDate() - (6 - i)}`,
+                day: `Ngày ${i + 1}`,
                 upload: 0
             }));
         }
 
-        return documentStats.map(stat => ({
-            day: `Ngày ${new Date(stat.date).getDate()}`,
+        return documentStats.map((stat, index) => ({
+            day: `Ngày ${index + 1}`,
             upload: stat.total
         }));
     };
@@ -61,13 +61,13 @@ const AnalysisChartComp: React.FC = () => {
         if (lessonStats.length === 0) {
             // Fallback to empty data if no stats
             return Array.from({ length: 7 }, (_, i) => ({
-                day: `Ngày ${new Date().getDate() - (6 - i)}`,
+                day: `Ngày ${i + 1}`,
                 upload: 0
             }));
         }
 
-        return lessonStats.map(stat => ({
-            day: `Ngày ${new Date(stat.date).getDate()}`,
+        return lessonStats.map((stat, index) => ({
+            day: `Ngày ${index + 1}`,
             upload: stat.total
         }));
     };
@@ -77,13 +77,13 @@ const AnalysisChartComp: React.FC = () => {
         if (userStats.length === 0) {
             // Fallback to empty data if no stats
             return Array.from({ length: 7 }, (_, i) => ({
-                day: `Ngày ${new Date().getDate() - (6 - i)}`,
+                day: `Ngày ${i + 1}`,
                 người_dùng: 0
             }));
         }
 
-        return userStats.map(stat => ({
-            day: `Ngày ${new Date(stat.date).getDate()}`,
+        return userStats.map((stat, index) => ({
+            day: `Ngày ${index + 1}`,
             người_dùng: stat.total
         }));
     };
