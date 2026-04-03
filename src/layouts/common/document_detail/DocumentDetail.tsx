@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import CenterComp from "./components/CenterComp";
 import { downloadFile, getPublicDocumentById, increaseDownload, increaseView } from "../../../apis/DocumentApi";
-import type { DocumentResponse } from "../../../models/response/DocumentResponse";
+import type { DocumentDetailResponse } from "../../../models/response/document/DocumentDetailResponse";
 import CommentComp from "../components/CommentComp";
 import LeftSidebar from "./components/LeftSidebar";
 import RightSidebar from "./components/RightSidebar";
 import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
 import ReportComp from "../components/ReportComp";
-import { addFavoriteDocument, checkDocumentFavorite, removeDocumentFavorite } from "../../../apis/FavoriteApi";
+import { addFavorite, checkDocumentFavorite, removeDocumentFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import AlertDialog from "../components/AlertDialog";
@@ -21,7 +21,7 @@ const DocumentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const docId = Number(id);
 
-    const [documentDetail, setDocumentDetail] = useState<DocumentResponse | null>(null);
+    const [documentDetail, setDocumentDetail] = useState<DocumentDetailResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -116,7 +116,7 @@ const DocumentDetail: React.FC = () => {
                 await removeDocumentFavorite(docId);
                 setIsFavorite(false);
             } else {
-                await addFavoriteDocument({
+                await addFavorite({
                     contentId: docId,
                     type: 'DOCUMENT',
                 });

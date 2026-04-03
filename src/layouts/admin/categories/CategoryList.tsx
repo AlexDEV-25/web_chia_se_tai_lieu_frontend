@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAllCategory, hideCategory } from '../../../apis/CategoryApi';
-import type { CategoryResponse } from '../../../models/response/CategoryResponse';
+import type { CategoryResponse } from '../../../models/response/category/CategoryResponse';
 import PageHeader from '../components/PageHeader';
 import Stats from '../components/Stats';
 import Filter from '../components/Filter';

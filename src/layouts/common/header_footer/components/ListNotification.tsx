@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getByReceiver, read, readAll } from "../../../../apis/UserNotificationApi";
-import type { UserNotificationResponse } from "../../../../models/response/UserNotificationResponse";
+import type { UserNotificationResponse } from "../../../../models/response/usernotification/UserNotificationResponse";
 import { handleApiError } from "../../../../utils/errorHandler";
 
 const ListNotification: React.FC = () => {

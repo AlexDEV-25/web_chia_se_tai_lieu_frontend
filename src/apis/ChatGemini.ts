@@ -1,7 +1,7 @@
-import type { APIResponse } from './../models/response/APIResponse';
+import type { APIResponse } from '../models/response/APIResponse';
 import api, { httpGet } from "./HttpClient";
-import type { ChatHistoryResponse } from "./../models/response/ChatHistoryResponse";
-import type { CommentResponse } from '../models/response/CommentResponse';
+import type { ChatHistoryResponse } from "../models/response/ai/ChatHistoryResponse";
+import type { CommentResponse } from '../models/response/comment/CommentResponse';
 
 export const chatbot = async (file: File, message: string): Promise<APIResponse<string>> => {
     const formData = new FormData();
@@ -15,8 +15,8 @@ export const chatbot = async (file: File, message: string): Promise<APIResponse<
     return response.data;
 }
 
-export const filterCommnent = async () => {
-    return await httpGet<APIResponse<CommentResponse>>(`/chats/admin/filter-comment`) as APIResponse<CommentResponse>;
+export const filterComment = async () => {
+    return await httpGet<APIResponse<CommentResponse>>(`/comments/admin/filter-comment`);
 }
 
 export const getAllHistoryByUser = async () => {

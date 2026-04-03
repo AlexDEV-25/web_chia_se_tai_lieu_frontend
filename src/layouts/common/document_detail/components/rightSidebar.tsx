@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { getAllDocumentByUser } from "../../../../apis/DocumentApi";
 import {
-    addFavoriteDocument,
+    addFavorite,
     removeDocumentFavorite,
 } from "../../../../apis/FavoriteApi";
-import type { DocumentFavoriteResponse } from "../../../../models/response/DocumentFavoriteResponse";
+import type { DocumentFavoriteResponse } from "../../../../models/response/document/DocumentFavoriteResponse";
 import GrindItem from "../../components/GrindItem";
 import { handleApiError } from "../../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../../constants/messages";
@@ -78,7 +78,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                     )
                 );
             } else {
-                await addFavoriteDocument({
+                await addFavorite({
                     contentId: doc.id,
                     type: "DOCUMENT",
                 });

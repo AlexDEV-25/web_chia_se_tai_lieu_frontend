@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 
 import { getAllLessonByUser } from "../../../../apis/LessonApi";
 import {
-    addFavoriteLesson,
+    addFavorite,
     removeLessonFavorite,
 } from "../../../../apis/FavoriteApi";
 import GrindItem from "../../components/GrindItem";
 import { handleApiError } from "../../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../../constants/messages";
 import AlertDialog from "../../components/AlertDialog";
-import type { LessonFavoriteResponse } from "../../../../models/response/LessonFavoriteResponse";
+import type { LessonFavoriteResponse } from "../../../../models/response/lesson/LessonFavoriteResponse";
 
 interface LessonRightSidebarProps {
     userId: number;
@@ -84,7 +84,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({
                     )
                 );
             } else {
-                await addFavoriteLesson({
+                await addFavorite({
                     contentId: lesson.id,
                     type: "LESSON",
                 });

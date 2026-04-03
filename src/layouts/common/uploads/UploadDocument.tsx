@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import type { DocumentRequest } from "./../../../models/request/DocumentReques";
+import type { DocumentRequest } from "../../../models/request/DocumentRequest";
 import { getAllPublicCategory } from "./../../../apis/CategoryApi";
 import { uploadDocument } from "./../../../apis/DocumentApi";
-import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
+import type { CategoryResponse } from "./../../../models/response/category/CategoryResponse";
 import { useRef } from "react";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../../constants/messages";

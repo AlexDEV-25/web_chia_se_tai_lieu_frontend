@@ -1,26 +1,26 @@
 import { useState } from "react";
 import FormUpdate, { type FormDataType } from "./FormUpdate";
 import DeleteAlert from "./DeleteAlert";
-import type { DocumentResponse } from "../../../models/response/DocumentResponse";
+import type { DocumentUserResponse } from "../../../models/response/document/DocumentUserResponse";
 import { updateMyDocument } from "../../../apis/DocumentApi";
 
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import type { DocumentRequest } from "../../../models/request/DocumentReques";
+import type { DocumentRequest } from "../../../models/request/DocumentRequest";
 
 interface Props {
-    documents: DocumentResponse[];
+    documents: DocumentUserResponse[];
     onDelete: (id: number) => void;
     onUpdate: () => void;
 }
 
 const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
-    const [editingDocument, setEditingDocument] = useState<DocumentResponse | null>(null);
+    const [editingDocument, setEditingDocument] = useState<DocumentUserResponse | null>(null);
     const [showEditForm, setShowEditForm] = useState(false);
-    const [deletingDocument, setDeletingDocument] = useState<DocumentResponse | null>(null);
+    const [deletingDocument, setDeletingDocument] = useState<DocumentUserResponse | null>(null);
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
-    const handleEdit = (document: DocumentResponse) => {
+    const handleEdit = (document: DocumentUserResponse) => {
         setEditingDocument(document);
         setShowEditForm(true);
     };
@@ -44,7 +44,7 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
         setEditingDocument(null);
     };
 
-    const handleDelete = (document: DocumentResponse) => {
+    const handleDelete = (document: DocumentUserResponse) => {
         setDeletingDocument(document);
         setShowDeleteAlert(true);
     };

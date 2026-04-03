@@ -1,7 +1,7 @@
-import type { APIResponse } from './../models/response/APIResponse';
+import type { APIResponse } from '../models/response/APIResponse';
 import { httpGet, httpPost, httpPut, httpDelete } from "./HttpClient";
-import type { CategoryResponse } from "./../models/response/CategoryResponse";
-import type { CategoryRequest } from "./../models/request/CategoryRequest"
+import type { CategoryResponse } from "../models/response/category/CategoryResponse";
+import type { CategoryRequest } from "../models/request/CategoryRequest"
 import type { HideRequest } from '../models/request/HideRequest';
 
 export const getAllCategory = async () => {

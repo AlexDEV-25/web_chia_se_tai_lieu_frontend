@@ -3,12 +3,11 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
     getCommentsByDocument,
-    createDocumentComment,
+    createComment,
     getCommentsByLesson,
-    createLessonComment,
 } from "../../../apis/CommentApi";
 import type { CommentRequest } from "../../../models/request/CommentRequest";
-import type { CommentTreeResponse } from "../../../models/response/CommentTreeResponse";
+import type { CommentTreeResponse } from "../../../models/response/comment/CommentTreeResponse";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import CommentItemComp from "./CommentItemComp";
@@ -71,9 +70,8 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
             contentId: targetId,
             type: isLessonMode ? "LESSON" : "DOCUMENT",
         };
-        isLessonMode
-            ? await createLessonComment(payload)
-            : await createDocumentComment(payload);
+        await createComment(payload)
+
 
         await fetchComments();
     };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { getAllCategory } from "../../../../apis/CategoryApi";
-import type { CategoryResponse } from "../../../../models/response/CategoryResponse";
+import type { CategoryResponse } from "../../../../models/response/category/CategoryResponse";
 
 type ContentType = "document" | "lesson";
 

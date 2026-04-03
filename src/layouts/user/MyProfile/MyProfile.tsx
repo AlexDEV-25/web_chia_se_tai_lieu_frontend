@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../../apis/HttpClient";
-import type { UserResponse } from "../../../models/response/UserResponse";
+import type { UserResponse } from "../../../models/response/user/UserResponse";
 import { getMyInfo } from "../../../apis/UserApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";

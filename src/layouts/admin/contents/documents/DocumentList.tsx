@@ -9,19 +9,19 @@ import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
 import LeftSidebar from '../../components/LeftSidebar';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import type { DocumentResponse } from '../../../../models/response/DocumentResponse';
+import type { DocumentAdminResponse } from '../../../../models/response/document/DocumentAdminResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
 import type { VisibilityFilter } from '../../types/common';
 
 const DocumentList: React.FC = () => {
-    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
+    const [documents, setDocuments] = useState<DocumentAdminResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
-    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; action: 'toggle' | 'delete'; item: DocumentResponse | null }>({ isOpen: false, action: 'toggle', item: null });
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; action: 'toggle' | 'delete'; item: DocumentAdminResponse | null }>({ isOpen: false, action: 'toggle', item: null });
 
     const fetchDocuments = useCallback(async () => {
         setLoading(true);
@@ -41,11 +41,11 @@ const DocumentList: React.FC = () => {
         fetchDocuments();
     }, [fetchDocuments]);
 
-    const handleToggleVisibility = useCallback((document: DocumentResponse) => {
+    const handleToggleVisibility = useCallback((document: DocumentAdminResponse) => {
         setConfirmDialog({ isOpen: true, action: 'toggle', item: document });
     }, []);
 
-    const handleDelete = useCallback((document: DocumentResponse) => {
+    const handleDelete = useCallback((document: DocumentAdminResponse) => {
         setConfirmDialog({ isOpen: true, action: 'delete', item: document });
     }, []);
 

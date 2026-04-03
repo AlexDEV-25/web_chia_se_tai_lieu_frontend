@@ -8,9 +8,9 @@ import LoadingState from '../../components/LoadingState';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { getAllComments, hideComment, deleteComment } from '../../../../apis/CommentApi';
-import { filterCommnent } from '../../../../apis/ChatGemini';
-import type { CommentResponse } from '../../../../models/response/CommentResponse';
+import { getAllComments, hideComment } from '../../../../apis/CommentApi';
+import { filterComment } from '../../../../apis/ChatGemini';
+import type { CommentResponse } from '../../../../models/response/comment/CommentResponse';
 import type { HideRequest } from '../../../../models/request/HideRequest';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
@@ -24,7 +24,6 @@ const CommentList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
     const [isInvalidView, setIsInvalidView] = useState<boolean>(false);
     const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; type: 'visibility' | 'delete'; comment?: CommentResponse } | null>(null);
 
@@ -33,7 +32,7 @@ const CommentList: React.FC = () => {
         setError(null);
         try {
             if (invalidOnly) {
-                const response = await filterCommnent();
+                const response = await filterComment();
                 const list = response.resultList ?? (response.result ? [response.result] : []);
                 setComments(list as CommentResponse[]);
             } else {
@@ -60,9 +59,6 @@ const CommentList: React.FC = () => {
         []
     );
 
-    const handleDelete = useCallback((comment: CommentResponse) => {
-        setConfirmDialog({ isOpen: true, type: 'delete', comment });
-    }, []);
 
     const handleConfirm = useCallback(async () => {
         if (!confirmDialog?.comment) return;
@@ -83,17 +79,6 @@ const CommentList: React.FC = () => {
                 setError(message);
             } finally {
                 setUpdatingId(null);
-            }
-        } else if (type === 'delete') {
-            try {
-                setDeletingId(id);
-                await deleteComment(id);
-                setComments((prev) => prev.filter((item) => item.id !== id));
-            } catch (err: any) {
-                const message = handleApiError(err, ERROR_MESSAGES.DELETE_FAILED);
-                setError(message);
-            } finally {
-                setDeletingId(null);
             }
         }
 
@@ -217,18 +202,11 @@ const CommentList: React.FC = () => {
                                                 <div className="category-row-actions">
                                                     <button
                                                         onClick={() => handleToggleVisibility(c)}
-                                                        disabled={updatingId === c.id || deletingId === c.id}
+                                                        disabled={updatingId === c.id}
                                                         className={`category-btn ${c.hide ? 'primary' : 'danger'}`}
                                                     >
                                                         {updatingId === c.id ? 'Đang cập nhật...'
                                                             : c.hide ? 'Hiển thị' : 'Ẩn'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(c)}
-                                                        disabled={deletingId === c.id}
-                                                        className="category-btn danger"
-                                                    >
-                                                        {deletingId === c.id ? 'Đang xóa...' : 'Xóa'}
                                                     </button>
                                                 </div>
                                             </td>

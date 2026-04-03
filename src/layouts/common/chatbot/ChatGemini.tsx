@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { chatbot, getAllHistoryByUser } from "../../../apis/ChatGemini";
-import type { ChatHistoryResponse } from "../../../models/response/ChatHistoryResponse";
+import type { ChatHistoryResponse } from "../../../models/response/ai/ChatHistoryResponse";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import ChatAuthRequired from "./component/ChatAuthRequired";

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-    createRatingDocument,
-    createRatingLesson,
+    createRating,
     getRatingSummaryByDocument,
     getRatingSummaryByLesson,
     getMyRatingByDocument,
@@ -9,7 +8,7 @@ import {
 } from "../../../apis/RatingApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import type { RatingSummaryResponse } from "../../../models/response/RatingSummaryResponse";
+import type { RatingSummaryResponse } from "../../../models/response/rating/RatingSummaryResponse";
 import AlertDialog from "./AlertDialog";
 
 interface RatingCompProps {
@@ -111,24 +110,24 @@ const RatingComp: React.FC<RatingCompProps> = ({ docId, lessonId }) => {
         setSubmitting(true);
         try {
             if (isLessonMode) {
-                const response = await createRatingLesson({
+                const response = await createRating({
                     rating: selectedStar,
                     contentId: targetId,
                     type: 'LESSON',
                 });
                 if (response.result) {
-                    setUserRatingValue(selectedStar);
+                    setUserRatingValue(response.result.rating);
                     setSelectedStar(null);
                     fetchRatingSummary(); // Refetch summary to update total and average
                 }
             } else {
-                const response = await createRatingDocument({
+                const response = await createRating({
                     rating: selectedStar,
                     contentId: targetId,
                     type: 'DOCUMENT',
                 });
                 if (response.result) {
-                    setUserRatingValue(selectedStar);
+                    setUserRatingValue(response.result.rating);
                     setSelectedStar(null);
                     fetchRatingSummary(); // Refetch summary to update total and average
                 }

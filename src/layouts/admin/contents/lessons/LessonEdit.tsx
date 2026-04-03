@@ -4,7 +4,7 @@ import { getLessonById, updateLesson } from "../../../../apis/LessonApi";
 import VideoComp from "../../../common/components/VideoComp";
 import DocumentViewComp from "../../../common/components/DocumentViewComp";
 import RightProperties from "../components/RightProperties";
-import type { LessonResponse } from "../../../../models/response/LessonResponse";
+import type { LessonDetailResponse } from "../../../../models/response/lesson/LessonDetailResponse";
 import type { LessonRequest } from "../../../../models/request/LessonRequest";
 import { handleApiError } from "../../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../../constants/messages";
@@ -16,7 +16,7 @@ const LessonEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const [lesson, setLesson] = useState<LessonResponse | null>(null);
+    const [lesson, setLesson] = useState<LessonDetailResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);

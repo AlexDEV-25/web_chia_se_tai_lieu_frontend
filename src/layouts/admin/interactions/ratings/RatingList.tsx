@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAllDocumentRatingSummary, hideDocument } from '../../../../apis/DocumentApi';
 import { getAllLessonRatingSummary, hideLesson } from '../../../../apis/LessonApi';
-import type { ContentRatingSummaryResponse } from '../../../../models/response/ContentRatingSummaryResponse';
+import type { RatingAdminResponse } from '../../../../models/response/rating/RatingAdminResponse';
 import type { HideRequest } from '../../../../models/request/HideRequest';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import LeftSidebar from '../../components/LeftSidebar';
@@ -11,7 +11,7 @@ import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
 
 const RatingList: React.FC = () => {
-    const [data, setData] = useState<(ContentRatingSummaryResponse & { hide: boolean })[]>([]);
+    const [data, setData] = useState<(RatingAdminResponse & { hide: boolean })[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'document' | 'lesson'>('document');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -48,7 +48,7 @@ const RatingList: React.FC = () => {
         fetchData();
     }, []);
 
-    const handleToggleVisibility = (item: ContentRatingSummaryResponse & { hide: boolean }) => {
+    const handleToggleVisibility = (item: RatingAdminResponse & { hide: boolean }) => {
         if (updatingId) return;
         setConfirmDialog({
             isOpen: true,
@@ -61,7 +61,7 @@ const RatingList: React.FC = () => {
         });
     };
 
-    const toggleItem = async (item: ContentRatingSummaryResponse & { hide: boolean }) => {
+    const toggleItem = async (item: RatingAdminResponse & { hide: boolean }) => {
         setUpdatingId(item.id);
         try {
             const newHide = !item.hide;

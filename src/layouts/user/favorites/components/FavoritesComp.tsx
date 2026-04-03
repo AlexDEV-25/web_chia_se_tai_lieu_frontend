@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { FavoriteResponse } from "../../../../models/response/FavoriteResponse";
+import type { FavoriteResponse } from "../../../../models/response/favorite/FavoriteResponse";
 
 type FavoriteType = "DOCUMENT" | "LESSON";
 

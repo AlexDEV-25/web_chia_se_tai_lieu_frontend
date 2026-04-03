@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
 import { getAllLessonByCategory } from "../../../apis/LessonApi";
-import { addFavoriteDocument, removeDocumentFavorite, addFavoriteLesson, removeLessonFavorite } from "../../../apis/FavoriteApi";
+import { addFavorite, removeDocumentFavorite, removeLessonFavorite } from "../../../apis/FavoriteApi";
 import type { FavoriteRequest } from "../../../models/request/FavoriteRequest";
 import GrindItem from "./GrindItem";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import type { DocumentFavoriteResponse } from "../../../models/response/DocumentFavoriteResponse";
-import type { LessonFavoriteResponse } from "../../../models/response/LessonFavoriteResponse";
+import type { DocumentFavoriteResponse } from "../../../models/response/document/DocumentFavoriteResponse";
+import type { LessonFavoriteResponse } from "../../../models/response/lesson/LessonFavoriteResponse";
 import AlertDialog from "./AlertDialog";
 
 interface CarouselProps {
@@ -83,21 +83,15 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                     )
                 );
             } else {
-                let data: FavoriteRequest;
-                if (type === 'document') {
-                    data = {
+                type === "document"
+                    ? await addFavorite({
                         contentId: item.id,
                         type: 'DOCUMENT',
-                    };
-                    await addFavoriteDocument(data);
-                } else {
-                    data = {
+                    })
+                    : await addFavorite({
                         contentId: item.id,
                         type: 'LESSON',
-                    };
-                    await addFavoriteLesson(data);
-                }
-
+                    });
                 setItems((prev) =>
                     prev.map((i) =>
                         i.id === item.id ? { ...i, favorite: true } : i

@@ -1,7 +1,11 @@
 import { httpGet, httpPost, httpPut } from "./HttpClient";
 import type { APIResponse } from "../models/response/APIResponse";
-import type { UserResponse } from "../models/response/UserResponse";
+import type { UserResponse } from "../models/response/user/UserResponse";
+import type { UserBioResponse } from "../models/response/user/UserBioResponse";
 import type { UserRequest } from "../models/request/UserRequest";
+import type { ChangePasswordRequest } from "../models/request/ChangePasswordRequest";
+import type { ChangeUserInfoRequest } from "../models/request/ChangeUserInfoRequest";
+import api from "./HttpClient";
 import type { HideRequest } from "../models/request/HideRequest";
 
 export const checkEmailExist = async (email: string) => {
@@ -16,26 +20,37 @@ export const getMyInfo = async () => {
     return await httpGet<APIResponse<UserResponse>>(`/users/my-info`);
 }
 
-export const checkPasswordExist = async () => {
-    return await httpGet<APIResponse<boolean>>(`/users/check-password`);
+export const getUserInfo = async (id: number) => {
+    return await httpGet<APIResponse<UserBioResponse>>(`/users/info/${id}`);
 }
 
-export const createPassword = async (password: string) => {
-    return await httpPost<APIResponse<void>>(`/users/create-password`, { password });
+export const updateMyInfo = async (avt: File | null, data: ChangeUserInfoRequest) => {
+    const formData = new FormData();
+    if (avt) {
+        formData.append("avt", avt);
+    }
+    formData.append("data", JSON.stringify(data));
+
+    const response = await api.put<APIResponse<UserResponse>>("/users/my-info", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return response.data;
+}
+
+export const changePassword = async (data: ChangePasswordRequest) => {
+    return await httpPut<APIResponse<void>>(`/users/change-password`, data);
+}
+
+// Admin APIs
+export const getAllUser = async () => {
+    return await httpGet<APIResponse<UserResponse>>(`/users/admin`);
 }
 
 export const createUser = async (data: UserRequest) => {
-    return await httpPost<APIResponse<UserResponse>>(`/users`, data);
+    return await httpPost<APIResponse<UserResponse>>(`/users/admin`, data);
 }
 
 export const hideUser = async (id: number, data: HideRequest) => {
-    return await httpPut<APIResponse<UserResponse>>(`/users/hide/${id}`, data);
-}
-
-export const getAllUser = async () => {
-    return await httpGet<APIResponse<UserResponse>>(`/users`);
-}
-
-export const getInfo = async (id: number) => {
-    return await httpGet<APIResponse<UserResponse>>(`/users/info/${id}`);
+    return await httpPut<APIResponse<UserResponse>>(`/users/admin/hide/${id}`, data);
 }

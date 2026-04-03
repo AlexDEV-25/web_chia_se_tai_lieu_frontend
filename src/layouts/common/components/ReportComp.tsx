@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ReactDOM from 'react-dom';
-import { documentReport, lessonReport } from "../../../apis/ReportApi";
+import { report } from "../../../apis/ReportApi";
 
 import { handleApiError } from "../../../utils/errorHandler";
 import type { ReportRequest } from "../../../models/request/ReportRequest";
@@ -82,11 +82,7 @@ const ReportComp: React.FC<ReportCompProps> = ({ contentId, contentType }) => {
                 type: contentType,
             };
 
-            if (contentType === "DOCUMENT") {
-                await documentReport(reportData);
-            } else {
-                await lessonReport(reportData);
-            }
+            await report(reportData);
 
             setSubmitMessage({
                 type: "success",

@@ -3,13 +3,13 @@ import { Link, useParams } from "react-router-dom";
 import VideoComp from "../components/VideoComp";
 import DocumentComp from "./components/DocumentComp";
 import { downloadDocument, downloadSubFile, getPublicLessonById, increaseView } from "../../../apis/LessonApi";
-import type { LessonResponse } from "../../../models/response/LessonResponse";
+import type { LessonDetailResponse } from "../../../models/response/lesson/LessonDetailResponse";
 import LessonRightSidebar from "./components/LessonRightSidebar";
 import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
 import CommentComp from "../components/CommentComp";
 import ReportComp from "../components/ReportComp";
-import { addFavoriteLesson, checkLessonFavorite, removeLessonFavorite } from "../../../apis/FavoriteApi";
+import { addFavorite, checkLessonFavorite, removeLessonFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import AlertDialog from "../components/AlertDialog";
@@ -21,7 +21,7 @@ const LessonDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const lessonId = Number(id);
 
-    const [lessonDetail, setLessonDetail] = useState<LessonResponse | null>(null);
+    const [lessonDetail, setLessonDetail] = useState<LessonDetailResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [downloadingDoc, setDownloadingDoc] = useState(false);
@@ -110,7 +110,7 @@ const LessonDetail: React.FC = () => {
                 await removeLessonFavorite(lessonId);
                 setIsFavorite(false);
             } else {
-                await addFavoriteLesson({
+                await addFavorite({
                     contentId: lessonId,
                     type: 'LESSON',
                 });

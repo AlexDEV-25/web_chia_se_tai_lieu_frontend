@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import type { CommentTreeResponse } from "../../../models/response/CommentTreeResponse";
+import type { CommentTreeResponse } from "../../../models/response/comment/CommentTreeResponse";
 
 interface CommentItemCompProps {
     comment: CommentTreeResponse;

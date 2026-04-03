@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
-    addFavoriteDocument,
-    addFavoriteLesson,
+    addFavorite,
     getDocumentFavoritesByUser,
     getLessonFavoritesByUser,
     removeDocumentFavorite,
@@ -20,7 +19,7 @@ interface BaseItem {
     description?: string;
     thumbnailUrl?: string;
     viewsCount: number;
-    userName?: string;
+    username?: string;
 }
 
 interface DocumentItem extends BaseItem {
@@ -130,11 +129,11 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
             } else {
                 const response =
                     itemType === "document"
-                        ? await addFavoriteDocument({
+                        ? await addFavorite({
                             contentId: itemId,
                             type: 'DOCUMENT',
                         })
-                        : await addFavoriteLesson({
+                        : await addFavorite({
                             contentId: itemId,
                             type: 'LESSON',
                         });
@@ -222,7 +221,7 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                                         <i>{item.description ? item.description : "Không có mô tả."}</i>
                                         <div>
                                             <strong style={{ fontWeight: 500, opacity: 0.7 }}>by:</strong>{" "}
-                                            <Link to={getItemLink(item)}>{item.userName ?? "Tác giả ẩn danh"}</Link>
+                                            <Link to={getItemLink(item)}>{item.username ?? "Tác giả ẩn danh"}</Link>
                                         </div>
                                     </div>
                                 }

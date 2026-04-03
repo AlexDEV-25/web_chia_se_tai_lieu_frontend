@@ -8,7 +8,7 @@ import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
 import ConfirmDialog from '../components/ConfirmDialog';
 import LeftSidebar from '../components/LeftSidebar';
-import type { UserResponse } from '../../../models/response/UserResponse';
+import type { UserResponse } from '../../../models/response/user/UserResponse';
 import { handleApiError } from '../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../constants/messages';
 import { renderStatusPill } from '../components/StatusPill';

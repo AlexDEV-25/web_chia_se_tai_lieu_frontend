@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { getMyDocument, deleteMyDocument, countMyDocument } from "../../../apis/DocumentApi";
 import { getMyLesson, deleteMyLesson, countMyLesson } from "../../../apis/LessonApi";
-import type { DocumentResponse } from "../../../models/response/DocumentResponse";
-import type { LessonResponse } from "../../../models/response/LessonResponse";
+import type { DocumentUserResponse } from "../../../models/response/document/DocumentUserResponse";
+import type { LessonUserResponse } from "../../../models/response/lesson/LessonUserResponse";
 import DocumentComp from "./DocumentComp";
 import LessonComp from "./LessonComp";
 import { handleApiError } from "../../../utils/errorHandler";
@@ -10,8 +10,8 @@ import { ERROR_MESSAGES } from "../../../constants/messages";
 
 const UploadHistory: React.FC = () => {
     const [activeTab, setActiveTab] = useState<"documents" | "lessons">("documents");
-    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
-    const [lessons, setLessons] = useState<LessonResponse[]>([]);
+    const [documents, setDocuments] = useState<DocumentUserResponse[]>([]);
+    const [lessons, setLessons] = useState<LessonUserResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [documentQuantity, setDocumentQuantity] = useState<number>(0);

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getDocumentReport, getLessonReport } from '../../../../apis/ReportApi';
-import type { ReportResponse } from '../../../../models/response/ReportResponse';
+import { getDocumentReports, getLessonReports } from '../../../../apis/ReportApi';
+import type { ReportDetailAdminResponse } from '../../../../models/response/report/ReportDetailAdminResponse';
 import LeftSidebar from '../../components/LeftSidebar';
 import PageHeader from '../../components/PageHeader';
 
 const ReportDetail: React.FC = () => {
     const { type, id } = useParams<{ type: string; id: string }>();
     const navigate = useNavigate();
-    const [reports, setReports] = useState<ReportResponse[]>([]);
+    const [reports, setReports] = useState<ReportDetailAdminResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [contentTitle, setContentTitle] = useState('');
 
@@ -17,7 +17,7 @@ const ReportDetail: React.FC = () => {
         const fetchReports = async () => {
             setLoading(true);
             try {
-                const res = type === 'document' ? await getDocumentReport(parseInt(id)) : await getLessonReport(parseInt(id));
+                const res = type === 'document' ? await getDocumentReports(parseInt(id)) : await getLessonReports(parseInt(id));
                 setReports(res.resultList || []);
                 if (res.resultList && res.resultList.length > 0) {
                     setContentTitle(res.resultList[0].title);

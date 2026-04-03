@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { handleApiError } from "../../../utils/errorHandler";
 import { changePassword } from "../../../apis/AuthApi";
-import type { ChangePasswordRequest } from "../../../models/request/ChangePasswordRequest";
+import type { ForgotPasswordRequest } from "../../../models/request/ForgotPasswordRequest";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../../constants/messages";
 
 const ChangePassword: React.FC = () => {
@@ -51,7 +51,7 @@ const ChangePassword: React.FC = () => {
 
         if (passwordErr || confirmErr) return;
 
-        const payload: ChangePasswordRequest = {
+        const payload: ForgotPasswordRequest = {
             email: email + "".trim(),
             forgotPasswordCode: forgotPasswordCode + "".trim(),
             password,

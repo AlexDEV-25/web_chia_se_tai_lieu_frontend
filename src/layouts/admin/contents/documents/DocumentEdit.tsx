@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getDocumentById, updateDocument } from "../../../../apis/DocumentApi";
 import DocumentViewComp from "../../../common/components/DocumentViewComp";
 import RightProperties from "../components/RightProperties";
-import type { DocumentResponse } from "../../../../models/response/DocumentResponse";
-import type { DocumentRequest } from "../../../../models/request/DocumentReques";
+import type { DocumentDetailResponse } from "../../../../models/response/document/DocumentDetailResponse";
+import type { DocumentRequest } from "../../../../models/request/DocumentRequest";
 import { handleApiError } from "../../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../../constants/messages";
 import ReturnHeader from "../components/ReturnHeader";
@@ -15,7 +15,7 @@ const DocumentEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const [document, setDocument] = useState<DocumentResponse | null>(null);
+    const [document, setDocument] = useState<DocumentDetailResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);

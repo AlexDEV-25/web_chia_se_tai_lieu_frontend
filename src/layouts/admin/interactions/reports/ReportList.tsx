@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAllDocumentReportSummary, hideDocument } from '../../../../apis/DocumentApi';
 import { getAllLessonReportSummary, hideLesson } from '../../../../apis/LessonApi';
-import type { ContentReportSummaryResponse } from '../../../../models/response/ContentReportSummaryResponse';
+import type { ReportAdminResponse } from '../../../../models/response/report/ReportAdminResponse';
 import type { HideRequest } from '../../../../models/request/HideRequest';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import LeftSidebar from '../../components/LeftSidebar';
@@ -11,7 +11,7 @@ import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
 
 const ReportList: React.FC = () => {
-    const [data, setData] = useState<(ContentReportSummaryResponse & { hide: boolean })[]>([]);
+    const [data, setData] = useState<(ReportAdminResponse & { hide: boolean })[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'document' | 'lesson'>('document');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -48,7 +48,7 @@ const ReportList: React.FC = () => {
         fetchData();
     }, []);
 
-    const handleToggleVisibility = (item: ContentReportSummaryResponse & { hide: boolean }) => {
+    const handleToggleVisibility = (item: ReportAdminResponse & { hide: boolean }) => {
         if (updatingId) return;
         setConfirmDialog({
             isOpen: true,
@@ -61,7 +61,7 @@ const ReportList: React.FC = () => {
         });
     };
 
-    const toggleItem = async (item: ContentReportSummaryResponse & { hide: boolean }) => {
+    const toggleItem = async (item: ReportAdminResponse & { hide: boolean }) => {
         setUpdatingId(item.id);
         try {
             const newHide = !item.hide;

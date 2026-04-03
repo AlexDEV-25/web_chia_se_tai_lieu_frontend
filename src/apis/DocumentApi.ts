@@ -1,12 +1,14 @@
-import type { APIResponse } from './../models/response/APIResponse';
-import api, { httpGet, httpPost } from "./HttpClient";
-import type { DocumentResponse } from "./../models/response/DocumentResponse";
-import type { DocumentRequest } from "./../models/request/DocumentReques";
+import type { APIResponse } from '../models/response/APIResponse';
+import api, { httpGet, httpPost, httpPut, httpDelete } from "./HttpClient";
+import type { DocumentDetailResponse } from "../models/response/document/DocumentDetailResponse";
+import type { DocumentRequest } from '../models/request/DocumentRequest';
 import type { HideRequest } from '../models/request/HideRequest';
-import type { DocumentStatsResponse } from '../models/response/DocumentStatsResponse';
-import type { DocumentFavoriteResponse } from '../models/response/DocumentFavoriteResponse';
-import type { ContentRatingSummaryResponse } from '../models/response/ContentRatingSummaryResponse';
-import type { ContentReportSummaryResponse } from '../models/response/ContentReportSummaryResponse';
+import type { DocumentStatsResponse } from '../models/response/document/DocumentStatsResponse';
+import type { DocumentFavoriteResponse } from '../models/response/document/DocumentFavoriteResponse';
+import type { DocumentUserResponse } from '../models/response/document/DocumentUserResponse';
+import type { DocumentAdminResponse } from '../models/response/document/DocumentAdminResponse';
+import type { RatingAdminResponse } from '../models/response/rating/RatingAdminResponse';
+import type { ReportAdminResponse } from '../models/response/report/ReportAdminResponse';
 
 export const stats = async () => {
     return await httpGet<APIResponse<DocumentStatsResponse>>(`/documents/stats`);
@@ -23,30 +25,27 @@ export const search = async (keyword: string, categoryId: number | null) => {
 };
 
 export const getDocumentById = async (id: number) => {
-    return await httpGet<APIResponse<DocumentResponse>>(`/documents/admin/${id}`);
+    return await httpGet<APIResponse<DocumentDetailResponse>>(`/documents/admin/${id}`);
 };
 
 export const getPublicDocumentById = async (id: number) => {
-    return await httpGet<APIResponse<DocumentResponse>>(`/documents/${id}`);
+    return await httpGet<APIResponse<DocumentDetailResponse>>(`/documents/${id}`);
 };
 
 export const getAllDocument = async () => {
-    return await httpGet<APIResponse<DocumentResponse>>(`/documents/admin`);
+    return await httpGet<APIResponse<DocumentAdminResponse>>(`/documents/admin`);
 };
 
 export const deleteDocument = async (id: number): Promise<APIResponse<void>> => {
-    const response = await api.delete<APIResponse<void>>(`/documents/admin/${id}`);
-    return response.data;
+    return await httpDelete<APIResponse<void>>(`/documents/admin/${id}`);
 };
 
-export const hideDocument = async (id: number, data: HideRequest): Promise<APIResponse<DocumentResponse>> => {
-    const response = await api.put<APIResponse<DocumentResponse>>(`/documents/admin/hide/${id}`, data);
-    return response.data;
+export const hideDocument = async (id: number, data: HideRequest): Promise<APIResponse<DocumentDetailResponse>> => {
+    return await httpPut<APIResponse<DocumentDetailResponse>>(`/documents/admin/hide/${id}`, data);
 };
 
-export const updateDocument = async (id: number, documentData: DocumentRequest): Promise<APIResponse<DocumentResponse>> => {
-    const response = await api.put<APIResponse<DocumentResponse>>(`/documents/admin/${id}`, documentData);
-    return response.data;
+export const updateDocument = async (id: number, documentData: DocumentRequest): Promise<APIResponse<DocumentDetailResponse>> => {
+    return await httpPut<APIResponse<DocumentDetailResponse>>(`/documents/admin/${id}`, documentData);
 };
 
 export const increaseView = async (id: number) => {
@@ -57,12 +56,12 @@ export const increaseDownload = async (id: number) => {
     return await httpPost<APIResponse<void>>(`/documents/download/${id}`);
 };
 
-export const uploadDocument = async (file: File, documentData: DocumentRequest): Promise<APIResponse<DocumentResponse>> => {
+export const uploadDocument = async (file: File, documentData: DocumentRequest): Promise<APIResponse<DocumentDetailResponse>> => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("data", JSON.stringify(documentData));
 
-    const response = await api.post<APIResponse<DocumentResponse>>("/documents/upload-file", formData, {
+    const response = await api.post<APIResponse<DocumentDetailResponse>>("/documents/upload-file", formData, {
         headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -82,17 +81,15 @@ export const downloadFile = async (documentId: number): Promise<Blob> => {
 };
 
 export const getMyDocument = async () => {
-    return await httpGet<APIResponse<DocumentResponse>>(`/documents/my-document`);
+    return await httpGet<APIResponse<DocumentUserResponse>>(`/documents/my-document`);
 };
 
-export const updateMyDocument = async (id: number, documentData: DocumentRequest): Promise<APIResponse<DocumentResponse>> => {
-    const response = await api.put<APIResponse<DocumentResponse>>(`/documents/my-document/${id}`, documentData);
-    return response.data;
+export const updateMyDocument = async (id: number, documentData: DocumentRequest): Promise<APIResponse<DocumentUserResponse>> => {
+    return await httpPut<APIResponse<DocumentUserResponse>>(`/documents/my-document/${id}`, documentData);
 };
 
 export const deleteMyDocument = async (id: number): Promise<APIResponse<void>> => {
-    const response = await api.delete<APIResponse<void>>(`/documents/my-document/${id}`);
-    return response.data;
+    return await httpDelete<APIResponse<void>>(`/documents/my-document/${id}`);
 };
 
 export const getDocumentFile = async (documentId: number): Promise<Blob> => {
@@ -138,9 +135,9 @@ export const countDocumentOfUser = async (userId: number) => {
 };
 
 export const getAllDocumentRatingSummary = async () => {
-    return await httpGet<APIResponse<ContentRatingSummaryResponse>>(`/documents/admin/rating`);
+    return await httpGet<APIResponse<RatingAdminResponse>>(`/ratings/admin/document`);
 };
 
 export const getAllDocumentReportSummary = async () => {
-    return await httpGet<APIResponse<ContentReportSummaryResponse>>(`/documents/admin/report`);
+    return await httpGet<APIResponse<ReportAdminResponse>>(`/reports/admin/document`);
 };

@@ -9,19 +9,19 @@ import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
 import LeftSidebar from '../../components/LeftSidebar';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import type { LessonResponse } from '../../../../models/response/LessonResponse';
+import type { LessonAdminResponse } from '../../../../models/response/lesson/LessonAdminResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
 import type { VisibilityFilter } from '../../types/common';
 
 const LessonList: React.FC = () => {
-    const [lessons, setLessons] = useState<LessonResponse[]>([]);
+    const [lessons, setLessons] = useState<LessonAdminResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
-    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; action: 'toggle' | 'delete'; item: LessonResponse | null }>({ isOpen: false, action: 'toggle', item: null });
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; action: 'toggle' | 'delete'; item: LessonAdminResponse | null }>({ isOpen: false, action: 'toggle', item: null });
 
     const fetchLessons = useCallback(async () => {
         setLoading(true);
@@ -41,11 +41,11 @@ const LessonList: React.FC = () => {
         fetchLessons();
     }, [fetchLessons]);
 
-    const handleToggleVisibility = useCallback((lesson: LessonResponse) => {
+    const handleToggleVisibility = useCallback((lesson: LessonAdminResponse) => {
         setConfirmDialog({ isOpen: true, action: 'toggle', item: lesson });
     }, []);
 
-    const handleDelete = useCallback((lesson: LessonResponse) => {
+    const handleDelete = useCallback((lesson: LessonAdminResponse) => {
         setConfirmDialog({ isOpen: true, action: 'delete', item: lesson });
     }, []);
 

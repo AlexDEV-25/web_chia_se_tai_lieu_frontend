@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { search, stats, getAllPublicLesson } from "../../../apis/LessonApi";
 import { getAllPublicCategory } from "../../../apis/CategoryApi";
-import type { CategoryResponse } from "../../../models/response/CategoryResponse";
+import type { CategoryResponse } from "../../../models/response/category/CategoryResponse";
 import HeroBlockComp from "../components/HeroBlockComp";
 import CategoryBlockComp from "../components/CategoryBlockComp";
 import MainBlockComp from "../components/MainBlockComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import type { LessonFavoriteResponse } from "../../../models/response/LessonFavoriteResponse";
+import type { LessonFavoriteResponse } from "../../../models/response/lesson/LessonFavoriteResponse";
 
 interface Props {
     keyWords: string

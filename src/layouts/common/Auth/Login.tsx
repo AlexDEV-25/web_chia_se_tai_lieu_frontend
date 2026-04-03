@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { OAuthConfig } from "../../../configurations/configuration";
 import { exchangeToken } from "../../../apis/GoogleApi";
 import { useSearchParams } from "react-router-dom";
-import type { UserResponse } from "../../../models/response/UserResponse";
+import type { UserResponse } from "../../../models/response/user/UserResponse";
 import { getMyInfo } from "../../../apis/UserApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";

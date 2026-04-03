@@ -3,20 +3,20 @@ import { Link, useParams } from "react-router-dom";
 
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import { handleApiError } from "../../../utils/errorHandler";
-import { getInfo } from "../../../apis/UserApi";
-import type { DocumentFavoriteResponse } from "../../../models/response/DocumentFavoriteResponse";
+import { getUserInfo } from "../../../apis/UserApi";
+import type { DocumentFavoriteResponse } from "../../../models/response/document/DocumentFavoriteResponse";
 import { countLessonOfUser, getListLessonByUser } from "../../../apis/LessonApi";
 
-import type { UserBioResponse } from "../../../models/response/UserBioResponse";
-import type { FollowCountResponse } from "../../../models/response/FollowCountResponse";
+import type { UserBioResponse } from "../../../models/response/user/UserBioResponse";
+import type { FollowCountResponse } from "../../../models/response/userfollow/FollowCountResponse";
 import { checkFollowed, checkIsMe, followUser, getFollowCount, unfollowUser } from "../../../apis/UserFollowApi";
-import { addFavoriteDocument, addFavoriteLesson, removeDocumentFavorite, removeLessonFavorite } from "../../../apis/FavoriteApi";
+import { addFavorite, removeDocumentFavorite, removeLessonFavorite } from "../../../apis/FavoriteApi";
 import type { FavoriteRequest } from "../../../models/request/FavoriteRequest";
 import GrindItem from "../../common/components/GrindItem";
 
 import { countDocumentOfUser, getListDocumentByUser } from "../../../apis/DocumentApi";
 
-import type { LessonFavoriteResponse } from "../../../models/response/LessonFavoriteResponse";
+import type { LessonFavoriteResponse } from "../../../models/response/lesson/LessonFavoriteResponse";
 import AlertDialog from "../../common/components/AlertDialog";
 
 const Profile: React.FC = () => {
@@ -76,7 +76,7 @@ const Profile: React.FC = () => {
                     contentId: doc.id,
                     type: "DOCUMENT",
                 };
-                await addFavoriteDocument(data);
+                await addFavorite(data);
                 setDocuments((prev) =>
                     prev.map((item) =>
                         item.id === doc.id ? { ...item, favorite: true } : item
@@ -119,7 +119,7 @@ const Profile: React.FC = () => {
                     contentId: lesson.id,
                     type: "LESSON",
                 };
-                await addFavoriteLesson(data);
+                await addFavorite(data);
                 setLessons((prev) =>
                     prev.map((item) =>
                         item.id === lesson.id ? { ...item, favorite: true } : item
@@ -159,7 +159,7 @@ const Profile: React.FC = () => {
 
     const fetchUserInfo = useCallback(async () => {
         try {
-            const response = await getInfo(userId);
+            const response = await getUserInfo(userId);
             setUser(response.result);
         } catch (err: any) {
             setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_LOAD_FAILED))

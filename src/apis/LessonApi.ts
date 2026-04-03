@@ -1,12 +1,14 @@
-import type { APIResponse } from './../models/response/APIResponse';
-import api, { httpGet, httpPost } from "./HttpClient";
-import type { LessonResponse } from "./../models/response/LessonResponse";
-import type { LessonRequest } from "./../models/request/LessonRequest";
+import type { APIResponse } from '../models/response/APIResponse';
+import api, { httpGet, httpPost, httpPut, httpDelete } from "./HttpClient";
+import type { LessonDetailResponse } from "../models/response/lesson/LessonDetailResponse";
+import type { LessonRequest } from "../models/request/LessonRequest";
 import type { HideRequest } from '../models/request/HideRequest';
-import type { LessonStatsResponse } from '../models/response/LessonStatsResponse';
-import type { LessonFavoriteResponse } from '../models/response/LessonFavoriteResponse';
-import type { ContentRatingSummaryResponse } from '../models/response/ContentRatingSummaryResponse';
-import type { ContentReportSummaryResponse } from '../models/response/ContentReportSummaryResponse';
+import type { LessonStatsResponse } from '../models/response/lesson/LessonStatsResponse';
+import type { LessonFavoriteResponse } from '../models/response/lesson/LessonFavoriteResponse';
+import type { LessonUserResponse } from '../models/response/lesson/LessonUserResponse';
+import type { LessonAdminResponse } from '../models/response/lesson/LessonAdminResponse';
+import type { RatingAdminResponse } from '../models/response/rating/RatingAdminResponse';
+import type { ReportAdminResponse } from '../models/response/report/ReportAdminResponse';
 
 export const stats = async () => {
     return await httpGet<APIResponse<LessonStatsResponse>>(`/lessons/stats`);
@@ -23,33 +25,27 @@ export const search = async (keyword: string, categoryId: number | null) => {
 };
 
 export const getLessonById = async (id: number) => {
-    return await httpGet<APIResponse<LessonResponse>>(`/lessons/admin/${id}`);
+    return await httpGet<APIResponse<LessonDetailResponse>>(`/lessons/admin/${id}`);
 };
 
 export const getPublicLessonById = async (id: number) => {
-    return await httpGet<APIResponse<LessonResponse>>(`/lessons/${id}`);
+    return await httpGet<APIResponse<LessonDetailResponse>>(`/lessons/${id}`);
 };
 
 export const getAllLesson = async () => {
-    return await httpGet<APIResponse<LessonResponse>>(`/lessons/admin`);
+    return await httpGet<APIResponse<LessonAdminResponse>>(`/lessons/admin`);
 };
 
 export const deleteLesson = async (id: number): Promise<APIResponse<void>> => {
-    const response = await api.delete<APIResponse<void>>(`/lessons/admin/${id}`);
-    return response.data;
+    return await httpDelete<APIResponse<void>>(`/lessons/admin/${id}`);
 };
 
-
-
-export const hideLesson = async (id: number, data: HideRequest): Promise<APIResponse<LessonResponse>> => {
-    const response = await api.put<APIResponse<LessonResponse>>(`/lessons/admin/hide/${id}`, data);
-    return response.data;
+export const hideLesson = async (id: number, data: HideRequest): Promise<APIResponse<LessonDetailResponse>> => {
+    return await httpPut<APIResponse<LessonDetailResponse>>(`/lessons/admin/hide/${id}`, data);
 };
 
-
-export const updateLesson = async (id: number, lessonData: LessonRequest): Promise<APIResponse<LessonResponse>> => {
-    const response = await api.put<APIResponse<LessonResponse>>(`/lessons/admin/${id}`, lessonData);
-    return response.data;
+export const updateLesson = async (id: number, lessonData: LessonRequest): Promise<APIResponse<LessonDetailResponse>> => {
+    return await httpPut<APIResponse<LessonDetailResponse>>(`/lessons/admin/${id}`, lessonData);
 };
 
 export const increaseView = async (id: number) => {
@@ -85,7 +81,7 @@ export const uploadLesson = async (
     lessonData: LessonRequest,
     documentFile?: File,
     subFile?: File
-): Promise<APIResponse<LessonResponse>> => {
+): Promise<APIResponse<LessonDetailResponse>> => {
     const formData = new FormData();
     formData.append("video", videoFile);
     if (documentFile) {
@@ -96,7 +92,7 @@ export const uploadLesson = async (
     }
     formData.append("data", JSON.stringify(lessonData));
 
-    const response = await api.post<APIResponse<LessonResponse>>("/lessons/upload-file", formData, {
+    const response = await api.post<APIResponse<LessonDetailResponse>>("/lessons/upload-file", formData, {
         headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -104,17 +100,15 @@ export const uploadLesson = async (
 };
 
 export const getMyLesson = async () => {
-    return await httpGet<APIResponse<LessonResponse>>(`/lessons/my-lesson`);
+    return await httpGet<APIResponse<LessonUserResponse>>(`/lessons/my-lesson`);
 };
 
-export const updateMyLesson = async (id: number, lessonData: LessonRequest): Promise<APIResponse<LessonResponse>> => {
-    const response = await api.put<APIResponse<LessonResponse>>(`/lessons/my-lesson/${id}`, lessonData);
-    return response.data;
+export const updateMyLesson = async (id: number, lessonData: LessonRequest): Promise<APIResponse<LessonUserResponse>> => {
+    return await httpPut<APIResponse<LessonUserResponse>>(`/lessons/my-lesson/${id}`, lessonData);
 };
 
 export const deleteMyLesson = async (id: number): Promise<APIResponse<void>> => {
-    const response = await api.delete<APIResponse<void>>(`/lessons/my-lesson/${id}`);
-    return response.data;
+    return await httpDelete<APIResponse<void>>(`/lessons/my-lesson/${id}`);
 };
 
 
@@ -155,22 +149,18 @@ export const getLessonDocument = async (lessonId: number): Promise<Blob> => {
     return response.data;
 };
 
-// lấy danh sách các document công khai và check xem đã favorite hay chưa
 export const getAllPublicLesson = async () => {
     return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons`);
 };
 
-// lấy danh sách tất cả các document công khai của 1 user và check xem đã favorite hay chưa
 export const getListLessonByUser = async (userId: number) => {
     return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons/user/${userId}`);
 };
 
-// lấy danh sách các document công khai cùng 1 user trừ document hiện tại và check xem đã favorite hay chưa
 export const getAllLessonByUser = async (lessonId: number, userId: number) => {
     return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons/user?lessonId=${lessonId}&userId=${userId}`);
 };
 
-// lấy danh sách các document công khai cùng 1 category trừ document hiện tại và check xem đã favorite hay chưa
 export const getAllLessonByCategory = async (lessonId: number, categoryId: number) => {
     return await httpGet<APIResponse<LessonFavoriteResponse>>(`/lessons/category?categoryId=${categoryId}&lessonId=${lessonId}`);
 };
@@ -186,10 +176,10 @@ export const countLessonOfUser = async (userId: number) => {
 };
 
 export const getAllLessonRatingSummary = async () => {
-    return await httpGet<APIResponse<ContentRatingSummaryResponse>>(`/lessons/admin/rating`);
+    return await httpGet<APIResponse<RatingAdminResponse>>(`/ratings/admin/lesson`);
 };
 
 export const getAllLessonReportSummary = async () => {
-    return await httpGet<APIResponse<ContentReportSummaryResponse>>(`/lessons/admin/report`);
+    return await httpGet<APIResponse<ReportAdminResponse>>(`/reports/admin/lesson`);
 };
 

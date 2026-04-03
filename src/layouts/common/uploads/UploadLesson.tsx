@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { LessonRequest } from "./../../../models/request/LessonRequest";
 import { getAllPublicCategory } from "./../../../apis/CategoryApi";
 import { uploadLesson } from "./../../../apis/LessonApi";
-import type { CategoryResponse } from "./../../../models/response/CategoryResponse";
+import type { CategoryResponse } from "./../../../models/response/category/CategoryResponse";
 import { useRef } from "react";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../../constants/messages";

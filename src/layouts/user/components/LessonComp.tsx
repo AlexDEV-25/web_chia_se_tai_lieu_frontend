@@ -2,25 +2,25 @@ import { useState } from "react";
 
 import FormUpdate, { type FormDataType } from "./FormUpdate";
 import DeleteAlert from "./DeleteAlert";
-import type { LessonResponse } from "../../../models/response/LessonResponse";
+import type { LessonUserResponse } from "../../../models/response/lesson/LessonUserResponse";
 import { updateMyLesson } from "../../../apis/LessonApi";
 import type { LessonRequest } from "../../../models/request/LessonRequest";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 
 interface Props {
-    lessons: LessonResponse[];
+    lessons: LessonUserResponse[];
     onDelete: (id: number) => void;
     onUpdate: () => void;
 }
 
 const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
-    const [editingLesson, setEditingLesson] = useState<LessonResponse | null>(null);
+    const [editingLesson, setEditingLesson] = useState<LessonUserResponse | null>(null);
     const [showEditForm, setShowEditForm] = useState(false);
-    const [deletingLesson, setDeletingLesson] = useState<LessonResponse | null>(null);
+    const [deletingLesson, setDeletingLesson] = useState<LessonUserResponse | null>(null);
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
-    const handleEdit = (lesson: LessonResponse) => {
+    const handleEdit = (lesson: LessonUserResponse) => {
         setEditingLesson(lesson);
         setShowEditForm(true);
     };
@@ -44,7 +44,7 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
         setEditingLesson(null);
     };
 
-    const handleDelete = (lesson: LessonResponse) => {
+    const handleDelete = (lesson: LessonUserResponse) => {
         setDeletingLesson(lesson);
         setShowDeleteAlert(true);
     };
