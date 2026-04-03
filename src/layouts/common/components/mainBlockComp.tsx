@@ -163,6 +163,11 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
         return value.toLocaleString("vi-VN");
     };
 
+    const truncate = (str: string, maxLength: number) => {
+        if (str.length <= maxLength) return str;
+        return str.slice(0, maxLength) + "...";
+    };
+
     const formatDuration = () => {
         return Math.floor(Math.random() * 60) + ":" + String(Math.floor(Math.random() * 60)).padStart(2, "0");
     };
@@ -218,10 +223,10 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                                 thumbnailUrl={resolveThumbnailUrl(item)}
                                 subtitle={
                                     <div>
-                                        <i>{item.description ? item.description : "Không có mô tả."}</i>
+                                        <i>{item.description ? truncate(item.description, 30) : "Không có mô tả."}</i>
                                         <div>
                                             <strong style={{ fontWeight: 500, opacity: 0.7 }}>by:</strong>{" "}
-                                            <Link to={getItemLink(item)}>{item.username ?? "Tác giả ẩn danh"}</Link>
+                                            <Link to={getItemLink(item)}>{item.username ? truncate(item.username, 15) : "Tác giả ẩn danh"}</Link>
                                         </div>
                                     </div>
                                 }

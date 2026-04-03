@@ -27,6 +27,11 @@ const defaultNumberFormatter = (value?: number | null) => {
     return value.toLocaleString("vi-VN");
 };
 
+const truncate = (str: string, maxLength: number) => {
+    if (str.length <= maxLength) return str;
+    return str.slice(0, maxLength) + "...";
+};
+
 const GrindItem: React.FC<GrindItemProps> = ({
     itemType,
     link,
@@ -85,8 +90,8 @@ const GrindItem: React.FC<GrindItemProps> = ({
 
     const renderTitle = () => {
         return (
-            <Link to={link}>
-                <h3>{title}</h3>
+            <Link to={link} className="doc-title-link">
+                <h3>{truncate(title, 30)}</h3>
             </Link>
         );
     };
@@ -136,7 +141,7 @@ const GrindItem: React.FC<GrindItemProps> = ({
             {renderThumbnail()}
             <div className="doc-body">
                 {renderTitle()}
-                {subtitle}
+                {subtitle && <div className="doc-subtitle">{subtitle}</div>}
                 {renderMeta()}
             </div>
         </article>

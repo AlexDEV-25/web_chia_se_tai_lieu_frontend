@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { getAllDocumentByCategory } from "../../../apis/DocumentApi";
 import { getAllLessonByCategory } from "../../../apis/LessonApi";
 import { addFavorite, removeDocumentFavorite, removeLessonFavorite } from "../../../apis/FavoriteApi";
-import type { FavoriteRequest } from "../../../models/request/FavoriteRequest";
 import GrindItem from "./GrindItem";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";

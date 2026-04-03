@@ -55,6 +55,9 @@ body {
     font-size: clamp(2.5rem, 4vw, 3.5rem);
     line-height: 1.1;
     margin-bottom: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .hero-block h1 span {
@@ -64,6 +67,9 @@ body {
 .hero-subtitle {
     max-width: 520px;
     opacity: 0.95;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .hero-metrics {
@@ -273,6 +279,29 @@ body {
 .doc-body h3 {
     font-size: 1.1rem;
     margin-bottom: 0.35rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.doc-title-link,
+.doc-title-link h3,
+.doc-body a {
+    text-decoration: none;
+}
+
+.doc-title-link h3 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.doc-subtitle {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: rgba(33, 33, 33, 0.75);
+    font-size: 0.92rem;
 }
 
 .doc-body p {
