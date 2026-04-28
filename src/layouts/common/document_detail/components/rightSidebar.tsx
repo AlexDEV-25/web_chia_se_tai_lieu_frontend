@@ -142,7 +142,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                         title={doc.title}
                         thumbnailUrl={
                             doc.thumbnailUrl
-                                ? `http://localhost:8080/api/images/thumbnail/${doc.thumbnailUrl}`
+                                ? `${doc.thumbnailUrl}`
                                 : undefined
                         }
                         subtitle={

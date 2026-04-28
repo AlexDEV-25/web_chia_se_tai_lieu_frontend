@@ -148,7 +148,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({
                         title={lesson.title}
                         thumbnailUrl={
                             lesson.thumbnailUrl
-                                ? `http://localhost:8080/api/images/thumbnail/${lesson.thumbnailUrl}`
+                                ? `${lesson.thumbnailUrl}`
                                 : undefined
                         }
                         subtitle={

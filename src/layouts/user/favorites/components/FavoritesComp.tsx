@@ -44,7 +44,7 @@ const FavoritesComp: React.FC<FavoritesCompProps> = ({
                             <div className="document-thumbnail">
                                 <Link to={link}>
                                     {thumbnail ? (
-                                        <img src={`http://localhost:8080/api/images/thumbnail/${thumbnail}`} alt={title} />
+                                        <img src={`${thumbnail}`} alt={title} />
                                     ) : (
                                         <div className="default-thumbnail">
                                             <i className="fa fa-file-text"></i>

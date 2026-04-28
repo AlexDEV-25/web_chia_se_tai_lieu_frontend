@@ -112,31 +112,6 @@ export const deleteMyLesson = async (id: number): Promise<APIResponse<void>> => 
 };
 
 
-
-export const getLessonVideo = async (lessonId: number): Promise<Blob> => {
-    if (!lessonId) {
-        throw new Error("Thiếu ID lesson để tải video");
-    }
-
-    const response = await api.get<Blob>(`/lessons/admin/${lessonId}/video`, {
-        responseType: "blob",
-    });
-
-    return response.data;
-};
-
-export const getPublicLessonVideo = async (lessonId: number): Promise<Blob> => {
-    if (!lessonId) {
-        throw new Error("Thiếu ID lesson để tải video");
-    }
-
-    const response = await api.get<Blob>(`/lessons/${lessonId}/video`, {
-        responseType: "blob",
-    });
-
-    return response.data;
-};
-
 export const getLessonDocument = async (lessonId: number): Promise<Blob> => {
     if (!lessonId) {
         throw new Error("Thiếu ID lesson để tải document");

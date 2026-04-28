@@ -107,13 +107,13 @@ const LessonEdit: React.FC = () => {
 
                         <div className="document-preview-card">
                             <h3 className="document-section-title">Video bài giảng</h3>
-                            <VideoComp lessonId={lesson.id} isAdmin={true} thumbnailUrl={lesson.thumbnailUrl} />
+                            <VideoComp videoUrl={lesson.lessonUrl} thumbnailUrl={lesson.thumbnailUrl} />
                         </div>
 
                         {lesson.documentUrl && (
                             <div className="document-preview-card">
                                 <h3 className="document-section-title">Tài liệu bài giảng</h3>
-                                <DocumentViewComp docId={lesson.id} isAdmin={true} isLessonDocument={true} maxRenderWidth={860} emptyFallback={
+                                <DocumentViewComp documentUrl={lesson.documentUrl} maxRenderWidth={860} emptyFallback={
                                     <div className="document-empty-preview">
                                         <p>Không có tài liệu đi kèm</p>
                                     </div>

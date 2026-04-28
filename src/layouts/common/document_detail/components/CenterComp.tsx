@@ -1,23 +1,21 @@
 import DocumentViewComp from "../../components/DocumentViewComp";
 
 interface Props {
-    docId: number;
+    documentUrl: string | null;
     pageNumber: number;
     onLoadPages?: (pages: number) => void;
     onPageChange?: (page: number) => void;
 }
 
 const CenterComp: React.FC<Props> = ({
-    docId,
+    documentUrl,
     pageNumber,
     onLoadPages,
     onPageChange,
 }) => {
     return (
         <DocumentViewComp
-            docId={docId}
-            isAdmin={false}
-            isLessonDocument={false}
+            documentUrl={documentUrl}
             page={pageNumber}
             onPageChange={onPageChange}
             onLoadPages={onLoadPages}

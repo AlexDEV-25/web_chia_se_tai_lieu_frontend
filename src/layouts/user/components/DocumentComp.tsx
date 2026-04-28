@@ -88,7 +88,7 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
                     <div key={document.id} className="document-card">
                         <div className="document-thumbnail">
                             {document.thumbnailUrl ? (
-                                <img src={`http://localhost:8080/api/images/thumbnail/${document.thumbnailUrl}`} alt={document.title} />
+                                <img src={`${document.thumbnailUrl}`} alt={document.title} />
                             ) : (
                                 <div className="default-thumbnail">
                                     <i className="fa fa-file-text"></i>

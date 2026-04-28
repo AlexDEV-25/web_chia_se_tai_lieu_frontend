@@ -1,15 +1,13 @@
 import DocumentViewComp from "../../components/DocumentViewComp";
 
 interface Props {
-    lessonId?: number;
+    documentUrl: string | null;
 }
 
-const DocumentComp: React.FC<Props> = ({ lessonId }) => {
+const DocumentComp: React.FC<Props> = ({ documentUrl }) => {
     return (
         <DocumentViewComp
-            docId={lessonId}
-            isAdmin={false}
-            isLessonDocument={true}
+            documentUrl={documentUrl}
             maxRenderWidth={520}
             emptyFallback={
                 <div className="lesson-document-empty">

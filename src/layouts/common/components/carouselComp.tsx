@@ -184,7 +184,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
 
                             const isLoadingFavorite = favoriteLoadingId === item.id;
                             const thumbnailUrl = 'thumbnailUrl' in item && item.thumbnailUrl
-                                ? `http://localhost:8080/api/images/thumbnail/${item.thumbnailUrl}`
+                                ? `${item.thumbnailUrl}`
                                 : undefined;
                             const link = type === 'document' ? `/document/${item.id}` : `/lesson/${item.id}`;
                             const description = 'description' in item ? item.description : '';

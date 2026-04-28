@@ -267,7 +267,7 @@ const Profile: React.FC = () => {
                 <div className="profile-info-section">
                     <div className="profile-avatar">
                         <img
-                            src={`http://localhost:8080/api/images/avatar/${user?.avatarUrl ?? "myAvatar.jpg"}`}
+                            src={`${user?.avatarUrl ?? "myAvatar.jpg"}`}
                             alt={user?.username || "User"}
                             className="avatar-img"
                         />
@@ -359,7 +359,7 @@ const Profile: React.FC = () => {
                                             title={doc.title}
                                             thumbnailUrl={
                                                 doc.thumbnailUrl
-                                                    ? `http://localhost:8080/api/images/thumbnail/${doc.thumbnailUrl}`
+                                                    ? `${doc.thumbnailUrl}`
                                                     : undefined
                                             }
                                             subtitle={
@@ -394,7 +394,7 @@ const Profile: React.FC = () => {
                                             title={lesson.title}
                                             thumbnailUrl={
                                                 lesson.thumbnailUrl
-                                                    ? `http://localhost:8080/api/images/thumbnail/${lesson.thumbnailUrl}`
+                                                    ? `${lesson.thumbnailUrl}`
                                                     : undefined
                                             }
                                             subtitle={

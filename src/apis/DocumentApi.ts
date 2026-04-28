@@ -92,17 +92,6 @@ export const deleteMyDocument = async (id: number): Promise<APIResponse<void>> =
     return await httpDelete<APIResponse<void>>(`/documents/my-document/${id}`);
 };
 
-export const getDocumentFile = async (documentId: number): Promise<Blob> => {
-    if (!documentId) {
-        throw new Error("Thiếu ID document để tải file");
-    }
-
-    const response = await api.get<Blob>(`/documents/admin/${documentId}/file`, {
-        responseType: "blob",
-    });
-
-    return response.data;
-};
 
 // lấy danh sách các document công khai và check xem đã favorite hay chưa
 export const getAllPublicDocument = async () => {

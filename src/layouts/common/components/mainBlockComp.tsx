@@ -178,7 +178,7 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
 
     const resolveThumbnailUrl = (item: DocumentItem | LessonItem) => {
         if (!item.thumbnailUrl) return undefined;
-        return `http://localhost:8080/api/images/thumbnail/${item.thumbnailUrl}`;
+        return `${item.thumbnailUrl}`;
     };
 
     return (
@@ -206,7 +206,7 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                 </div>
             ) : (
                 <div className="document-grid">
-                    {items.map((item) => {
+                    {items.map((item: DocumentItem | LessonItem) => {
                         const downloadsCount =
                             itemType === "document" && "downloadsCount" in item
                                 ? item.downloadsCount ?? 0

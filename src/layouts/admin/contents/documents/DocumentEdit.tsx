@@ -90,9 +90,7 @@ const DocumentEdit: React.FC = () => {
                         <div className="document-preview-card">
                             <h3 className="document-section-title">Xem trước tài liệu</h3>
                             <DocumentViewComp
-                                docId={document.id}
-                                isAdmin={true}
-                                isLessonDocument={false}
+                                documentUrl={document.fileUrl}
                                 maxRenderWidth={860}
                                 emptyFallback={
                                     <div className="document-empty-preview">

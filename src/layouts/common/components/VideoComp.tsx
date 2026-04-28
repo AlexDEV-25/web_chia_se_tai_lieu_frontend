@@ -1,49 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { getLessonVideo, getPublicLessonVideo } from "../../../apis/LessonApi";
+
 
 interface VideoCompProps {
-    lessonId?: number;
+    videoUrl: string | null;
     thumbnailUrl?: string | null;
-
-    /** admin mode - use admin API to load all lessons including hidden/pending */
-    isAdmin?: boolean;
 }
 
-const VideoComp: React.FC<VideoCompProps> = ({ lessonId, thumbnailUrl, isAdmin }) => {
+const VideoComp: React.FC<VideoCompProps> = ({ videoUrl, thumbnailUrl }) => {
     const [videoSource, setVideoSource] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!lessonId) return;
-        const fetchVideo = async () => {
-            setLoading(true);
+        if (!videoUrl) {
+            setVideoSource(null);
+            setLoading(false);
             setError(null);
-            try {
-                const blob = isAdmin
-                    ? await getLessonVideo(lessonId)
-                    : await getPublicLessonVideo(lessonId);
+            return;
+        }
 
-                const url = URL.createObjectURL(blob);
-                setVideoSource(url);
-            } catch (err) {
-                console.error('Error fetching video:', err);
-                setError('Không thể tải video');
-            } finally {
-                setLoading(false);
-            }
-        };
+        setVideoSource(videoUrl);
+        setLoading(false);
+        setError(null);
+    }, [videoUrl]);
 
-        fetchVideo();
-
-        return () => {
-            if (videoSource) {
-                URL.revokeObjectURL(videoSource);
-            }
-        };
-    }, [lessonId, isAdmin]);
-
-    if (!lessonId) {
+    if (!videoUrl) {
         return (
             <div className="lesson-video-empty">
                 <i className="fa fa-video-camera" />
@@ -76,7 +57,7 @@ const VideoComp: React.FC<VideoCompProps> = ({ lessonId, thumbnailUrl, isAdmin }
                 <video
                     controls
                     controlsList="nodownload"
-                    poster={thumbnailUrl ? `http://localhost:8080/api/images/thumbnail/${thumbnailUrl}` : undefined}
+                    poster={thumbnailUrl ? `${thumbnailUrl}` : undefined}
                     preload="metadata"
                     onContextMenu={(e) => e.preventDefault()}
                 >

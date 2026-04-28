@@ -35,7 +35,7 @@ const CommentItemComp: React.FC<CommentItemCompProps> = ({
         >
             <div className="d-flex">
                 <img
-                    src={`http://localhost:8080/api/images/avatar/${comment.userAvatar ?? "myAvatar.jpg"}`}
+                    src={`${comment.userAvatar ?? "myAvatar.jpg"}`}
                     alt={comment.username}
                     className="rounded-circle me-3"
                     style={{ width: 40, height: 40 }}

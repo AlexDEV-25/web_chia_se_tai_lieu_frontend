@@ -284,7 +284,7 @@ const DocumentDetail: React.FC = () => {
 
                     <div className="viewer-panel rail-pane">
                         <CenterComp
-                            docId={docId}
+                            documentUrl={documentDetail.fileUrl || null}
                             pageNumber={activeSlide}
                             onLoadPages={handlePdfLoadedPages}
                             onPageChange={handleSlideSelect}

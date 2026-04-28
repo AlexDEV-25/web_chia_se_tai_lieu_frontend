@@ -289,16 +289,15 @@ const LessonDetail: React.FC = () => {
                 <section className="lesson-content-layout">
                     <div className="rail-pane lesson-video-pane">
                         <VideoComp
-                            lessonId={lessonId}
-                            isAdmin={false}
-                            thumbnailUrl={lessonDetail.thumbnailUrl}
+                            videoUrl={lessonDetail.lessonUrl || null}
+                            thumbnailUrl={lessonDetail.thumbnailUrl || null}
                         />
                     </div>
 
                     {hasDocument ? (
                         <div className="rail-pane lesson-document-pane">
                             <DocumentComp
-                                lessonId={lessonId}
+                                documentUrl={lessonDetail.documentUrl || null}
                             />
                         </div>
                     ) : (

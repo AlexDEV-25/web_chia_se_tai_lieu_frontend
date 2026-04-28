@@ -88,7 +88,7 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
                     <div key={lesson.id} className="lesson-card">
                         <div className="lesson-thumbnail">
                             {lesson.thumbnailUrl ? (
-                                <img src={`http://localhost:8080/api/images/thumbnail/${lesson.thumbnailUrl}`} alt={lesson.title} />
+                                <img src={`${lesson.thumbnailUrl}`} alt={lesson.title} />
                             ) : (
                                 <div className="default-thumbnail">
                                     <i className="fa fa-play-circle"></i>

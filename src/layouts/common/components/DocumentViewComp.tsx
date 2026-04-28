@@ -2,11 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Document, Page } from "react-pdf";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import ZoomComp from "./ZoomComp";
-import { getDocumentFile } from "../../../apis/DocumentApi";
-import { getLessonDocument } from "../../../apis/LessonApi";
 
 interface Props {
-    docId?: number;
+    documentUrl: string | null;
     maxRenderWidth?: number;
 
     /** controlled page (optional) */
@@ -19,20 +17,16 @@ interface Props {
     /** empty state */
     emptyFallback?: React.ReactNode;
 
-    /** admin mode - use admin API to load all documents including hidden/pending */
-    isAdmin?: boolean;
-    isLessonDocument?: boolean;
 }
 
 const DocumentViewComp: React.FC<Props> = ({
-    docId,
+    documentUrl,
     maxRenderWidth = 860,
     page,
     onPageChange,
     onLoadPages,
     emptyFallback,
-    isAdmin,
-    isLessonDocument,
+
 }) => {
     const [numPages, setNumPages] = useState<number>();
     const [internalPage, setInternalPage] = useState<number>(page ?? 1);
@@ -51,66 +45,19 @@ const DocumentViewComp: React.FC<Props> = ({
 
     const isControlled = page !== undefined;
     const currentPage = isControlled ? page! : internalPage;
-    // Fetch file with Authorization header
+    // Set document URL directly
     useEffect(() => {
-        if (!docId) return;
+        if (!documentUrl) return;
 
-        let objectUrl: string | null = null;
-        let isMounted = true;
+        setLoadingFile(true);
+        setErrorMessage(null);
 
-        const fetchFile = async () => {
-            setLoadingFile(true);
-            setErrorMessage(null);
+        // Dùng trực tiếp URL, không tạo blob
+        const url = documentUrl;
 
-            try {
-                let url: string;
-
-                if (isAdmin === true) {
-                    let blob: Blob;
-
-                    if (isLessonDocument === true) {
-                        blob = await getLessonDocument(docId);
-                    } else {
-                        blob = await getDocumentFile(docId);
-                    }
-
-                    if (!isMounted) return;
-
-                    objectUrl = URL.createObjectURL(blob);
-                    url = objectUrl;
-                } else {
-                    // Public → dùng trực tiếp URL, KHÔNG tạo blob
-                    if (isLessonDocument === true) {
-                        url = `http://localhost:8080/api/lessons/${docId}/document`;
-                    } else {
-                        url = `http://localhost:8080/api/documents/${docId}/file`;
-                    }
-                }
-
-                if (isMounted) {
-                    setFileData(url);
-                }
-
-            } catch (error) {
-                if (!isMounted) return;
-                console.error("Error fetching PDF file:", error);
-                setErrorMessage(ERROR_MESSAGES.PDF_LOAD_ERROR);
-            } finally {
-                if (isMounted) setLoadingFile(false);
-            }
-        };
-
-        fetchFile();
-
-        return () => {
-            isMounted = false;
-
-            // Chỉ revoke nếu là blob URL do mình tạo
-            if (objectUrl) {
-                URL.revokeObjectURL(objectUrl);
-            }
-        };
-    }, [docId, isAdmin, isLessonDocument]);
+        setFileData(url);
+        setLoadingFile(false);
+    }, [documentUrl]);
 
 
     /* sync controlled page */
@@ -178,7 +125,7 @@ const DocumentViewComp: React.FC<Props> = ({
         }
     };
 
-    if (!docId) {
+    if (!documentUrl) {
         return <>{emptyFallback ?? null}</>;
     }
 
