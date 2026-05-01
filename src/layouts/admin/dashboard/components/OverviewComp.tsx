@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { getAllUser } from '../../../../apis/UserApi';
 import { userLast7Days, documentLast7Days, lessonLast7Days } from '../../../../apis/StatisticsApi';
 import OverviewCard from './child_components/OverviewCard';
-import type { UserResponse } from '../../../../models/response/UserResponse';
-import type { DailyCountResponse } from '../../../../models/response/DailyCountResponse';
+
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
 import LoadingState from '../../components/LoadingState';
+import type { UserResponse } from '../../../../models/response/user/UserResponse';
+import type { DailyCountResponse } from '../../../../models/response/statistic/DailyCountResponse';
 
 const OverviewComp: React.FC = () => {
     const [loading, setLoading] = useState(true);

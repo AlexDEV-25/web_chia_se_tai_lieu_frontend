@@ -8,9 +8,10 @@ interface PieChartData {
 
 interface PieChartProps {
     data: PieChartData[];
+    title?: string;
 }
 
-const PieChart: React.FC<PieChartProps> = ({ data }) => {
+const PieChart: React.FC<PieChartProps> = ({ data, title = "Tài liệu theo danh mục" }) => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
     const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
@@ -50,7 +51,7 @@ const PieChart: React.FC<PieChartProps> = ({ data }) => {
     });
 
     return (
-        <ChartCard title="Tài liệu theo danh mục">
+        <ChartCard title={title}>
             <div className="pie-chart-container">
                 <svg viewBox="0 0 100 100" className="pie-chart">
                     {slices.map((slice, index) => (
