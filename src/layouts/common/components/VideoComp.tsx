@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-
+import React, { useState } from "react";
 
 interface VideoCompProps {
     videoUrl: string | null;
@@ -7,46 +6,18 @@ interface VideoCompProps {
 }
 
 const VideoComp: React.FC<VideoCompProps> = ({ videoUrl, thumbnailUrl }) => {
-    const [videoSource, setVideoSource] = useState<string | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!videoUrl) {
-            setVideoSource(null);
-            setLoading(false);
-            setError(null);
-            return;
-        }
-
-        setVideoSource(videoUrl);
-        setLoading(false);
-        setError(null);
-    }, [videoUrl]);
 
     if (!videoUrl) {
         return (
-            <div className="lesson-video-empty">
-                <i className="fa fa-video-camera" />
-                <p>Video bài giảng sẽ được cập nhật sớm.</p>
-            </div>
-        );
-    }
-
-    if (loading) {
-        return (
-            <div className="lesson-video-loading">
-                <i className="fa fa-spinner fa-spin" />
-                <p>Đang tải video...</p>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="lesson-video-error">
-                <i className="fa fa-exclamation-triangle" />
-                <p>{error}</p>
+            <div className="lesson-video-player">
+                <div className="lesson-video-frame">
+                    <div className="lesson-video-empty">
+                        <i className="fa fa-video-camera" />
+                        <p>Video bài giảng sẽ được cập nhật sớm.</p>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -54,14 +25,36 @@ const VideoComp: React.FC<VideoCompProps> = ({ videoUrl, thumbnailUrl }) => {
     return (
         <div className="lesson-video-player">
             <div className="lesson-video-frame">
+                {loading && (
+                    <div className="lesson-video-overlay lesson-video-loading">
+                        <i className="fa fa-spinner fa-spin" />
+                        <p>Đang tải video...</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="lesson-video-overlay lesson-video-error">
+                        <i className="fa fa-exclamation-triangle" />
+                        <p>{error}</p>
+                    </div>
+                )}
+
                 <video
+                    key={videoUrl}
                     controls
                     controlsList="nodownload"
-                    poster={thumbnailUrl ? `${thumbnailUrl}` : undefined}
+                    poster={thumbnailUrl || undefined}
                     preload="metadata"
                     onContextMenu={(e) => e.preventDefault()}
+                    onLoadStart={() => setLoading(true)}
+                    onLoadedData={() => setLoading(false)}
+                    onError={() => {
+                        setLoading(false);
+                        setError("Không thể tải video. Vui lòng thử lại sau.");
+                    }}
+                    className={loading || error ? "video-hidden" : ""}
                 >
-                    <source src={videoSource || undefined} />
+                    <source src={videoUrl} />
                     Trình duyệt của bạn không hỗ trợ video.
                 </video>
             </div>

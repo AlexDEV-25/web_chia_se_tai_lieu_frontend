@@ -163,11 +163,11 @@ const UploadLesson: React.FC = () => {
                         </div>
 
                         <div className="input-field">
-                            <label>Tài liệu đi kèm (pdf, doc, docx, ppt, pptx) - Tùy chọn</label>
+                            <label>Tài liệu đi kèm (pdf) - Tùy chọn</label>
                             <div className="file-drop">
                                 <input
                                     type="file"
-                                    accept=".pdf,.doc,.docx,.ppt,.pptx"
+                                    accept=".pdf"
                                     onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
                                     ref={documentRef}
                                 />
