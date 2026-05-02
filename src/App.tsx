@@ -1,7 +1,7 @@
 import './App.css'
-import Home from './layouts/common/home/Home'
-import Header from './layouts/common/header_footer/Header';
-import Footer from './layouts/common/header_footer/Footer';
+import Home from './layouts/common/home/Home1'
+import Header from './layouts/common/header_footer/Header1';
+import Footer from './layouts/common/header_footer/Footer1';
 import { useState, useEffect } from 'react';
 import type { AppContextType } from './AppContext';
 import { AppContext } from './AppContext';
@@ -11,15 +11,15 @@ import CategoryAdd from './layouts/admin/categories/CategoryAdd';
 import CategoryEdit from './layouts/admin/categories/CategotyEdit';
 import UploadDocument from './layouts/common/uploads/UploadDocument';
 import DocumentDetail from './layouts/common/document_detail/DocumentDetail';
-import Register from './layouts/common/auth/Register';
-import Login from './layouts/common/auth/Login';
-import Activate from './layouts/common/auth/Activate';
-import ForgotPassword from './layouts/common/auth/ForgotPassword';
-import ChangePassword from './layouts/common/auth/ChangePassword';
+import Register from './layouts/common/auth/Register1';
+import Login from './layouts/common/auth/Login1';
+import Activate from './layouts/common/auth/Activate1';
+import ForgotPassword from './layouts/common/auth/ForgotPassword1';
+import ChangePassword from './layouts/common/auth/ChangePassword1';
 import MyProfile from './layouts/user/MyProfile/MyProfile';
 import Favorites from './layouts/user/favorites/Favorites';
 import LessonDetail from './layouts/common/lesson_detail/LessonDetail';
-import Lesson from './layouts/common/lesson/Lesson';
+import Lesson from './layouts/common/lesson/Lesson1';
 import ChatGemini from './layouts/common/chatbot/ChatGemini';
 import { pdfjs } from 'react-pdf';
 import { introspect, refreshToken } from './apis/AuthApi';
