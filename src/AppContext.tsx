@@ -1,6 +1,6 @@
 // App.tsx hoặc AppContext.tsx
 import { createContext } from "react";
-import type { UserResponse } from "./models/response/UserResponse";
+import type { UserResponse } from "./models/response/user/UserResponse";
 
 export interface AppContextType {
     keyWords: string;
