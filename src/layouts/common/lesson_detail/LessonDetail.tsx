@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import VideoComp from "../components/VideoComp";
-import DocumentComp from "./components/DocumentComp1";
+import DocumentComp from "./components/DocumentComp";
 import { downloadDocument, downloadSubFile, getPublicLessonById, increaseView } from "../../../apis/LessonApi";
 import type { LessonDetailResponse } from "../../../models/response/lesson/LessonDetailResponse";
-import LessonRightSidebar from "./components/LessonRightSidebar1";
-import CarouselComp from "../components/CarouselComp1";
+import LessonRightSidebar from "./components/LessonRightSidebar";
+import CarouselComp from "../components/CarouselComp";
 import RatingComp from "../components/RatingComp";
-import CommentComp from "../components/CommentComp1";
+import CommentComp from "../components/CommentComp";
 import ReportComp from "../components/ReportComp";
 import { addFavorite, checkLessonFavorite, removeLessonFavorite } from "../../../apis/FavoriteApi";
 import { handleApiError } from "../../../utils/errorHandler";

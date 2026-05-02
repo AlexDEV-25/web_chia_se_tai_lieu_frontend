@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Document, Page } from "react-pdf";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import ZoomComp from "./ZoomComp1";
+import ZoomComp from "./ZoomComp";
 
 interface Props {
     documentUrl: string | null;
