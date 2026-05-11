@@ -6,7 +6,7 @@ import type { UserRequest } from "../models/request/UserRequest";
 import type { ChangePasswordRequest } from "../models/request/ChangePasswordRequest";
 import type { ChangeUserInfoRequest } from "../models/request/ChangeUserInfoRequest";
 import api from "./HttpClient";
-import type { HideRequest } from "../models/request/HideRequest";
+import type { HideRequest } from "../models/request/DisplayRequest";
 
 export const checkEmailExist = async (email: string) => {
     return await httpGet<APIResponse<boolean>>(`/users/email/${email}`);
@@ -36,6 +36,10 @@ export const updateMyInfo = async (avt: File | null, data: ChangeUserInfoRequest
     });
 
     return response.data;
+}
+
+export const searchUsers = async (keyword: string) => {
+    return await httpGet<APIResponse<UserBioResponse>>(`/users/search?keyword=${keyword}`);
 }
 
 export const changePassword = async (data: ChangePasswordRequest) => {

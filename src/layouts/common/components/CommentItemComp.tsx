@@ -9,7 +9,7 @@ interface CommentItemCompProps {
     replyContent: Record<number, string>;
     setReplyContent: React.Dispatch<React.SetStateAction<Record<number, string>>>;
     submittingTarget: "root" | number | null;
-    handleReplySubmit: (e: FormEvent, parentId: number) => Promise<void>;
+    handleReplySubmit: (e: FormEvent, parentId: number, levelParent: number) => Promise<void>;
     isAuthenticated: boolean;
 }
 
@@ -66,7 +66,7 @@ const CommentItemComp: React.FC<CommentItemCompProps> = ({
                         <form
                             className="mt-2"
                             onSubmit={(e) =>
-                                handleReplySubmit(e, comment.id)
+                                handleReplySubmit(e, comment.id, comment.level)
                             }
                         >
                             <textarea

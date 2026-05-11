@@ -10,5 +10,4 @@ export interface CommentResponse {
     contentId: number;
     level: number;
     hide: boolean;
-    type: 'DOCUMENT' | 'LESSON';
 }

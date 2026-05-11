@@ -4,14 +4,14 @@ import type { FavoriteResponse } from "../../../models/response/favorite/Favorit
 import {
     getDocumentFavoritesByUser,
     getLessonFavoritesByUser,
-    removeFavorite,
+    removeDocumentFavorite,
+    removeLessonFavorite,
 } from "../../../apis/FavoriteApi";
 import FavoritesComp from "./components/FavoritesComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import AlertDialog from "../../common/components/AlertDialog";
-
-type TabKey = "document" | "lesson";
+import type { InteractionType } from "../../../models/enum/common";
 
 const Favorites: React.FC = () => {
     const token = localStorage.getItem("token");
@@ -22,7 +22,7 @@ const Favorites: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [removingId, setRemovingId] = useState<number | null>(null);
-    const [activeTab, setActiveTab] = useState<TabKey>("document");
+    const [activeTab, setActiveTab] = useState<InteractionType>("DOCUMENT");
     const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
     const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
@@ -77,18 +77,20 @@ const Favorites: React.FC = () => {
         };
     }, [isAuthenticated]);
 
-    const handleRemove = async (favoriteId: number) => {
-        setRemovingId(favoriteId);
+    const handleRemove = async (contentId: number, type: InteractionType) => {
+        setRemovingId(contentId);
         try {
-            await removeFavorite(favoriteId);
-
-            // favoriteId là unique → lọc cả 2 mảng đều an toàn
-            setDocumentFavorites((prev) =>
-                prev.filter((fav) => fav.id !== favoriteId)
-            );
-            setLessonFavorites((prev) =>
-                prev.filter((fav) => fav.id !== favoriteId)
-            );
+            if (type === 'DOCUMENT') {
+                await removeDocumentFavorite(contentId);
+                setDocumentFavorites((prev) =>
+                    prev.filter((fav) => fav.contentId !== contentId)
+                );
+            } else {
+                await removeLessonFavorite(contentId);
+                setLessonFavorites((prev) =>
+                    prev.filter((fav) => fav.contentId !== contentId)
+                );
+            }
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_REMOVE_FAILED);
             setAlertDialog({
@@ -101,17 +103,17 @@ const Favorites: React.FC = () => {
         }
     };
 
-    const renderEmptyState = (tab: TabKey) => (
+    const renderEmptyState = (tab: InteractionType) => (
         <div className="text-center py-5">
             <p className="mb-3">
-                Bạn chưa lưu {tab === "document" ? "tài liệu" : "bài giảng"} nào.
+                Bạn chưa lưu {tab === "DOCUMENT" ? "tài liệu" : "bài giảng"} nào.
                 Khám phá và lưu về để xem sau!
             </p>
             <Link
-                to={tab === "document" ? "/" : "/lesson"}
+                to={tab === "DOCUMENT" ? "/" : "/lesson"}
                 className="btn btn-primary"
             >
-                Khám phá {tab === "document" ? "tài liệu" : "bài giảng"}
+                Khám phá {tab === "DOCUMENT" ? "tài liệu" : "bài giảng"}
             </Link>
         </div>
     );
@@ -168,27 +170,27 @@ const Favorites: React.FC = () => {
                     >
                         <button
                             type="button"
-                            className={`btn ${activeTab === "document"
+                            className={`btn ${activeTab === "DOCUMENT"
                                 ? "btn-primary"
                                 : "btn-outline-secondary"
                                 }`}
-                            onClick={() => setActiveTab("document")}
+                            onClick={() => setActiveTab("DOCUMENT")}
                         >
                             Tài liệu ({documentFavorites.length})
                         </button>
                         <button
                             type="button"
-                            className={`btn ${activeTab === "lesson"
+                            className={`btn ${activeTab === "LESSON"
                                 ? "btn-primary"
                                 : "btn-outline-secondary"
                                 }`}
-                            onClick={() => setActiveTab("lesson")}
+                            onClick={() => setActiveTab("LESSON")}
                         >
                             Bài giảng ({lessonFavorites.length})
                         </button>
                     </div>
 
-                    {activeTab === "document" ? (
+                    {activeTab === "DOCUMENT" ? (
                         documentFavorites.length > 0 ? (
                             <FavoritesComp
                                 type="DOCUMENT"
@@ -198,7 +200,7 @@ const Favorites: React.FC = () => {
                                 onRemove={handleRemove}
                             />
                         ) : (
-                            renderEmptyState("document")
+                            renderEmptyState("DOCUMENT")
                         )
                     ) : lessonFavorites.length > 0 ? (
                         <FavoritesComp
@@ -209,7 +211,7 @@ const Favorites: React.FC = () => {
                             onRemove={handleRemove}
                         />
                     ) : (
-                        renderEmptyState("lesson")
+                        renderEmptyState("LESSON")
                     )}
                 </>
             )}

@@ -154,7 +154,7 @@ const ChatGemini: React.FC = () => {
                     className="chatbot-toggle-btn"
                 >
                     <i className="fa fa-comments" />
-                    <span>Alex</span>
+
                 </button>
             </div>
         );
@@ -170,7 +170,7 @@ const ChatGemini: React.FC = () => {
             <div className="chatbot-header">
                 <div className="chatbot-title">
                     <i className="fa fa-robot" />
-                    <span>AI Assistant</span>
+                    <span>AI</span>
                 </div>
                 <button
                     onClick={() => setIsMinimized(true)}

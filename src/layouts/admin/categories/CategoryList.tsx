@@ -12,15 +12,16 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import { handleApiError } from '../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../constants/messages';
 import { Link } from 'react-router-dom';
-import type { VisibilityFilter } from '../types/common';
 import { renderStatusPill } from '../components/StatusPill';
+import type { VisibilityFilter } from '../../../models/enum/common';
+
 
 const CategoryList: React.FC = () => {
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
+    const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('ALL');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
     const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; category: CategoryResponse | null }>({ isOpen: false, category: null });
 
@@ -52,7 +53,7 @@ const CategoryList: React.FC = () => {
         const { id, hide } = confirmDialog.category;
         try {
             setUpdatingId(id);
-            await hideCategory(id, { hide: !hide, updatedAt: new Date() });
+            await hideCategory(id, { hide: !hide, type: "CATEGORY" });
             setCategories((prev) =>
                 prev.map((item) =>
                     item.id === id ? { ...item, hide: !hide } : item
@@ -79,9 +80,9 @@ const CategoryList: React.FC = () => {
                 category.name.toLowerCase().includes(lowerSearch) ||
                 category.description?.toLowerCase().includes(lowerSearch);
             const matchesVisibility =
-                visibilityFilter === 'all' ||
-                (visibilityFilter === 'visible' && !category.hide) ||
-                (visibilityFilter === 'hidden' && category.hide);
+                visibilityFilter === 'ALL' ||
+                (visibilityFilter === 'VISIBLE' && !category.hide) ||
+                (visibilityFilter === 'HIDDEN' && category.hide);
             return matchesSearch && matchesVisibility;
         });
     }, [categories, searchTerm, visibilityFilter]);

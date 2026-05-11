@@ -61,7 +61,7 @@ const UploadDocument: React.FC = () => {
             description,
             status: "PENDING"
             , hide: false,
-            categoryId: categoryId === -1 ? undefined : categoryId
+            categoryId: categoryId === -1 ? null : categoryId
         };
 
         try {

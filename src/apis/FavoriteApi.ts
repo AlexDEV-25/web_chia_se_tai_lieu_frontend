@@ -4,11 +4,7 @@ import type { FavoriteRequest } from "../models/request/FavoriteRequest";
 import type { FavoriteResponse } from "../models/response/favorite/FavoriteResponse";
 
 export const addFavorite = async (data: FavoriteRequest) => {
-    return await httpPost<APIResponse<FavoriteResponse>>(`/favorites/`, data);
-};
-
-export const removeFavorite = async (id: number) => {
-    return await httpDelete<APIResponse<void>>(`/favorites/${id}`);
+    return await httpPost<APIResponse<FavoriteResponse>>(`/favorites`, data);
 };
 
 export const removeDocumentFavorite = async (documentId: number) => {

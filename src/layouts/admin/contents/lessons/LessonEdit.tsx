@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getLessonById, updateLesson } from "../../../../apis/LessonApi";
+import { getLessonById, updateLesson, deleteLesson } from "../../../../apis/LessonApi";
 import VideoComp from "../../../common/components/VideoComp";
 import DocumentViewComp from "../../../common/components/DocumentViewComp";
 import RightProperties from "../components/RightProperties";
@@ -11,6 +11,8 @@ import { ERROR_MESSAGES } from "../../../../constants/messages";
 import ReturnHeader from "../components/ReturnHeader";
 import ErrorAlert from "../../components/ErrorAlert";
 import Header from "../components/Header";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import type { ContentStatus } from "../../../../models/enum/common";
 
 const LessonEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -20,10 +22,12 @@ const LessonEdit: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean }>({ isOpen: false });
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [status, setStatus] = useState<"PENDING" | "PUBLISHED">("PENDING");
+    const [status, setStatus] = useState<ContentStatus>("PENDING");
     const [hide, setHide] = useState(false);
     const [categoryId, setCategoryId] = useState<number | undefined>();
 
@@ -84,7 +88,24 @@ const LessonEdit: React.FC = () => {
         } finally {
             setSaving(false);
         }
-    }, [lesson?.id, title, description, status, hide, categoryId]);
+    }, [lesson?.id, title, description, status, categoryId]);
+
+    const handleDelete = useCallback(async () => {
+        if (!lesson?.id) return;
+
+        setDeleting(true);
+        try {
+            await deleteLesson(lesson.id);
+            setError(null);
+            navigate("/lessons");
+        } catch (err: any) {
+            const message = handleApiError(err, ERROR_MESSAGES.DELETE_FAILED);
+            setError(message);
+            setConfirmDialog({ isOpen: false });
+        } finally {
+            setDeleting(false);
+        }
+    }, [lesson?.id]);
 
     if (loading) {
         return <div className="loading-skeleton">Đang tải bài học...</div>;
@@ -100,6 +121,15 @@ const LessonEdit: React.FC = () => {
                 <Header target="documents" content="Chi tiết bài học" />
 
                 {error && (<ErrorAlert message={error} onRetry={fetchLesson} />)}
+                <div className="document-actions-header">
+                    <button
+                        className="category-btn danger"
+                        onClick={() => setConfirmDialog({ isOpen: true })}
+                        disabled={deleting || saving}
+                    >
+                        {deleting ? 'Đang xóa...' : 'Xóa bài học'}
+                    </button>
+                </div>
 
                 <div className="document-edit-grid">
 
@@ -123,14 +153,13 @@ const LessonEdit: React.FC = () => {
                     </div>
 
                     <RightProperties
-                        type="lesson"
+                        type="LESSON"
                         data={{
                             id: lesson.id,
                             title,
                             description,
                             categoryId,
                             status,
-                            hide,
                             createdAt: lesson.createdAt,
                             updatedAt: lesson.updatedAt,
                             views: lesson.viewsCount,
@@ -139,13 +168,22 @@ const LessonEdit: React.FC = () => {
                         setDescription={setDescription}
                         setCategoryId={setCategoryId}
                         setStatus={setStatus}
-                        setHide={setHide}
                         onSave={handleSave}
                         onClose={() => navigate("/lessons")}
                         saving={saving}
                     />
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                title="Xóa bài học"
+                message={`Bạn có chắc chắn muốn xóa bài học "${lesson.title}"? Hành động này không thể hoàn tác.`}
+                onConfirm={handleDelete}
+                onCancel={() => setConfirmDialog({ isOpen: false })}
+                confirmText="Xóa"
+                cancelText="Hủy"
+            />
         </div>
     );
 };

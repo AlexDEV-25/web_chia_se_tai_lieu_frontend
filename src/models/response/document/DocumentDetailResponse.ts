@@ -1,3 +1,5 @@
+import type { ContentStatus } from "../../enum/common";
+
 export interface DocumentDetailResponse {
     id: number;
     title: string;
@@ -8,7 +10,7 @@ export interface DocumentDetailResponse {
     downloadsCount: number;
     createdAt: string;
     updatedAt: string;
-    status: 'PUBLISHED' | 'PENDING';
+    status: ContentStatus;
     hide: boolean;
     categoryId: number;
     categoryName: string;

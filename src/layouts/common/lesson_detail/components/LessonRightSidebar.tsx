@@ -9,7 +9,7 @@ import GrindItem from "../../components/GrindItem";
 import { handleApiError } from "../../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../../constants/messages";
 import AlertDialog from "../../components/AlertDialog";
-import type { LessonFavoriteResponse } from "../../../../models/response/lesson/LessonFavoriteResponse";
+import type { LessonResponse } from "../../../../models/response/lesson/LessonResponse";
 
 interface LessonRightSidebarProps {
     userId: number;
@@ -23,7 +23,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({
     const token = localStorage.getItem("token");
     const isAuthenticated = Boolean(token);
 
-    const [lessons, setLessons] = useState<LessonFavoriteResponse[]>([]);
+    const [lessons, setLessons] = useState<LessonResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
@@ -61,7 +61,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({
     }, [userId, currentLessonId]);
 
     // Toggle favorite
-    const handleToggleFavorite = async (lesson: LessonFavoriteResponse) => {
+    const handleToggleFavorite = async (lesson: LessonResponse) => {
         if (!isAuthenticated) {
             setAlertDialog({
                 isOpen: true,
@@ -143,7 +143,7 @@ const LessonRightSidebar: React.FC<LessonRightSidebarProps> = ({
                 {lessons.map((lesson) => (
                     <GrindItem
                         key={lesson.id}
-                        itemType="lesson"
+                        itemType="LESSON"
                         link={`/lesson/${lesson.id}`}
                         title={lesson.title}
                         thumbnailUrl={

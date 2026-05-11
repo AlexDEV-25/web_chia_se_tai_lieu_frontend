@@ -4,5 +4,4 @@ export interface ReportDetailAdminResponse {
     title: string;
     username: string;
     reason: string;
-    type: 'DOCUMENT' | 'LESSON';
 }

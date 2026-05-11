@@ -7,12 +7,12 @@ import CategoryBlockComp from "../components/CategoryBlockComp";
 import MainBlockComp from "../components/MainBlockComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import type { DocumentFavoriteResponse } from "../../../models/response/document/DocumentFavoriteResponse";
+import type { DocumentResponse } from "../../../models/response/document/DocumentResponse";
 interface Props {
     keyWords: string
 }
 const Home = ({ keyWords }: Props) => {
-    const [documents, setDocuments] = useState<DocumentFavoriteResponse[]>([]);
+    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [statsData, setStatsData] = useState<any>(null);
     const [loadingDocs, setLoadingDocs] = useState(true);
@@ -139,9 +139,16 @@ const Home = ({ keyWords }: Props) => {
                 loading={loadingDocs}
                 error={error}
                 items={filteredDocuments}
+                onFavoriteChange={(itemId, isFavorite) => {
+                    setDocuments(prev =>
+                        prev.map(doc =>
+                            doc.id === itemId ? { ...doc, favorite: isFavorite } : doc
+                        )
+                    );
+                }}
                 shimmerPlaceholders={shimmer}
                 selectedCategoryLabel={selectedCategoryLabel}
-                itemType="document"
+                itemType="DOCUMENT"
                 sectionTitle="Tài liệu đề xuất"
                 emptyMessage="Không tìm thấy tài liệu phù hợp. Hãy thử từ khóa khác nhé!"
             />

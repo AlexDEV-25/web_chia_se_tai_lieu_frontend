@@ -13,8 +13,9 @@ import { ERROR_MESSAGES } from "../../../constants/messages";
 interface Props {
     setToken: (value: string | null) => void
     setRoles: (value: string[]) => void
+    setAvatar: (value: string | null) => void
 }
-const Login: React.FC<Props> = ({ setToken, setRoles }) => {
+const Login: React.FC<Props> = ({ setToken, setRoles, setAvatar }) => {
     const navigate = useNavigate();
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -68,6 +69,9 @@ const Login: React.FC<Props> = ({ setToken, setRoles }) => {
                     return;
                 }
                 setRoles(roles!);
+                localStorage.setItem("roles", JSON.stringify(roles));
+                setAvatar(user.avatarUrl!);
+                localStorage.setItem("avatar", user.avatarUrl!);
             } catch (err: any) {
                 const message = handleApiError(err, ERROR_MESSAGES.LOGIN_FAILED);
                 setLoginError(message);
@@ -123,6 +127,8 @@ const Login: React.FC<Props> = ({ setToken, setRoles }) => {
                             setLoginError(ERROR_MESSAGES.LOGIN_FAILED);
                             return;
                         }
+                        localStorage.setItem("avatar", user.avatarUrl!);
+                        setAvatar(user.avatarUrl!);
                     } catch (err: any) {
                         const message = handleApiError(err, ERROR_MESSAGES.LOGIN_FAILED);
                         setLoginError(message);

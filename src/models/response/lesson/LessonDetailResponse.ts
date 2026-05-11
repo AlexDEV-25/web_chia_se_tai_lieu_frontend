@@ -1,3 +1,5 @@
+import type { ContentStatus } from "../../enum/common";
+
 export interface LessonDetailResponse {
     id: number;
     title: string;
@@ -9,7 +11,7 @@ export interface LessonDetailResponse {
     viewsCount: number;
     createdAt: string;
     updatedAt: string;
-    status: 'PUBLISHED' | 'PENDING';
+    status: ContentStatus;
     hide: boolean;
     categoryId: number;
     categoryName: string;

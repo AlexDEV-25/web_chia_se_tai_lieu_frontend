@@ -45,6 +45,7 @@ function App() {
   const [keyWords, setKeyWords] = useState("");
   const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
   const [roles, setRoles] = useState<string[]>(JSON.parse(localStorage.getItem("roles") || "[]"));
+  const [avatar, setAvatar] = useState<string | null>(localStorage.getItem("avatar"));
 
   const ctxValue: AppContextType = {
     keyWords, setKeyWords,
@@ -56,8 +57,10 @@ function App() {
       await introspect().catch(() => {
         localStorage.removeItem("token");
         localStorage.removeItem("roles");
+        localStorage.removeItem("avatar");
         setToken(null);
         setRoles([]);
+        setAvatar(null);
       });
     }
     check()
@@ -80,14 +83,14 @@ function App() {
     <>
       <BrowserRouter>
         <AppContext.Provider value={ctxValue}>
-          <Header token={token} setToken={setToken} setKeyWords={setKeyWords} roles={roles} setRoles={setRoles} />
+          <Header token={token} setToken={setToken} setKeyWords={setKeyWords} roles={roles} setRoles={setRoles} avatar={avatar} setAvatar={setAvatar} />
           <Routes>
             <Route path="/" element={<Home keyWords={keyWords} />} />
             <Route path="/lesson" element={<Lesson keyWords={keyWords} />} />
 
             {/* {auth} */}
             <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login setToken={setToken} setRoles={setRoles} />} />
+            <Route path="/login" element={<Login setToken={setToken} setRoles={setRoles} setAvatar={setAvatar} />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/change-password/:email/:forgotPasswordCode" element={<ChangePassword />} />
             <Route path="/activate/:email/:activationCode" element={<Activate />} />

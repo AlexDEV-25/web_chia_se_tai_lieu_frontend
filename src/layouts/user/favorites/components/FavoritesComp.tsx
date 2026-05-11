@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
 import type { FavoriteResponse } from "../../../../models/response/favorite/FavoriteResponse";
+import type { InteractionType } from "../../../../models/enum/common";
 
-type FavoriteType = "DOCUMENT" | "LESSON";
 
 interface FavoritesCompProps {
-    type: FavoriteType;
+    type: InteractionType;
     favorites: FavoriteResponse[];
     formatSavedDate: (value: string) => string;
     removingId: number | null;
-    onRemove: (favoriteId: number) => void;
+    onRemove: (contentId: number, type: InteractionType) => void;
 }
 
 const FavoritesComp: React.FC<FavoritesCompProps> = ({
@@ -40,7 +40,7 @@ const FavoritesComp: React.FC<FavoritesCompProps> = ({
                     const thumbnail = fav.thumbnailUrl;
                     const title = fav.title;
                     return (
-                        <div key={fav.id} className="document-card">
+                        <div key={`${type}-${fav.contentId}`} className="document-card">
                             <div className="document-thumbnail">
                                 <Link to={link}>
                                     {thumbnail ? (
@@ -79,12 +79,12 @@ const FavoritesComp: React.FC<FavoritesCompProps> = ({
                             <div className="document-action">
                                 <button
                                     className="action-button delete"
-                                    onClick={() => onRemove(fav.id)}
-                                    disabled={removingId === fav.id}
+                                    onClick={() => onRemove(fav.contentId, isDocument ? 'DOCUMENT' : 'LESSON')}
+                                    disabled={removingId === fav.contentId}
                                     title="Xóa khỏi yêu thích"
                                 >
                                     <i className="fa fa-trash"></i>
-                                    {removingId === fav.id ? ' Đang xóa...' : ' Xóa'}
+                                    {removingId === fav.contentId ? ' Đang xóa...' : ' Xóa'}
                                 </button>
                             </div>
                         </div>

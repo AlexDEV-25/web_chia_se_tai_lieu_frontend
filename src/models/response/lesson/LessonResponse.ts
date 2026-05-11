@@ -1,4 +1,4 @@
-export interface LessonFavoriteResponse {
+export interface LessonResponse {
     id: number;
     title: string;
     description: string;

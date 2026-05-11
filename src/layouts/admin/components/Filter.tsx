@@ -1,5 +1,6 @@
 import React from 'react';
-import type { VisibilityFilter } from '../types/common';
+import type { VisibilityFilter } from '../../../models/enum/common';
+
 
 
 interface FilterProps {
@@ -25,11 +26,11 @@ const Filter: React.FC<FilterProps> = ({
     filterActionsClass = 'filter-actions',
     filterChipClass = 'filter-chip'
 }) => {
-    const filters: VisibilityFilter[] = ['all', 'visible', 'hidden'];
+    const filters: VisibilityFilter[] = ['ALL', 'VISIBLE', 'HIDDEN'];
     const filterLabels: Record<VisibilityFilter, string> = {
-        all: 'Tất cả',
-        visible: 'Hiển thị',
-        hidden: 'Ẩn'
+        ALL: 'Tất cả',
+        VISIBLE: 'Hiển thị',
+        HIDDEN: 'Ẩn'
     };
 
     return (

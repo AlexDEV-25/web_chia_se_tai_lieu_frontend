@@ -7,9 +7,10 @@ import DocumentComp from "./DocumentComp";
 import LessonComp from "./LessonComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import type { InteractionType } from "../../../models/enum/common";
 
 const UploadHistory: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<"documents" | "lessons">("documents");
+    const [activeTab, setActiveTab] = useState<InteractionType>("DOCUMENT");
     const [documents, setDocuments] = useState<DocumentUserResponse[]>([]);
     const [lessons, setLessons] = useState<LessonUserResponse[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,7 +27,7 @@ const UploadHistory: React.FC = () => {
         setError(null);
 
         try {
-            if (activeTab === "documents") {
+            if (activeTab === "DOCUMENT") {
                 const response = await getMyDocument();
                 setDocuments(response.resultList || []);
             } else {
@@ -100,14 +101,14 @@ const UploadHistory: React.FC = () => {
                 <h1>Lịch sử tải lên</h1>
                 <div className="tab-navigation">
                     <button
-                        className={`tab-button ${activeTab === "documents" ? "active" : ""}`}
-                        onClick={() => setActiveTab("documents")}
+                        className={`tab-button ${activeTab === "DOCUMENT" ? "active" : ""}`}
+                        onClick={() => setActiveTab("DOCUMENT")}
                     >
                         Tài liệu ({documentQuantity})
                     </button>
                     <button
-                        className={`tab-button ${activeTab === "lessons" ? "active" : ""}`}
-                        onClick={() => setActiveTab("lessons")}
+                        className={`tab-button ${activeTab === "LESSON" ? "active" : ""}`}
+                        onClick={() => setActiveTab("LESSON")}
                     >
                         Bài học ({lessonQuantity})
                     </button>
@@ -129,14 +130,14 @@ const UploadHistory: React.FC = () => {
                     </div>
                 ) : (
                     <>
-                        {activeTab === "documents" && (
+                        {activeTab === "DOCUMENT" && (
                             <DocumentComp
                                 documents={documents}
                                 onDelete={handleDeleteDocument}
                                 onUpdate={loadData}
                             />
                         )}
-                        {activeTab === "lessons" && (
+                        {activeTab === "LESSON" && (
                             <LessonComp
                                 lessons={lessons}
                                 onDelete={handleDeleteLesson}

@@ -1,16 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { getAllCategory } from "../../../../apis/CategoryApi";
 import type { CategoryResponse } from "../../../../models/response/category/CategoryResponse";
+import type { ContentStatus, InteractionType } from "../../../../models/enum/common";
 
-type ContentType = "document" | "lesson";
 
 interface BaseContent {
     id: number;
     title: string;
     description?: string;
     categoryId?: number;
-    status: "PENDING" | "PUBLISHED";
-    hide: boolean;
+    status: ContentStatus;
     createdAt?: string;
     updatedAt?: string;
     views?: number;
@@ -18,18 +17,14 @@ interface BaseContent {
 }
 
 interface RightPropertiesProps {
-    type: ContentType;
+    type: InteractionType;
     data: BaseContent;
-
     setTitle: (value: string) => void;
     setDescription: (value: string) => void;
     setCategoryId: (value?: number) => void;
-    setStatus: (value: "PENDING" | "PUBLISHED") => void;
-    setHide: (value: boolean) => void;
-
+    setStatus: (value: ContentStatus) => void;
     onSave: () => void;
     onClose: () => void;
-
     saving?: boolean;
 }
 
@@ -40,7 +35,6 @@ const RightProperties: React.FC<RightPropertiesProps> = ({
     setDescription,
     setCategoryId,
     setStatus,
-    setHide,
     onSave,
     onClose,
     saving = false,
@@ -121,7 +115,7 @@ const RightProperties: React.FC<RightPropertiesProps> = ({
                         <strong>{data.views ?? 0}</strong>
                     </div>
 
-                    {type === "document" && (
+                    {type === "DOCUMENT" && (
                         <div className="stat-item">
                             <span>Lượt tải</span>
                             <strong>{data.downloads ?? 0}</strong>
@@ -138,28 +132,18 @@ const RightProperties: React.FC<RightPropertiesProps> = ({
                     <select
                         value={data.status}
                         onChange={(e) =>
-                            setStatus(e.target.value as "PENDING" | "PUBLISHED")
+                            setStatus(e.target.value as ContentStatus)
                         }
                         disabled={saving}
                         className="document-select"
                     >
                         <option value="PENDING">Chờ duyệt</option>
                         <option value="PUBLISHED">Đã xuất bản</option>
+                        <option value="HIDDEN">Đã ẩn</option>
                     </select>
                 </div>
 
-                <div className="property-item">
-                    <label>Ẩn / Hiển thị</label>
-                    <select
-                        value={data.hide ? "true" : "false"}
-                        onChange={(e) => setHide(e.target.value === "true")}
-                        disabled={saving}
-                        className="document-select"
-                    >
-                        <option value="false">Đang hiển thị</option>
-                        <option value="true">Đang ẩn</option>
-                    </select>
-                </div>
+
             </div>
 
             <div className="document-property-card">

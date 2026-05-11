@@ -1,3 +1,5 @@
+import type { ContentStatus } from "../../enum/common";
+
 export interface DocumentUserResponse {
     id: number;
     title: string;
@@ -5,7 +7,5 @@ export interface DocumentUserResponse {
     thumbnailUrl: string;
     viewsCount: number;
     downloadsCount: number;
-    categoryId: number;
-    hide: boolean;
-    status: 'PUBLISHED' | 'PENDING';
+    status: ContentStatus;
 }

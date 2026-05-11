@@ -146,8 +146,8 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
 
             {showEditForm && editingDocument && (
                 <FormUpdate
-                    item={editingDocument}
-                    itemType="document"
+                    itemId={editingDocument.id}
+                    itemType="DOCUMENT"
                     isVisible={showEditForm}
                     onClose={handleCancelEdit}
                     onSave={handleSaveEdit}
@@ -157,7 +157,7 @@ const DocumentComp: React.FC<Props> = ({ documents, onDelete, onUpdate }) => {
             {showDeleteAlert && deletingDocument && (
                 <DeleteAlert
                     isVisible={showDeleteAlert}
-                    itemType="document"
+                    itemType="DOCUMENT"
                     itemName={deletingDocument.title}
                     onConfirm={handleConfirmDelete}
                     onCancel={handleCancelDelete}

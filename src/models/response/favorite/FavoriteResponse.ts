@@ -5,5 +5,4 @@ export interface FavoriteResponse {
     title: string;
     thumbnailUrl: string;
     authorName: string;
-    type: 'DOCUMENT' | 'LESSON';
 }

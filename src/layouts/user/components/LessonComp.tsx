@@ -144,8 +144,8 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
 
             {showEditForm && editingLesson && (
                 <FormUpdate
-                    item={editingLesson}
-                    itemType="lesson"
+                    itemId={editingLesson.id}
+                    itemType="LESSON"
                     isVisible={showEditForm}
                     onClose={handleCancelEdit}
                     onSave={handleSaveEdit}
@@ -155,7 +155,7 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
             {showDeleteAlert && deletingLesson && (
                 <DeleteAlert
                     isVisible={showDeleteAlert}
-                    itemType="lesson"
+                    itemType="LESSON"
                     itemName={deletingLesson.title}
                     onConfirm={handleConfirmDelete}
                     onCancel={handleCancelDelete}

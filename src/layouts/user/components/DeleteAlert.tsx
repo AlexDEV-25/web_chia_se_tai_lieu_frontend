@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import type { InteractionType } from "../../../models/enum/common";
 
 
 
 interface Props {
     isVisible: boolean;
-    itemType: "document" | "lesson";
+    itemType: InteractionType;
     itemName: string;
     onConfirm: () => Promise<void>;
     onCancel: () => void;
@@ -33,16 +34,16 @@ const DeleteAlert: React.FC<Props> = ({
     };
 
     const getAlertTitle = () => {
-        return itemType === "document" ? "Xóa tài liệu" : "Xóa bài học";
+        return itemType === "DOCUMENT" ? "Xóa tài liệu" : "Xóa bài học";
     };
 
     const getAlertMessage = () => {
-        const prefix = itemType === "document" ? "tài liệu" : "bài học";
+        const prefix = itemType === "DOCUMENT" ? "tài liệu" : "bài học";
         return `Bạn có chắc chắn muốn xóa ${prefix} "${itemName}" không? Hành động này không thể hoàn tác.`;
     };
 
     const getAlertIcon = () => {
-        return itemType === "document" ? "fa-file-text" : "fa-play-circle";
+        return itemType === "DOCUMENT" ? "fa-file-text" : "fa-play-circle";
     };
 
     if (!isVisible) return null;
@@ -109,7 +110,7 @@ const DeleteAlert: React.FC<Props> = ({
                         ) : (
                             <>
                                 <i className="fa fa-trash"></i>
-                                Xóa {itemType === "document" ? "tài liệu" : "bài học"}
+                                Xóa {itemType === "DOCUMENT" ? "tài liệu" : "bài học"}
                             </>
                         )}
                     </button>

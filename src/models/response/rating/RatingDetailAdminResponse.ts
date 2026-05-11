@@ -6,5 +6,4 @@ export interface RatingDetailAdminResponse {
     star3: number;
     star4: number;
     star5: number;
-    type: 'DOCUMENT' | 'LESSON';
 }

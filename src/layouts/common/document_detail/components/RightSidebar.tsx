@@ -4,7 +4,7 @@ import {
     addFavorite,
     removeDocumentFavorite,
 } from "../../../../apis/FavoriteApi";
-import type { DocumentFavoriteResponse } from "../../../../models/response/document/DocumentFavoriteResponse";
+import type { DocumentResponse } from "../../../../models/response/document/DocumentResponse";
 import GrindItem from "../../components/GrindItem";
 import { handleApiError } from "../../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../../constants/messages";
@@ -19,7 +19,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
     const token = localStorage.getItem("token");
     const isAuthenticated = Boolean(token);
 
-    const [documents, setDocuments] = useState<DocumentFavoriteResponse[]>([]);
+    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
@@ -55,7 +55,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
     }, [userId, currentDocumentId]);
 
     // Toggle favorite
-    const handleToggleFavorite = async (doc: DocumentFavoriteResponse) => {
+    const handleToggleFavorite = async (doc: DocumentResponse) => {
         if (!isAuthenticated) {
             setAlertDialog({
                 isOpen: true,

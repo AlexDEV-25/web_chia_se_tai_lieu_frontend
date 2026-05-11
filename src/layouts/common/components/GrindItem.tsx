@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import type { InteractionType } from "../../../models/enum/common";
 
 type GrindItemProps = {
-    itemType: "document" | "lesson";
+    itemType: InteractionType;
     link: string;
     title: string;
     thumbnailUrl?: string | null;
@@ -54,7 +55,7 @@ const GrindItem: React.FC<GrindItemProps> = ({
 }: GrindItemProps) => {
     const safeThumbnailUrl =
         thumbnailUrl && thumbnailUrl.trim() !== "" ? thumbnailUrl : "/images/video-placeholder.jpg";
-    const resolvedDocType = itemType === "document" ? "PDF" : "Video";
+    const resolvedDocType = itemType === "DOCUMENT" ? "PDF" : "Video";
     const itemClasses = ["document-card"];
 
     if (variant === "compact") {
@@ -98,7 +99,7 @@ const GrindItem: React.FC<GrindItemProps> = ({
 
     const renderMeta = () => {
         const hasViews = viewsCount != null;
-        const hasDownloads = itemType === "document" && downloadsCount != null;
+        const hasDownloads = itemType === "DOCUMENT" && downloadsCount != null;
         const hasInlineFavorite = showInlineFavorite && onToggleFavorite;
         const hasMetaExtras = Boolean(metaExtras);
 

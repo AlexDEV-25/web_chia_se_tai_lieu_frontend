@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getByReceiver, read, readAll } from "../../../../apis/UserNotificationApi";
 import type { UserNotificationResponse } from "../../../../models/response/usernotification/UserNotificationResponse";
@@ -11,6 +11,7 @@ const ListNotification: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [markingAllAsRead, setMarkingAllAsRead] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const fetchNotifications = async () => {
         setLoading(true);
@@ -36,6 +37,23 @@ const ListNotification: React.FC = () => {
         if (isOpen) {
             fetchNotifications();
         }
+    }, [isOpen]);
+
+    // Click outside to close
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
     }, [isOpen]);
 
     const handleMarkAsRead = async (notificationId: number) => {
@@ -119,7 +137,7 @@ const ListNotification: React.FC = () => {
 
             {/* Notification Dropdown */}
             {isOpen && (
-                <div className="notification-dropdown">
+                <div className="notification-dropdown" ref={dropdownRef}>
                     <div className="notification-header">
                         <h5 className="notification-title">Thông báo</h5>
                         <div className="notification-header-actions">

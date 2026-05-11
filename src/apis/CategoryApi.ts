@@ -2,7 +2,7 @@ import type { APIResponse } from '../models/response/APIResponse';
 import { httpGet, httpPost, httpPut, httpDelete } from "./HttpClient";
 import type { CategoryResponse } from "../models/response/category/CategoryResponse";
 import type { CategoryRequest } from "../models/request/CategoryRequest"
-import type { HideRequest } from '../models/request/HideRequest';
+import type { HideRequest } from '../models/request/DisplayRequest';
 
 export const getAllCategory = async () => {
     return await httpGet<APIResponse<CategoryResponse>>(`/categories/admin`);

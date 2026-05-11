@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllDocument, deleteDocument, hideDocument } from '../../../../apis/DocumentApi';
+import { getAllDocument, deleteDocument } from '../../../../apis/DocumentApi';
 import PageHeader from '../../components/PageHeader';
 import Stats from '../../components/Stats';
 import Filter from '../../components/Filter';
@@ -12,16 +12,16 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import type { DocumentAdminResponse } from '../../../../models/response/document/DocumentAdminResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
-import type { VisibilityFilter } from '../../types/common';
+import type { ContentStatus, VisibilityFilter } from '../../../../models/enum/common';
 
 const DocumentList: React.FC = () => {
     const [documents, setDocuments] = useState<DocumentAdminResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
+    const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('ALL');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
-    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; action: 'toggle' | 'delete'; item: DocumentAdminResponse | null }>({ isOpen: false, action: 'toggle', item: null });
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; item: DocumentAdminResponse | null }>({ isOpen: false, item: null });
 
     const fetchDocuments = useCallback(async () => {
         setLoading(true);
@@ -41,12 +41,8 @@ const DocumentList: React.FC = () => {
         fetchDocuments();
     }, [fetchDocuments]);
 
-    const handleToggleVisibility = useCallback((document: DocumentAdminResponse) => {
-        setConfirmDialog({ isOpen: true, action: 'toggle', item: document });
-    }, []);
-
     const handleDelete = useCallback((document: DocumentAdminResponse) => {
-        setConfirmDialog({ isOpen: true, action: 'delete', item: document });
+        setConfirmDialog({ isOpen: true, item: document });
     }, []);
 
     const handleConfirm = async () => {
@@ -55,29 +51,19 @@ const DocumentList: React.FC = () => {
         const { id } = confirmDialog.item;
         try {
             setUpdatingId(id);
-            if (confirmDialog.action === 'toggle') {
-                const { hide } = confirmDialog.item;
-                await hideDocument(id, { hide: !hide, updatedAt: new Date() });
-                setDocuments((prev) =>
-                    prev.map((item) =>
-                        item.id === id ? { ...item, hide: !hide } : item
-                    )
-                );
-            } else {
-                await deleteDocument(id);
-                setDocuments((prev) => prev.filter((item) => item.id !== id));
-            }
+            await deleteDocument(id);
+            setDocuments((prev) => prev.filter((item) => item.id !== id));
         } catch (err: any) {
-            const message = handleApiError(err, confirmDialog.action === 'toggle' ? ERROR_MESSAGES.DOCUMENT_UPDATE_FAILED : ERROR_MESSAGES.DOCUMENT_DELETE_FAILED);
+            const message = handleApiError(err, ERROR_MESSAGES.DOCUMENT_DELETE_FAILED);
             setError(message);
         } finally {
             setUpdatingId(null);
-            setConfirmDialog({ isOpen: false, action: 'toggle', item: null });
+            setConfirmDialog({ isOpen: false, item: null });
         }
     };
 
     const handleCancel = () => {
-        setConfirmDialog({ isOpen: false, action: 'toggle', item: null });
+        setConfirmDialog({ isOpen: false, item: null });
     };
 
     const filteredDocuments = useMemo(() => {
@@ -88,25 +74,26 @@ const DocumentList: React.FC = () => {
                 document.title.toLowerCase().includes(lowerSearch) ||
                 document.description?.toLowerCase().includes(lowerSearch);
             const matchesVisibility =
-                visibilityFilter === 'all' ||
-                (visibilityFilter === 'visible' && !document.hide) ||
-                (visibilityFilter === 'hidden' && document.hide);
+                visibilityFilter === 'ALL' ||
+                (visibilityFilter === 'VISIBLE') ||
+                (visibilityFilter === 'HIDDEN');
             return matchesSearch && matchesVisibility;
         });
     }, [documents, searchTerm, visibilityFilter]);
 
     const stats = useMemo(() => {
         const total = documents.length;
-        const hidden = documents.filter((doc) => doc.hide).length;
+        const hidden = documents.filter((doc) => doc.status === 'HIDDEN').length;
         const visible = total - hidden;
         return { total, visible, hidden };
     }, [documents]);
 
-    const renderStatusPill = (status?: 'PENDING' | 'PUBLISHED') => {
+    const renderStatusPill = (status?: ContentStatus) => {
         const isPublished = status === 'PUBLISHED';
+        const isHidden = status === 'HIDDEN';
         return (
-            <span className={`document-status-pill ${isPublished ? 'is-published' : 'is-pending'}`}>
-                {isPublished ? 'Đã duyệt' : 'Chờ duyệt'}
+            <span className={`document-status-pill ${isPublished ? 'is-published' : isHidden ? 'is-hidden' : 'is-pending'}`}>
+                {isPublished ? 'Đã duyệt' : isHidden ? 'Đã ẩn' : 'Chờ duyệt'}
             </span>
         );
     };
@@ -170,24 +157,17 @@ const DocumentList: React.FC = () => {
                                             <td>
                                                 <div>
                                                     <p className="document-title">{doc.title}</p>
-                                                    <span className="document-meta">{doc.hide ? 'Ẩn khỏi công khai' : 'Công khai'}</span>
+                                                    <span className="document-meta">{doc.status === 'HIDDEN' ? 'Ẩn khỏi công khai' : 'Công khai'}</span>
                                                 </div>
                                             </td>
                                             <td><span className="description-cell">{doc.description || '—'}</span></td>
                                             <td><span>{doc.categoryName || 'Chưa phân loại'}</span></td>
-                                            <td>{renderStatusPill(doc.status)}</td>
+                                            <td>{renderStatusPill(doc.status as ContentStatus)}</td>
                                             <td className="text-right">
                                                 <div className="document-row-actions">
                                                     <Link to={`/documents/edit/${doc.id}`} className="document-btn subtle">
                                                         Chi tiết
                                                     </Link>
-                                                    <button
-                                                        onClick={() => handleToggleVisibility(doc)}
-                                                        disabled={updatingId === doc.id}
-                                                        className={`document-btn ${doc.hide ? 'primary' : 'danger'}`}
-                                                    >
-                                                        {updatingId === doc.id ? 'Đang cập nhật...' : doc.hide ? 'Hiển thị' : 'Ẩn'}
-                                                    </button>
                                                     <button
                                                         onClick={() => handleDelete(doc)}
                                                         disabled={updatingId === doc.id}
@@ -209,14 +189,12 @@ const DocumentList: React.FC = () => {
             {confirmDialog.isOpen && confirmDialog.item && (
                 <ConfirmDialog
                     isOpen={confirmDialog.isOpen}
-                    title="Xác nhận"
-                    message={confirmDialog.action === 'toggle'
-                        ? (confirmDialog.item.hide
-                            ? `Bạn có muốn hiển thị lại tài liệu "${confirmDialog.item.title}"?`
-                            : `Bạn có chắc chắn muốn ẩn tài liệu "${confirmDialog.item.title}"?`)
-                        : `Bạn có chắc chắn muốn xóa tài liệu "${confirmDialog.item.title}"? Hành động này không thể hoàn tác.`}
+                    title="Xác nhận xóa"
+                    message={`Bạn có chắc chắn muốn xóa tài liệu "${confirmDialog.item.title}"? Hành động này không thể hoàn tác.`}
                     onConfirm={handleConfirm}
                     onCancel={handleCancel}
+                    confirmText="Xóa"
+                    cancelText="Hủy"
                 />
             )}
         </div>

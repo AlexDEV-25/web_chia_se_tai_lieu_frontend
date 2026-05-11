@@ -1,37 +1,70 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { DocumentRequest } from "../../../models/request/DocumentRequest";
 import type { LessonRequest } from "../../../models/request/LessonRequest";
-import type { DocumentUserResponse } from "../../../models/response/document/DocumentUserResponse";
-import type { LessonUserResponse } from "../../../models/response/lesson/LessonUserResponse";
+import type { DocumentDetailResponse } from "../../../models/response/document/DocumentDetailResponse";
+import type { LessonDetailResponse } from "../../../models/response/lesson/LessonDetailResponse";
 import type { CategoryResponse } from "../../../models/response/category/CategoryResponse";
 import { getAllPublicCategory } from "../../../apis/CategoryApi";
+
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import type { InteractionType } from "../../../models/enum/common";
+import { getDetailMyDocument } from "../../../apis/DocumentApi";
+import { getDetailMyLesson } from "../../../apis/LessonApi";
 
 
 export type FormDataType = DocumentRequest | LessonRequest;
-export type ItemType = "document" | "lesson";
 
 interface Props {
-    item: DocumentUserResponse | LessonUserResponse;
-    itemType: ItemType;
+    itemId: number;
+    itemType: InteractionType;
     isVisible: boolean;
     onClose: () => void;
     onSave: (data: FormDataType) => Promise<void>;
 }
 
-const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSave }) => {
+const FormUpdate: React.FC<Props> = ({ itemId, itemType, isVisible, onClose, onSave }) => {
     const [formData, setFormData] = useState<FormDataType>({
-        title: item.title,
-        description: item.description,
-        categoryId: item.categoryId,
-        hide: item.hide,
-        status: item.status,
+        title: "",
+        description: "",
+        categoryId: null,
+        hide: false,
+        status: "PENDING",
     });
 
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoadingData, setIsLoadingData] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const fetchItemData = useCallback(async () => {
+        if (!itemId) return;
+
+        setIsLoadingData(true);
+        try {
+            let data: DocumentDetailResponse | LessonDetailResponse;
+            if (itemType === "DOCUMENT") {
+                const response = await getDetailMyDocument(itemId);
+                data = response.result!;
+            } else {
+                const response = await getDetailMyLesson(itemId);
+                data = response.result!;
+            }
+
+            setFormData({
+                title: data.title,
+                description: data.description,
+                categoryId: data.categoryId,
+                hide: data.hide,
+                status: data.status,
+            });
+        } catch (err: any) {
+            const message = handleApiError(err, itemType === "DOCUMENT" ? ERROR_MESSAGES.DOCUMENT_LOAD_FAILED : ERROR_MESSAGES.LESSON_LOAD_FAILED);
+            setErrors({ submit: message });
+        } finally {
+            setIsLoadingData(false);
+        }
+    }, [itemId, itemType]);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -46,8 +79,9 @@ const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSav
 
         if (isVisible) {
             fetchCategories();
+            fetchItemData();
         }
-    }, [isVisible]);
+    }, [isVisible, fetchItemData]);
 
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
@@ -99,11 +133,29 @@ const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSav
 
     if (!isVisible) return null;
 
+    if (isLoadingData) {
+        return (
+            <div className="modal-overlay">
+                <div className="modal-content update-form-modal">
+                    <div className="modal-header">
+                        <h2>{itemType === "DOCUMENT" ? "Sửa tài liệu" : "Sửa bài học"}</h2>
+                        <button onClick={onClose}>
+                            <i className="fa fa-times" />
+                        </button>
+                    </div>
+                    <div className="update-form">
+                        <div className="loading-skeleton">Đang tải dữ liệu...</div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="modal-overlay">
             <div className="modal-content update-form-modal">
                 <div className="modal-header">
-                    <h2>{itemType === "document" ? "Sửa tài liệu" : "Sửa bài học"}</h2>
+                    <h2>{itemType === "DOCUMENT" ? "Sửa tài liệu" : "Sửa bài học"}</h2>
                     <button onClick={onClose} disabled={isSubmitting}>
                         <i className="fa fa-times" />
                     </button>
@@ -141,7 +193,7 @@ const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSav
                     <div className="form-group">
                         <label>Danh mục *</label>
                         <select
-                            value={formData.categoryId}
+                            value={formData.categoryId || 0}
                             onChange={(e) =>
                                 handleInputChange("categoryId", Number(e.target.value))
                             }
@@ -156,6 +208,18 @@ const FormUpdate: React.FC<Props> = ({ item, itemType, isVisible, onClose, onSav
                         {errors.categoryId && (
                             <div className="error-message">{errors.categoryId}</div>
                         )}
+                    </div>
+
+                    <div className="form-group">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={formData.hide}
+                                onChange={(e) => handleInputChange("hide", e.target.checked)}
+                            />
+                            Ẩn khỏi công khai
+                        </label>
+                        <small className="form-hint">Khi ẩn, nội dung sẽ không hiển thị cho người dùng khác</small>
                     </div>
                 </div>
 

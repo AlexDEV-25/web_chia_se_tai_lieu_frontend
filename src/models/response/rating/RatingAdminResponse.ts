@@ -3,5 +3,4 @@ export interface RatingAdminResponse {
     title: string;
     average: number;
     total: number;
-    type: 'DOCUMENT' | 'LESSON';
 }

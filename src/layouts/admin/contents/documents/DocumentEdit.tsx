@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getDocumentById, updateDocument } from "../../../../apis/DocumentApi";
+import { getDocumentById, updateDocument, deleteDocument } from "../../../../apis/DocumentApi";
 import DocumentViewComp from "../../../common/components/DocumentViewComp";
 import RightProperties from "../components/RightProperties";
 import type { DocumentDetailResponse } from "../../../../models/response/document/DocumentDetailResponse";
@@ -10,6 +10,8 @@ import { ERROR_MESSAGES } from "../../../../constants/messages";
 import ReturnHeader from "../components/ReturnHeader";
 import ErrorAlert from "../../components/ErrorAlert";
 import Header from "../components/Header";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import type { ContentStatus } from "../../../../models/enum/common";
 
 const DocumentEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -19,10 +21,12 @@ const DocumentEdit: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean }>({ isOpen: false });
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [status, setStatus] = useState<"PENDING" | "PUBLISHED">("PENDING");
+    const [status, setStatus] = useState<ContentStatus>("PENDING");
     const [hide, setHide] = useState(false);
     const [categoryId, setCategoryId] = useState<number | undefined>();
 
@@ -71,6 +75,23 @@ const DocumentEdit: React.FC = () => {
         }
     }, [document?.id, title, description, status, hide, categoryId]);
 
+    const handleDelete = useCallback(async () => {
+        if (!document?.id) return;
+
+        setDeleting(true);
+        try {
+            await deleteDocument(document.id);
+            setError(null);
+            navigate("/documents");
+        } catch (err: any) {
+            const message = handleApiError(err, ERROR_MESSAGES.DELETE_FAILED);
+            setError(message);
+            setConfirmDialog({ isOpen: false });
+        } finally {
+            setDeleting(false);
+        }
+    }, [document?.id]);
+
     if (loading) {
         return <div className="loading-skeleton">Đang tải tài liệu...</div>;
     }
@@ -85,6 +106,15 @@ const DocumentEdit: React.FC = () => {
                 <Header target="documents" content="Chi tiết tài liệu" />
 
                 {error && (<ErrorAlert message={error} onRetry={fetchDocument} />)}
+                <div className="document-actions-header">
+                    <button
+                        className="category-btn danger"
+                        onClick={() => setConfirmDialog({ isOpen: true })}
+                        disabled={deleting || saving}
+                    >
+                        {deleting ? 'Đang xóa...' : 'Xóa tài liệu'}
+                    </button>
+                </div>
                 <div className="document-edit-grid">
                     <div className="document-preview-section">
                         <div className="document-preview-card">
@@ -101,14 +131,13 @@ const DocumentEdit: React.FC = () => {
                         </div>
                     </div>
                     <RightProperties
-                        type="document"
+                        type="DOCUMENT"
                         data={{
                             id: document.id,
                             title,
                             description,
                             categoryId,
                             status,
-                            hide,
                             createdAt: document.createdAt,
                             updatedAt: document.updatedAt,
                             views: document.viewsCount,
@@ -118,13 +147,22 @@ const DocumentEdit: React.FC = () => {
                         setDescription={setDescription}
                         setCategoryId={setCategoryId}
                         setStatus={setStatus}
-                        setHide={setHide}
                         onSave={handleSave}
                         onClose={() => navigate("/documents")}
                         saving={saving}
                     />
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                title="Xóa tài liệu"
+                message={`Bạn có chắc chắn muốn xóa tài liệu "${document.title}"? Hành động này không thể hoàn tác.`}
+                onConfirm={handleDelete}
+                onCancel={() => setConfirmDialog({ isOpen: false })}
+                confirmText="Xóa"
+                cancelText="Hủy"
+            />
         </div>
     );
 };

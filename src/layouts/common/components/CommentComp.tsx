@@ -60,12 +60,12 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
 
     /* ================= SUBMIT ================= */
 
-    const submitComment = async (content: string, idParent: number) => {
+    const submitComment = async (content: string, parentId: number | null) => {
         if (!isAuthenticated || !targetId) return;
 
         const payload: CommentRequest = {
             content: content.trim(),
-            idParent,
+            parentId,
             hide: false,
             contentId: targetId,
             type: isLessonMode ? "LESSON" : "DOCUMENT",
@@ -83,7 +83,7 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
         if (!commentContent.trim()) return;
 
         setSubmittingTarget("root");
-        await submitComment(commentContent, 0);
+        await submitComment(commentContent, null);
         setCommentContent("");
         setSubmittingTarget(null);
     };

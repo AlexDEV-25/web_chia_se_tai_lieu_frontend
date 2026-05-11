@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllLesson, deleteLesson, hideLesson } from '../../../../apis/LessonApi';
+import { getAllLesson, deleteLesson } from '../../../../apis/LessonApi';
 import PageHeader from '../../components/PageHeader';
 import Stats from '../../components/Stats';
 import Filter from '../../components/Filter';
@@ -12,16 +12,16 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import type { LessonAdminResponse } from '../../../../models/response/lesson/LessonAdminResponse';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
-import type { VisibilityFilter } from '../../types/common';
+import type { ContentStatus, VisibilityFilter } from '../../../../models/enum/common';
 
 const LessonList: React.FC = () => {
     const [lessons, setLessons] = useState<LessonAdminResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
+    const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('ALL');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
-    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; action: 'toggle' | 'delete'; item: LessonAdminResponse | null }>({ isOpen: false, action: 'toggle', item: null });
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; item: LessonAdminResponse | null }>({ isOpen: false, item: null });
 
     const fetchLessons = useCallback(async () => {
         setLoading(true);
@@ -41,12 +41,8 @@ const LessonList: React.FC = () => {
         fetchLessons();
     }, [fetchLessons]);
 
-    const handleToggleVisibility = useCallback((lesson: LessonAdminResponse) => {
-        setConfirmDialog({ isOpen: true, action: 'toggle', item: lesson });
-    }, []);
-
     const handleDelete = useCallback((lesson: LessonAdminResponse) => {
-        setConfirmDialog({ isOpen: true, action: 'delete', item: lesson });
+        setConfirmDialog({ isOpen: true, item: lesson });
     }, []);
 
     const handleConfirm = async () => {
@@ -55,29 +51,19 @@ const LessonList: React.FC = () => {
         const { id } = confirmDialog.item;
         try {
             setUpdatingId(id);
-            if (confirmDialog.action === 'toggle') {
-                const { hide } = confirmDialog.item;
-                await hideLesson(id, { hide: !hide, updatedAt: new Date() });
-                setLessons((prev) =>
-                    prev.map((item) =>
-                        item.id === id ? { ...item, hide: !hide } : item
-                    )
-                );
-            } else {
-                await deleteLesson(id);
-                setLessons((prev) => prev.filter((item) => item.id !== id));
-            }
+            await deleteLesson(id);
+            setLessons((prev) => prev.filter((item) => item.id !== id));
         } catch (err: any) {
-            const message = handleApiError(err, confirmDialog.action === 'toggle' ? ERROR_MESSAGES.LESSON_UPDATE_FAILED : ERROR_MESSAGES.LESSON_DELETE_FAILED);
+            const message = handleApiError(err, ERROR_MESSAGES.LESSON_DELETE_FAILED);
             setError(message);
         } finally {
             setUpdatingId(null);
-            setConfirmDialog({ isOpen: false, action: 'toggle', item: null });
+            setConfirmDialog({ isOpen: false, item: null });
         }
     };
 
     const handleCancel = () => {
-        setConfirmDialog({ isOpen: false, action: 'toggle', item: null });
+        setConfirmDialog({ isOpen: false, item: null });
     };
 
     const filteredLessons = useMemo(() => {
@@ -88,25 +74,26 @@ const LessonList: React.FC = () => {
                 lesson.title.toLowerCase().includes(lowerSearch) ||
                 lesson.description?.toLowerCase().includes(lowerSearch);
             const matchesVisibility =
-                visibilityFilter === 'all' ||
-                (visibilityFilter === 'visible' && !lesson.hide) ||
-                (visibilityFilter === 'hidden' && lesson.hide);
+                visibilityFilter === 'ALL' ||
+                (visibilityFilter === 'VISIBLE' && lesson.status !== 'HIDDEN') ||
+                (visibilityFilter === 'HIDDEN' && lesson.status === 'HIDDEN');
             return matchesSearch && matchesVisibility;
         });
     }, [lessons, searchTerm, visibilityFilter]);
 
     const stats = useMemo(() => {
         const total = lessons.length;
-        const hidden = lessons.filter((les) => les.hide).length;
+        const hidden = lessons.filter((les) => les.status === 'HIDDEN').length;
         const visible = total - hidden;
         return { total, visible, hidden };
     }, [lessons]);
 
-    const renderStatusPill = (status?: 'PENDING' | 'PUBLISHED') => {
+    const renderStatusPill = (status?: ContentStatus) => {
         const isPublished = status === 'PUBLISHED';
+        const isHidden = status === 'HIDDEN';
         return (
-            <span className={`lesson-status-pill ${isPublished ? 'is-published' : 'is-pending'}`}>
-                {isPublished ? 'Đã duyệt' : 'Chờ duyệt'}
+            <span className={`lesson-status-pill ${isPublished ? 'is-published' : isHidden ? 'is-hidden' : 'is-pending'}`}>
+                {isPublished ? 'Đã duyệt' : isHidden ? 'Đã ẩn' : 'Chờ duyệt'}
             </span>
         );
     };
@@ -170,7 +157,7 @@ const LessonList: React.FC = () => {
                                             <td>
                                                 <div>
                                                     <p className="lesson-title">{les.title}</p>
-                                                    <span className="lesson-meta">{les.hide ? 'Ẩn khỏi công khai' : 'Công khai'}</span>
+                                                    <span className="lesson-meta">{les.status === 'HIDDEN' ? 'Ẩn khỏi công khai' : 'Công khai'}</span>
                                                 </div>
                                             </td>
                                             <td>
@@ -179,19 +166,12 @@ const LessonList: React.FC = () => {
                                                 </span>
                                             </td>
                                             <td><span>{les.categoryName || 'Chưa phân loại'}</span></td>
-                                            <td>{renderStatusPill(les.status)}</td>
+                                            <td>{renderStatusPill(les.status as ContentStatus)}</td>
                                             <td className="text-right">
                                                 <div className="lesson-row-actions">
                                                     <Link to={`/lessons/edit/${les.id}`} className="lesson-btn subtle">
                                                         Chi tiết
                                                     </Link>
-                                                    <button
-                                                        onClick={() => handleToggleVisibility(les)}
-                                                        disabled={updatingId === les.id}
-                                                        className={`lesson-btn ${les.hide ? 'primary' : 'danger'}`}
-                                                    >
-                                                        {updatingId === les.id ? 'Đang cập nhật...' : les.hide ? 'Hiển thị' : 'Ẩn'}
-                                                    </button>
                                                     <button
                                                         onClick={() => handleDelete(les)}
                                                         disabled={updatingId === les.id}
@@ -213,14 +193,12 @@ const LessonList: React.FC = () => {
             {confirmDialog.isOpen && confirmDialog.item && (
                 <ConfirmDialog
                     isOpen={confirmDialog.isOpen}
-                    title="Xác nhận"
-                    message={confirmDialog.action === 'toggle'
-                        ? (confirmDialog.item.hide
-                            ? `Bạn có muốn hiển thị lại bài học "${confirmDialog.item.title}"?`
-                            : `Bạn có chắc chắn muốn ẩn bài học "${confirmDialog.item.title}"?`)
-                        : `Bạn có chắc chắn muốn xóa bài học "${confirmDialog.item.title}"? Hành động này không thể hoàn tác.`}
+                    title="Xác nhận xóa"
+                    message={`Bạn có chắc chắn muốn xóa bài học "${confirmDialog.item.title}"? Hành động này không thể hoàn tác.`}
                     onConfirm={handleConfirm}
                     onCancel={handleCancel}
+                    confirmText="Xóa"
+                    cancelText="Hủy"
                 />
             )}
         </div>

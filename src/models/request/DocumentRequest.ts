@@ -1,7 +1,9 @@
+import type { ContentStatus } from "../enum/common";
+
 export interface DocumentRequest {
     title: string;
     description: string;
-    status?: "PUBLISHED" | "PENDING";
+    status: ContentStatus;
     hide: boolean;
-    categoryId?: number;
+    categoryId: number | null;
 }

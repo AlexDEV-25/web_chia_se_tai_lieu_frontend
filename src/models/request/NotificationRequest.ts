@@ -1,5 +1,7 @@
+import type { NotificationType } from "../enum/common";
+
 export interface NotificationRequest {
     content: string;
     link?: string;
-    type: 'SYSTEM' | 'COMMENT' | 'FOLLOW' | 'RATING' | 'REPORT';
+    type: NotificationType;
 }

@@ -1,9 +1,7 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
     addFavorite,
-    getDocumentFavoritesByUser,
-    getLessonFavoritesByUser,
     removeDocumentFavorite,
     removeLessonFavorite,
 } from "../../../apis/FavoriteApi";
@@ -12,18 +10,20 @@ import GrindItem from "./GrindItem";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import AlertDialog from "./AlertDialog";
+import type { InteractionType } from "../../../models/enum/common";
 
 interface BaseItem {
     id: number;
     title: string;
-    description?: string;
-    thumbnailUrl?: string;
+    description: string;
+    thumbnailUrl: string;
+    username: string;
     viewsCount: number;
-    username?: string;
+    favorite: boolean;
 }
 
 interface DocumentItem extends BaseItem {
-    downloadsCount?: number;
+    downloadsCount: number;
 }
 
 interface LessonItem extends BaseItem {
@@ -34,20 +34,20 @@ type MainBlockCompProps = {
     loading: boolean;
     error: string | null;
     items: (DocumentItem | LessonItem)[];
+    onFavoriteChange?: (itemId: number, isFavorite: boolean) => void;
     shimmerPlaceholders: unknown[];
     selectedCategoryLabel: string;
-    itemType: "document" | "lesson";
+    itemType: InteractionType;
     sectionTitle?: string;
     emptyMessage?: string;
     emptyIcon?: string;
 };
 
-type FavoriteMap = Record<number, { favoriteId: number }>;
-
 const MainBlockComp: React.FC<MainBlockCompProps> = ({
     loading,
     error,
     items,
+    onFavoriteChange,
     shimmerPlaceholders,
     selectedCategoryLabel,
     itemType,
@@ -59,92 +59,38 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
     const isAuthenticated = Boolean(token);
 
     const hasItems = items.length > 0;
-    const [favoriteMap, setFavoriteMap] = useState<FavoriteMap>({});
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
     const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
 
     const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            setFavoriteMap({});
-            return;
-        }
-
-        const fetchFavorites = async () => {
-            try {
-                const map: FavoriteMap = {};
-                if (itemType === "document") {
-                    const favoritesResponse = await getDocumentFavoritesByUser();
-                    (favoritesResponse.resultList ?? []).forEach((fav: any) => {
-                        const itemId = fav.contentId;
-                        if (itemId) {
-                            map[itemId] = { favoriteId: fav.id };
-                        }
-                    });
-                } else {
-                    const favoritesResponse = await getLessonFavoritesByUser();
-                    (favoritesResponse.resultList ?? []).forEach((fav: any) => {
-                        const itemId = fav.contentId;
-                        if (itemId) {
-                            map[itemId] = { favoriteId: fav.id };
-                        }
-                    });
-                }
-                setFavoriteMap(map);
-            } catch (err: any) {
-                console.error(handleApiError(err, ERROR_MESSAGES.FAVORITES_LOAD_FAILED));
-                setFavoriteMap({});
-            }
-        };
-
-        fetchFavorites();
-    }, [isAuthenticated, itemType]);
-
-    const handleToggleFavorite = async (itemId: number) => {
+    const handleToggleFavorite = async (itemId: number, currentFavorite: boolean) => {
         if (!isAuthenticated) {
             setAlertDialog({
                 isOpen: true,
                 title: 'Yêu cầu đăng nhập',
-                message: `${ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE} ${itemType === "document" ? "tài liệu" : "bài giảng"} yêu thích.`
+                message: `${ERROR_MESSAGES.LOGIN_REQUIRED_FAVORITE} ${itemType === "DOCUMENT" ? "tài liệu" : "bài giảng"} yêu thích.`
             });
             return;
         }
 
-        const existing = favoriteMap[itemId];
         setFavoriteLoadingId(itemId);
 
         try {
-            if (existing) {
-                if (itemType === "document") {
-                    await removeDocumentFavorite(existing.favoriteId);
+            if (currentFavorite) {
+                if (itemType === "DOCUMENT") {
+                    await removeDocumentFavorite(itemId);
                 } else {
-                    await removeLessonFavorite(existing.favoriteId);
+                    await removeLessonFavorite(itemId);
                 }
-
-                setFavoriteMap((prev) => {
-                    const { [itemId]: _removed, ...rest } = prev;
-                    return rest;
-                });
             } else {
-                const response =
-                    itemType === "document"
-                        ? await addFavorite({
-                            contentId: itemId,
-                            type: 'DOCUMENT',
-                        })
-                        : await addFavorite({
-                            contentId: itemId,
-                            type: 'LESSON',
-                        });
-                const saved = response.result;
-                if (saved) {
-                    setFavoriteMap((prev) => ({
-                        ...prev,
-                        [itemId]: { favoriteId: saved.id },
-                    }));
-                }
+                await addFavorite({
+                    contentId: itemId,
+                    type: itemType,
+                });
             }
+
+            onFavoriteChange?.(itemId, !currentFavorite);
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.FAVORITE_UPDATE_FAILED);
             console.error(message);
@@ -173,7 +119,7 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
     };
 
     const getItemLink = (item: DocumentItem | LessonItem) => {
-        return itemType === "document" ? `/document/${item.id}` : `/lesson/${item.id}`;
+        return itemType === "DOCUMENT" ? `/document/${item.id}` : `/lesson/${item.id}`;
     };
 
     const resolveThumbnailUrl = (item: DocumentItem | LessonItem) => {
@@ -185,7 +131,7 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
         <section className="documents-block">
             <div className="section-heading">
                 <div>
-                    <p className="eyebrow">{sectionTitle || (itemType === "document" ? "Tài liệu đề xuất" : "Video đề xuất")}</p>
+                    <p className="eyebrow">{sectionTitle || (itemType === "DOCUMENT" ? "Tài liệu đề xuất" : "Video đề xuất")}</p>
                     <h2>{selectedCategoryLabel}</h2>
                 </div>
             </div>
@@ -201,17 +147,17 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
             ) : !hasItems ? (
                 <div className="empty-state">
                     {emptyIcon && <i className={`fa ${emptyIcon}`} />}
-                    <h3>Chưa có {itemType === "document" ? "tài liệu" : "video bài giảng"}</h3>
-                    <p>{emptyMessage || `Không có ${itemType === "document" ? "tài liệu" : "video"} nào trong danh mục này. Hãy thử danh mục khác.`}</p>
+                    <h3>Chưa có {itemType === "DOCUMENT" ? "tài liệu" : "video bài giảng"}</h3>
+                    <p>{emptyMessage || `Không có ${itemType === "DOCUMENT" ? "tài liệu" : "video"} nào trong danh mục này. Hãy thử danh mục khác.`}</p>
                 </div>
             ) : (
                 <div className="document-grid">
                     {items.map((item: DocumentItem | LessonItem) => {
                         const downloadsCount =
-                            itemType === "document" && "downloadsCount" in item
+                            itemType === "DOCUMENT" && "downloadsCount" in item
                                 ? item.downloadsCount ?? 0
                                 : undefined;
-                        const isFavorite = Boolean(favoriteMap[item.id]);
+                        const isFavorite = item.favorite;
                         const isLoadingFavorite = favoriteLoadingId === item.id;
 
                         return (
@@ -233,12 +179,12 @@ const MainBlockComp: React.FC<MainBlockCompProps> = ({
                                 viewsCount={item.viewsCount}
                                 downloadsCount={downloadsCount}
                                 variant="default"
-                                showVideoOverlay={itemType === "lesson"}
-                                videoDuration={itemType === "lesson" ? formatDuration() : undefined}
+                                showVideoOverlay={itemType === "LESSON"}
+                                videoDuration={itemType === "LESSON" ? formatDuration() : undefined}
                                 showInlineFavorite
                                 isFavorite={isFavorite}
                                 favoriteDisabled={isLoadingFavorite}
-                                onToggleFavorite={() => handleToggleFavorite(item.id)}
+                                onToggleFavorite={() => handleToggleFavorite(item.id, isFavorite)}
                                 numberFormatter={formatNumber}
                             />
                         );

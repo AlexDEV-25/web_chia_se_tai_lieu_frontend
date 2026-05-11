@@ -1,3 +1,5 @@
+import type { NotificationType } from "../../enum/common";
+
 export interface UserNotificationResponse {
     id: number;
     senderId: number;
@@ -7,7 +9,7 @@ export interface UserNotificationResponse {
     notificationId: number;
     notificationContent: string;
     notificationLink: string;
-    notificationType: 'SYSTEM' | 'COMMENT' | 'FOLLOW' | 'RATING' | 'REPORT';
+    notificationType: NotificationType;
     read: boolean;
     createdAt: string;
 }

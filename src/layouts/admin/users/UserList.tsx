@@ -12,15 +12,15 @@ import type { UserResponse } from '../../../models/response/user/UserResponse';
 import { handleApiError } from '../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../constants/messages';
 import { renderStatusPill } from '../components/StatusPill';
+import type { VisibilityFilter } from '../../../models/enum/common';
 
-type StatusFilter = 'all' | 'visible' | 'hidden';
 
 const UserList: React.FC = () => {
     const [users, setUsers] = useState<UserResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+    const [statusFilter, setStatusFilter] = useState<VisibilityFilter>('ALL');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
     const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; user?: UserResponse } | null>(null);
 
@@ -54,7 +54,7 @@ const UserList: React.FC = () => {
 
         try {
             setUpdatingId(id);
-            await hideUser(id, { hide: !hide, updatedAt: new Date() });
+            await hideUser(id, { hide: !hide, type: 'USER' });
             setUsers((prev) =>
                 prev.map((item) =>
                     item.id === id ? { ...item, hide: !hide } : item
@@ -81,9 +81,9 @@ const UserList: React.FC = () => {
                 lowerSearch.length === 0 ||
                 user.username.toLowerCase().includes(lowerSearch) ||
                 user.email?.toLowerCase().includes(lowerSearch);
-            const userStatus = user.hide ? 'hidden' : 'visible';
+            const userStatus = user.hide ? 'HIDDEN' : 'VISIBLE';
             const matchesStatus =
-                statusFilter === 'all' ||
+                statusFilter === 'ALL' ||
                 userStatus === statusFilter;
             return matchesSearch && matchesStatus;
         });

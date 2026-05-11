@@ -1,33 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllDocumentRatingSummary, hideDocument } from '../../../../apis/DocumentApi';
-import { getAllLessonRatingSummary, hideLesson } from '../../../../apis/LessonApi';
+import { getAllDocumentRatingSummary } from '../../../../apis/DocumentApi';
+import { getAllLessonRatingSummary } from '../../../../apis/LessonApi';
 import type { RatingAdminResponse } from '../../../../models/response/rating/RatingAdminResponse';
-import type { HideRequest } from '../../../../models/request/HideRequest';
-import ConfirmDialog from '../../components/ConfirmDialog';
 import LeftSidebar from '../../components/LeftSidebar';
 import PageHeader from '../../components/PageHeader';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
+import type { InteractionType } from '../../../../models/enum/common';
+
+type RatingWithType = RatingAdminResponse & { type: InteractionType };
 
 const RatingList: React.FC = () => {
-    const [data, setData] = useState<(RatingAdminResponse & { hide: boolean })[]>([]);
+    const [data, setData] = useState<RatingWithType[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'document' | 'lesson'>('document');
-    const [updatingId, setUpdatingId] = useState<number | null>(null);
-    const [confirmDialog, setConfirmDialog] = useState<{
-        isOpen: boolean;
-        title: string;
-        message: string;
-        onConfirm: () => void;
-        onCancel: () => void;
-    }>({
-        isOpen: false,
-        title: '',
-        message: '',
-        onConfirm: () => { },
-        onCancel: () => { }
-    });
+    const [activeTab, setActiveTab] = useState<InteractionType>('DOCUMENT');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -37,7 +24,9 @@ const RatingList: React.FC = () => {
                     getAllDocumentRatingSummary(),
                     getAllLessonRatingSummary()
                 ]);
-                const combined = [...(docRes.resultList || []), ...(lessonRes.resultList || [])].map(item => ({ ...item, hide: false }));
+                const docRatings = (docRes.resultList || []).map(item => ({ ...item, type: 'DOCUMENT' as InteractionType }));
+                const lessonRatings = (lessonRes.resultList || []).map(item => ({ ...item, type: 'LESSON' as InteractionType }));
+                const combined = [...docRatings, ...lessonRatings];
                 setData(combined);
             } catch (err: any) {
                 alert(handleApiError(err, ERROR_MESSAGES.RATING_LOAD_FAILED));
@@ -48,40 +37,7 @@ const RatingList: React.FC = () => {
         fetchData();
     }, []);
 
-    const handleToggleVisibility = (item: RatingAdminResponse & { hide: boolean }) => {
-        if (updatingId) return;
-        setConfirmDialog({
-            isOpen: true,
-            title: item.hide ? 'Hiển thị nội dung' : 'Ẩn nội dung',
-            message: item.hide
-                ? `Bạn có muốn hiển thị lại "${item.title}"?`
-                : `Bạn có chắc chắn muốn ẩn "${item.title}"?`,
-            onConfirm: () => toggleItem(item),
-            onCancel: () => setConfirmDialog({ ...confirmDialog, isOpen: false })
-        });
-    };
-
-    const toggleItem = async (item: RatingAdminResponse & { hide: boolean }) => {
-        setUpdatingId(item.id);
-        try {
-            const newHide = !item.hide;
-            const hideRequest: HideRequest = { hide: newHide, updatedAt: new Date() };
-            if (item.type === 'DOCUMENT') {
-                await hideDocument(item.id, hideRequest);
-            } else {
-                await hideLesson(item.id, hideRequest);
-            }
-            setData(prev => prev.map(d => d.id === item.id && d.type === item.type ? { ...d, hide: newHide } : d));
-            setConfirmDialog({ ...confirmDialog, isOpen: false });
-        } catch (err: any) {
-            alert(handleApiError(err, ERROR_MESSAGES.HIDE_FAILED));
-            setConfirmDialog({ ...confirmDialog, isOpen: false });
-        } finally {
-            setUpdatingId(null);
-        }
-    };
-
-    const filteredData = data.filter(item => item.type.toLowerCase() === activeTab);
+    const filteredData = data.filter(item => item.type === activeTab);
     const documentCount = data.filter(item => item.type === 'DOCUMENT').length;
     const lessonCount = data.filter(item => item.type === 'LESSON').length;
 
@@ -128,15 +84,15 @@ const RatingList: React.FC = () => {
                     <div className="btn-group mb-4" role="group" aria-label="Tabs đánh giá">
                         <button
                             type="button"
-                            className={`btn ${activeTab === 'document' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                            onClick={() => setActiveTab('document')}
+                            className={`btn ${activeTab === 'DOCUMENT' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                            onClick={() => setActiveTab('DOCUMENT')}
                         >
                             Tài liệu ({documentCount})
                         </button>
                         <button
                             type="button"
-                            className={`btn ${activeTab === 'lesson' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                            onClick={() => setActiveTab('lesson')}
+                            className={`btn ${activeTab === 'LESSON' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                            onClick={() => setActiveTab('LESSON')}
                         >
                             Bài giảng ({lessonCount})
                         </button>
@@ -144,7 +100,7 @@ const RatingList: React.FC = () => {
 
                     {!loading && filteredData.length === 0 && (
                         <div className="text-center py-5">
-                            <p className="text-muted">Chưa có đánh giá nào cho {activeTab === 'document' ? 'tài liệu' : 'bài giảng'}.</p>
+                            <p className="text-muted">Chưa có đánh giá nào cho {activeTab === 'DOCUMENT' ? 'tài liệu' : 'bài giảng'}.</p>
                         </div>
                     )}
 
@@ -173,14 +129,6 @@ const RatingList: React.FC = () => {
                                                         <Link to={`/${item.type.toLowerCase()}/${item.id}`} className="category-btn subtle">
                                                             Chi tiết
                                                         </Link>
-                                                        <button
-                                                            onClick={() => handleToggleVisibility(item)}
-                                                            disabled={updatingId === item.id}
-                                                            className={`category-btn ${item.hide ? 'primary' : 'danger'}`}
-                                                        >
-                                                            {updatingId === item.id ? 'Đang cập nhật...'
-                                                                : item.hide ? 'Hiển thị' : 'Ẩn'}
-                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -192,14 +140,6 @@ const RatingList: React.FC = () => {
                     )}
                 </div>
             </div>
-
-            <ConfirmDialog
-                isOpen={confirmDialog.isOpen}
-                title={confirmDialog.title}
-                message={confirmDialog.message}
-                onConfirm={confirmDialog.onConfirm}
-                onCancel={confirmDialog.onCancel}
-            />
         </div>
     );
 };

@@ -5,17 +5,18 @@ import { addFavorite, removeDocumentFavorite, removeLessonFavorite } from "../..
 import GrindItem from "./GrindItem";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import type { DocumentFavoriteResponse } from "../../../models/response/document/DocumentFavoriteResponse";
-import type { LessonFavoriteResponse } from "../../../models/response/lesson/LessonFavoriteResponse";
+import type { DocumentResponse } from "../../../models/response/document/DocumentResponse";
+import type { LessonResponse } from "../../../models/response/lesson/LessonResponse";
 import AlertDialog from "./AlertDialog";
+import type { InteractionType } from "../../../models/enum/common";
 
 interface CarouselProps {
     categoryId: number;
     currentItemId: number;
-    type: 'document' | 'lesson';
+    type: InteractionType;
 }
 
-type Item = DocumentFavoriteResponse | LessonFavoriteResponse;
+type Item = DocumentResponse | LessonResponse;
 
 const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type }) => {
     const token = localStorage.getItem("token");
@@ -36,7 +37,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
             setError(null);
             try {
                 let response;
-                if (type === 'document') {
+                if (type === 'DOCUMENT') {
                     response = await getAllDocumentByCategory(currentItemId, categoryId);
                 } else {
                     response = await getAllLessonByCategory(currentItemId, categoryId);
@@ -62,7 +63,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
             setAlertDialog({
                 isOpen: true,
                 title: 'Yêu cầu đăng nhập',
-                message: `Vui lòng đăng nhập để lưu ${type === 'document' ? 'tài liệu' : 'bài giảng'} yêu thích.`
+                message: `Vui lòng đăng nhập để lưu ${type === 'LESSON' ? 'tài liệu' : 'bài giảng'} yêu thích.`
             });
             return;
         }
@@ -71,7 +72,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
 
         try {
             if (item.favorite === true) {
-                if (type === 'document') {
+                if (type === 'DOCUMENT') {
                     await removeDocumentFavorite(item.id);
                 } else {
                     await removeLessonFavorite(item.id);
@@ -82,7 +83,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                     )
                 );
             } else {
-                type === "document"
+                type === "DOCUMENT"
                     ? await addFavorite({
                         contentId: item.id,
                         type: 'DOCUMENT',
@@ -141,7 +142,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
             <div className="section-heading">
                 <div>
                     <p className="eyebrow">Đề xuất thêm</p>
-                    <h2>{type === 'document' ? 'Tài liệu' : 'Bài giảng'} cùng danh mục</h2>
+                    <h2>{type === 'DOCUMENT' ? 'Tài liệu' : 'Bài giảng'} cùng danh mục</h2>
                 </div>
             </div>
 
@@ -149,7 +150,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
             {error && <div className="alert alert-danger">{error}</div>}
 
             {!loading && !hasItems && (
-                <div className="empty-state">Chưa có {type === 'document' ? 'tài liệu' : 'bài giảng'} phù hợp.</div>
+                <div className="empty-state">Chưa có {type === 'DOCUMENT' ? 'tài liệu' : 'bài giảng'} phù hợp.</div>
             )}
 
             {hasItems && (
@@ -186,7 +187,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                             const thumbnailUrl = 'thumbnailUrl' in item && item.thumbnailUrl
                                 ? `${item.thumbnailUrl}`
                                 : undefined;
-                            const link = type === 'document' ? `/document/${item.id}` : `/lesson/${item.id}`;
+                            const link = type === 'DOCUMENT' ? `/document/${item.id}` : `/lesson/${item.id}`;
                             const description = 'description' in item ? item.description : '';
 
                             return (
@@ -196,7 +197,7 @@ const CarouselComp: React.FC<CarouselProps> = ({ categoryId, currentItemId, type
                                         link={link}
                                         title={item.title}
                                         thumbnailUrl={thumbnailUrl}
-                                        subtitle={<p>{description ?? `${type === 'document' ? 'Tài liệu' : 'Bài giảng'} chưa có mô tả.`}</p>}
+                                        subtitle={<p>{description ?? `${type === 'DOCUMENT' ? 'Tài liệu' : 'Bài giảng'} chưa có mô tả.`}</p>}
                                         viewsCount={item.viewsCount}
                                         downloadsCount={'downloadsCount' in item ? item.downloadsCount : undefined}
                                         showInlineFavorite

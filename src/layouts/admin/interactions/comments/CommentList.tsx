@@ -8,37 +8,44 @@ import LoadingState from '../../components/LoadingState';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { getAllComments, hideComment } from '../../../../apis/CommentApi';
-import { filterComment } from '../../../../apis/ChatGemini';
+import { getAllDocumentComments, getAllLessonComments, hideComment, filterComment } from '../../../../apis/CommentApi';
 import type { CommentResponse } from '../../../../models/response/comment/CommentResponse';
-import type { HideRequest } from '../../../../models/request/HideRequest';
+import type { HideRequest } from '../../../../models/request/DisplayRequest';
 import { handleApiError } from '../../../../utils/errorHandler';
 import { ERROR_MESSAGES } from '../../../../constants/messages';
 import { renderStatusPill } from '../../components/StatusPill';
+import type { InteractionType, VisibilityFilter } from '../../../../models/enum/common';
 
-type VisibilityFilter = 'all' | 'visible' | 'hidden';
+
+
+type CommentWithType = CommentResponse & { type: InteractionType };
 
 const CommentList: React.FC = () => {
-    const [comments, setComments] = useState<CommentResponse[]>([]);
+    const [comments, setComments] = useState<CommentWithType[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
+    const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('ALL');
     const [updatingId, setUpdatingId] = useState<number | null>(null);
     const [isInvalidView, setIsInvalidView] = useState<boolean>(false);
-    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; type: 'visibility' | 'delete'; comment?: CommentResponse } | null>(null);
+    const [activeTab, setActiveTab] = useState<InteractionType>('DOCUMENT');
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; type: 'visibility' | 'delete'; comment?: CommentWithType } | null>(null);
 
     const fetchComments = useCallback(async (invalidOnly: boolean) => {
         setLoading(true);
         setError(null);
         try {
             if (invalidOnly) {
-                const response = await filterComment();
+                const response = await filterComment(activeTab);
                 const list = response.resultList ?? (response.result ? [response.result] : []);
-                setComments(list as CommentResponse[]);
+                setComments(list as CommentWithType[]);
             } else {
-                const response = await getAllComments();
-                const list = response.resultList ?? (response.result ? [response.result] : []);
-                setComments(list as CommentResponse[]);
+                const [docRes, lessonRes] = await Promise.all([
+                    getAllDocumentComments(),
+                    getAllLessonComments()
+                ]);
+                const docComments = (docRes.resultList || []).map(item => ({ ...item, type: 'DOCUMENT' as InteractionType }));
+                const lessonComments = (lessonRes.resultList || []).map(item => ({ ...item, type: 'LESSON' as InteractionType }));
+                setComments([...docComments, ...lessonComments]);
             }
         } catch (err: any) {
             const message = handleApiError(err, ERROR_MESSAGES.COMMENT_LOAD_FAILED);
@@ -53,7 +60,7 @@ const CommentList: React.FC = () => {
     }, [fetchComments, isInvalidView]);
 
     const handleToggleVisibility = useCallback(
-        (comment: CommentResponse) => {
+        (comment: CommentWithType) => {
             setConfirmDialog({ isOpen: true, type: 'visibility', comment });
         },
         []
@@ -69,7 +76,7 @@ const CommentList: React.FC = () => {
         if (type === 'visibility') {
             try {
                 setUpdatingId(id);
-                const payload: HideRequest = { hide: !hide, updatedAt: new Date() };
+                const payload: HideRequest = { hide: !hide, type: comment.type };
                 await hideComment(id, payload);
                 setComments((prev) =>
                     prev.map((item) => (item.id === id ? { ...item, hide: !hide } : item))
@@ -91,21 +98,26 @@ const CommentList: React.FC = () => {
 
     const filteredComments = useMemo(() => {
         return comments.filter((comment) => {
+            const matchesType = comment.type.toLowerCase() === activeTab;
             const matchesVisibility =
-                visibilityFilter === 'all' ||
-                (visibilityFilter === 'visible' && !comment.hide) ||
-                (visibilityFilter === 'hidden' && comment.hide);
+                visibilityFilter === 'ALL' ||
+                (visibilityFilter === 'VISIBLE' && !comment.hide) ||
+                (visibilityFilter === 'HIDDEN' && comment.hide);
 
-            return matchesVisibility;
+            return matchesType && matchesVisibility;
         });
-    }, [comments, visibilityFilter]);
+    }, [comments, activeTab, visibilityFilter]);
 
     const stats = useMemo(() => {
-        const total = comments.length;
-        const hidden = comments.filter((c) => c.hide).length;
+        const tabComments = comments.filter(c => c.type.toLowerCase() === activeTab);
+        const total = tabComments.length;
+        const hidden = tabComments.filter((c) => c.hide).length;
         const visible = total - hidden;
         return { total, visible, hidden };
-    }, [comments]);
+    }, [comments, activeTab]);
+
+    const documentCount = comments.filter(c => c.type === 'DOCUMENT').length;
+    const lessonCount = comments.filter(c => c.type === 'LESSON').length;
 
 
     return (
@@ -127,6 +139,23 @@ const CommentList: React.FC = () => {
                     )}
 
                     <Stats stats={stats} containerClass="category-stats" cardClass="category-stat-card" />
+
+                    <div className="btn-group mb-4" role="group" aria-label="Tabs bình luận">
+                        <button
+                            type="button"
+                            className={`btn ${activeTab === 'DOCUMENT' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                            onClick={() => setActiveTab('DOCUMENT')}
+                        >
+                            Tài liệu ({documentCount})
+                        </button>
+                        <button
+                            type="button"
+                            className={`btn ${activeTab === 'LESSON' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                            onClick={() => setActiveTab('LESSON')}
+                        >
+                            Bài giảng ({lessonCount})
+                        </button>
+                    </div>
 
                     <div className="category-filters invalid-toggle-row">
                         <Filter
@@ -189,7 +218,7 @@ const CommentList: React.FC = () => {
                                 </thead>
                                 <tbody>
                                     {filteredComments.map((c) => (
-                                        <tr key={c.id}>
+                                        <tr key={`${c.type}-${c.id}`}>
                                             <td><span className="muted-cell">#{c.id}</span></td>
                                             <td><p className="category-name">{c.content}</p></td>
                                             <td>

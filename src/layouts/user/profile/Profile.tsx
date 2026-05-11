@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import { handleApiError } from "../../../utils/errorHandler";
 import { getUserInfo } from "../../../apis/UserApi";
-import type { DocumentFavoriteResponse } from "../../../models/response/document/DocumentFavoriteResponse";
+import type { DocumentResponse } from "../../../models/response/document/DocumentResponse";
 import { countLessonOfUser, getListLessonByUser } from "../../../apis/LessonApi";
 
 import type { UserBioResponse } from "../../../models/response/user/UserBioResponse";
@@ -16,8 +16,9 @@ import GrindItem from "../../common/components/GrindItem";
 
 import { countDocumentOfUser, getListDocumentByUser } from "../../../apis/DocumentApi";
 
-import type { LessonFavoriteResponse } from "../../../models/response/lesson/LessonFavoriteResponse";
+import type { LessonResponse } from "../../../models/response/lesson/LessonResponse";
 import AlertDialog from "../../common/components/AlertDialog";
+import type { InteractionType } from "../../../models/enum/common";
 
 const Profile: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -29,9 +30,9 @@ const Profile: React.FC = () => {
     const [followerCount, setFollowerCount] = useState<FollowCountResponse | null>(null);
     const [user, setUser] = useState<UserBioResponse | null>(null);
     const [infoMessage, setInfoMessage] = useState("");
-    const [activeTab, setActiveTab] = useState<"documents" | "lessons">("documents");
-    const [documents, setDocuments] = useState<DocumentFavoriteResponse[]>([]);
-    const [lessons, setLessons] = useState<LessonFavoriteResponse[]>([]);
+    const [activeTab, setActiveTab] = useState<InteractionType>("DOCUMENT");
+    const [documents, setDocuments] = useState<DocumentResponse[]>([]);
+    const [lessons, setLessons] = useState<LessonResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isFollowing, setIsFollowing] = useState(false);
@@ -51,7 +52,7 @@ const Profile: React.FC = () => {
         }
     }, [userId]);
 
-    const handleToggleFavoriteDocument = async (doc: DocumentFavoriteResponse) => {
+    const handleToggleFavoriteDocument = async (doc: DocumentResponse) => {
         if (!isAuthenticated) {
             setAlertDialog({
                 isOpen: true,
@@ -94,7 +95,7 @@ const Profile: React.FC = () => {
         }
     };
 
-    const handleToggleFavoriteLesson = async (lesson: LessonFavoriteResponse) => {
+    const handleToggleFavoriteLesson = async (lesson: LessonResponse) => {
         if (!isAuthenticated) {
             setAlertDialog({
                 isOpen: true,
@@ -244,7 +245,7 @@ const Profile: React.FC = () => {
         setError(null);
 
         try {
-            if (activeTab === "documents") {
+            if (activeTab === "DOCUMENT") {
                 const response = await getListDocumentByUser(userId);
                 setDocuments(response.resultList || []);
             } else {
@@ -330,14 +331,14 @@ const Profile: React.FC = () => {
                 <div className="tabs-section">
                     <div className="tabs-nav">
                         <button
-                            className={`tab-btn ${activeTab === "documents" ? "active" : ""}`}
-                            onClick={() => setActiveTab("documents")}
+                            className={`tab-btn ${activeTab === "DOCUMENT" ? "active" : ""}`}
+                            onClick={() => setActiveTab("DOCUMENT")}
                         >
                             📄 Tài liệu ({documentQuantity})
                         </button>
                         <button
-                            className={`tab-btn ${activeTab === "lessons" ? "active" : ""}`}
-                            onClick={() => setActiveTab("lessons")}
+                            className={`tab-btn ${activeTab === "LESSON" ? "active" : ""}`}
+                            onClick={() => setActiveTab("LESSON")}
                         >
                             📚 Bài học ({lessonQuantity})
                         </button>
@@ -348,13 +349,13 @@ const Profile: React.FC = () => {
                             <div className="loading-state">
                                 <p>Đang tải dữ liệu...</p>
                             </div>
-                        ) : activeTab === "documents" ? (
+                        ) : activeTab === "DOCUMENT" ? (
                             <div className="profile-items-grid">
                                 {documents.length > 0 ? (
                                     documents.map((doc) => (
                                         <GrindItem
                                             key={doc.id}
-                                            itemType="document"
+                                            itemType="DOCUMENT"
                                             link={`/document/${doc.id}`}
                                             title={doc.title}
                                             thumbnailUrl={
@@ -389,7 +390,7 @@ const Profile: React.FC = () => {
                                     lessons.map((lesson) => (
                                         <GrindItem
                                             key={lesson.id}
-                                            itemType="lesson"
+                                            itemType="LESSON"
                                             link={`/lesson/${lesson.id}`}
                                             title={lesson.title}
                                             thumbnailUrl={

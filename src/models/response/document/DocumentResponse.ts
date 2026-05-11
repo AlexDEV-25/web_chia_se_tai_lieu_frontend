@@ -1,4 +1,4 @@
-export interface DocumentFavoriteResponse {
+export interface DocumentResponse {
     id: number;
     title: string;
     description: string;

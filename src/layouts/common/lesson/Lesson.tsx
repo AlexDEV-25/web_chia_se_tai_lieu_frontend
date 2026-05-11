@@ -7,14 +7,14 @@ import CategoryBlockComp from "../components/CategoryBlockComp";
 import MainBlockComp from "../components/MainBlockComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
-import type { LessonFavoriteResponse } from "../../../models/response/lesson/LessonFavoriteResponse";
+import type { LessonResponse } from "../../../models/response/lesson/LessonResponse";
 
 interface Props {
     keyWords: string
 }
 
 const Lesson = ({ keyWords }: Props) => {
-    const [lessons, setLessons] = useState<LessonFavoriteResponse[]>([]);
+    const [lessons, setLessons] = useState<LessonResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [statsData, setStatsData] = useState<any>(null);
     const [loadingLessons, setLoadingLessons] = useState(true);
@@ -134,9 +134,16 @@ const Lesson = ({ keyWords }: Props) => {
                 loading={loadingLessons}
                 error={error}
                 items={filteredLessons}
+                onFavoriteChange={(itemId, isFavorite) => {
+                    setLessons(prev =>
+                        prev.map(lesson =>
+                            lesson.id === itemId ? { ...lesson, favorite: isFavorite } : lesson
+                        )
+                    );
+                }}
                 shimmerPlaceholders={shimmer}
                 selectedCategoryLabel={selectedCategoryLabel}
-                itemType="lesson"
+                itemType="LESSON"
                 sectionTitle="Video đề xuất"
                 emptyMessage="Không có video nào trong danh mục này. Hãy thử danh mục khác."
             />

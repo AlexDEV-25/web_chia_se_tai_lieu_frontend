@@ -134,6 +134,17 @@
     padding: 0.45rem 1rem;
     font-weight: 600;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(25, 118, 210, 0.2);
 }
 
 .user-menu details {
@@ -733,4 +744,522 @@
     .notification-item {
         padding: 0.875rem 1rem;
     }
+}
+
+/* ========================================
+   CONVERSATION COMPONENT STYLES
+   ======================================== */
+
+.header-actions-wrapper {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.conversation-bell {
+    position: relative;
+    background: none;
+    border: none;
+    color: #0084ff;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.conversation-bell:hover {
+    color: #0066d6;
+    transform: scale(1.1);
+}
+
+.conversation-bell:active {
+    transform: scale(0.95);
+}
+
+.conversation-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 380px;
+    max-width: 95vw;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    overflow: hidden;
+    animation: slideDown 0.3s ease-out;
+}
+
+/* Conversation List Container */
+.list-conversation-container {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    color: #111b21;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Conversation Header */
+.conversation-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e4e6eb;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.conversation-header h5 {
+    color: #111b21;
+    margin: 0;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.conversation-header button {
+    background: #0084ff;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    font-weight: 300;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.conversation-header button:hover {
+    background: #0066d6;
+    transform: scale(1.05);
+}
+
+/* Search Bar in Conversation */
+.list-conversation-container .p-3 {
+    display: flex;
+    justify-content: center;
+    padding: 12px 16px;
+}
+
+.list-conversation-container .input-group {
+    background: #f0f2f5;
+    border-radius: 8px;
+    border: 1px solid #e4e6eb;
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+}
+
+.list-conversation-container .form-control {
+    background: transparent;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #111b21;
+    transition: all 0.2s ease;
+}
+
+.list-conversation-container .form-control:focus {
+    background: #ffffff;
+    outline: none;
+}
+
+.list-conversation-container .form-control::placeholder {
+    color: #8a92a6;
+}
+
+.list-conversation-container .input-group-text {
+    background: transparent;
+    border: none;
+    color: #8a92a6;
+    padding: 0 15px;
+}
+
+/* Conversation List */
+.conversation-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 480px;
+}
+
+/* Conversation Item */
+.conversation-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f2f5;
+    transition: background-color 0.2s ease;
+    position: relative;
+}
+
+.conversation-item:hover {
+    background: #f0f2f5;
+}
+
+.conversation-item.active {
+    background: #e7f3ff;
+}
+
+.conversation-item:last-child {
+    border-bottom: none;
+}
+
+.conversation-item img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+}
+
+.conversation-item .flex-grow-1 {
+    flex: 1;
+    margin-left: 12px;
+    overflow: hidden;
+}
+
+.conversation-item h6 {
+    font-size: 15px;
+    font-weight: 500;
+    color: #111b21;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Online Indicator */
+.conversation-item .position-relative {
+    position: relative;
+}
+
+.conversation-item .position-absolute {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: #00c851;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+}
+
+/* Checkbox for multi-select */
+.conversation-item .form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    accent-color: #0084ff;
+}
+
+/* Responsive Design for Conversation */
+@media (max-width: 480px) {
+    .conversation-dropdown {
+        width: calc(100vw - 2rem);
+        right: -1rem;
+        left: -1rem;
+    }
+
+    .conversation-header {
+        padding: 10px 12px;
+    }
+
+    .conversation-header h5 {
+        font-size: 14px;
+    }
+
+    .conversation-item {
+        padding: 10px 12px;
+    }
+
+    .conversation-item img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .conversation-item h6 {
+        font-size: 13px;
+    }
+}
+
+/* ========================================
+   CREATE CONVERSATION COMPONENT STYLES
+   ======================================== */
+
+/* Main Container */
+.create-conversation-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Search Wrapper */
+.create-search-wrapper {
+    width: 100%;
+}
+
+.create-search-input-group {
+    display: flex;
+    align-items: center;
+    background: #f0f2f5;
+    border-radius: 12px;
+    padding: 12px 16px;
+    gap: 12px;
+    border: 1px solid #e4e6eb;
+}
+
+.create-search-icon {
+    color: #8a92a6;
+    font-size: 16px;
+}
+
+.create-search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    color: #111b21;
+    outline: none;
+}
+
+.create-search-input::placeholder {
+    color: #8a92a6;
+}
+
+.create-search-clear {
+    background: none;
+    border: none;
+    color: #8a92a6;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 14px;
+}
+
+.create-search-clear:hover {
+    color: #111b21;
+}
+
+.create-search-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    color: #8a92a6;
+    font-size: 13px;
+}
+
+/* Results Container */
+.create-conversation-results {
+    border: 1px solid #e4e6eb;
+    border-radius: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #ffffff;
+}
+
+.create-conversation-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #8a92a6;
+    text-align: center;
+}
+
+.create-conversation-empty i {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.create-conversation-empty p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* User Item */
+.create-user-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f2f5;
+    transition: background-color 0.2s ease;
+}
+
+.create-user-item:last-child {
+    border-bottom: none;
+}
+
+.create-user-item:hover {
+    background: #f8f9fa;
+}
+
+.create-user-item-selected {
+    background: #e7f3ff;
+}
+
+.create-user-checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.create-user-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #0084ff;
+}
+
+.create-user-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.create-user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.create-user-online {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: #00c851;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+}
+
+.create-user-name {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 500;
+    color: #111b21;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Controls Section */
+.create-conversation-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Toggle Button */
+.create-conversation-toggle {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid #0084ff;
+    background: transparent;
+    color: #0084ff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.create-conversation-toggle:hover {
+    background: #f0f8ff;
+}
+
+.create-conversation-toggle.active {
+    background: #ffd93d;
+    border-color: #ffd93d;
+    color: #111b21;
+}
+
+.create-conversation-toggle:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Count Badge */
+.create-conversation-count {
+    text-align: center;
+}
+
+.create-conversation-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #0084ff;
+    color: white;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Action Buttons */
+.create-conversation-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.create-conversation-btn {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.create-conversation-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.create-conversation-btn-primary {
+    background: #00c851;
+    color: white;
+}
+
+.create-conversation-btn-primary:hover:not(:disabled) {
+    background: #00b248;
+}
+
+.create-conversation-btn-secondary {
+    background: #e4e6eb;
+    color: #111b21;
+}
+
+.create-conversation-btn-secondary:hover:not(:disabled) {
+    background: #d8dadf;
+}
+
+/* Help Text */
+.create-conversation-help {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+    color: #8a92a6;
+    font-size: 13px;
+}
+
+.create-conversation-help i {
+    font-size: 14px;
 }

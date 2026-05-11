@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import UploadDropdown from "./components/UploadDropdown";
 import ListNotification from "./components/ListNotification";
+import ListConversation from "./components/Conversation/ListConversation";
 
 interface Props {
     token: string | null
@@ -10,8 +11,10 @@ interface Props {
     setKeyWords: (value: string) => void
     roles: string[]
     setRoles: (value: string[]) => void
+    avatar: string | null
+    setAvatar: (value: string | null) => void
 }
-const Header: React.FC<Props> = ({ token, setToken, setKeyWords, roles, setRoles }) => {
+const Header: React.FC<Props> = ({ token, setToken, setKeyWords, roles, setRoles, avatar, setAvatar }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [valid, setValid] = useState<boolean>(false);
@@ -21,8 +24,10 @@ const Header: React.FC<Props> = ({ token, setToken, setKeyWords, roles, setRoles
     const handleLogout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("roles")
+        localStorage.removeItem("avatar")
         setToken(null);
         setRoles([]);
+        setAvatar(null);
         navigate("/");
     };
     useEffect(() => {
@@ -89,8 +94,10 @@ const Header: React.FC<Props> = ({ token, setToken, setKeyWords, roles, setRoles
                 </button>
             </div>
 
-            {token && <ListNotification />}
-
+            <div className="header-actions-wrapper">
+                {token && <ListConversation />}
+                {token && <ListNotification />}
+            </div>
 
             <div className="nav-actions">
                 {token === null ? (
@@ -106,9 +113,11 @@ const Header: React.FC<Props> = ({ token, setToken, setKeyWords, roles, setRoles
                     <div className="user-menu">
                         <details>
                             <summary>
-                                <span className="avatar-chip">
-                                    Tài khoản <i className="fa fa-chevron-down" />
-                                </span>
+                                {avatar ? (
+                                    <img src={avatar} alt="Avatar" className="user-avatar" />
+                                ) : (
+                                    <i className="fa fa-user-circle" />
+                                )}
                             </summary>
                             <div className="user-dropdown">
                                 <Link to="/myprofile">Trang cá nhân</Link>
