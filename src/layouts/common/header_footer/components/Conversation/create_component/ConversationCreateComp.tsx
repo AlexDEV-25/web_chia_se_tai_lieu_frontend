@@ -2,9 +2,10 @@ import { useState } from 'react';
 import ConversationCreateItemComp from './ConversationCreateItemComp.tsx';
 import type { UserBioResponse } from '../../../../../../models/response/user/UserBioResponse.ts';
 import type { ConversationType } from '../../../../../../models/enum/common.ts';
+import type { ConversationResponse } from '../../../../../../models/response/conversation/ConversationResponse.ts';
 import { createDirectConversation, createGroupConversation } from '../../../../../../apis/ConversationApi.ts';
 import { handleApiError } from '../../../../../../utils/errorHandler.ts';
-import SearchBarCreateComp from './SearchBarCreateComp.tsx';
+import SearchBarComp from '../common_component/SearchBarComp.tsx';
 
 
 interface ConversationCreateCompProps {
@@ -18,10 +19,10 @@ export default function ConversationCreateComp({ onClose, onConversationCreated 
     const [isLoading, setIsLoading] = useState(false);
     const [showMultiSelect, setShowMultiSelect] = useState(false);
 
-    const handleSearch = (results: UserBioResponse[]) => {
-        setSearchResults(results);
-        setSelectedUsers([]);
-        setShowMultiSelect(false);
+    const handleSearch = (results: UserBioResponse[] | ConversationResponse[]) => {
+        setSearchResults(results as UserBioResponse[]);
+        // Don't reset selected users when searching for new users
+        // This allows users to select multiple people across different searches
     };
 
     const handleUserSelect = (user: UserBioResponse, isSelected: boolean) => {
@@ -77,9 +78,6 @@ export default function ConversationCreateComp({ onClose, onConversationCreated 
     };
 
     const toggleMultiSelect = () => {
-        if (!showMultiSelect) {
-            setSelectedUsers([]);
-        }
         setShowMultiSelect(!showMultiSelect);
     };
 
@@ -87,37 +85,71 @@ export default function ConversationCreateComp({ onClose, onConversationCreated 
         <div className="create-conversation-container">
             {/* Search Bar */}
             <div className="create-conversation-search">
-                <SearchBarCreateComp onSearch={handleSearch} isLoading={isLoading} />
+                <SearchBarComp onSearch={handleSearch} isLoading={isLoading} searchType="users" />
             </div>
 
             {/* Search Results List */}
             <div className="create-conversation-results">
-                {searchResults.length === 0 ? (
+                {/* Show selected users first (always visible when in multi-select mode) */}
+                {showMultiSelect && selectedUsers.length > 0 && (
+                    <>
+                        <div className="px-3 py-2 bg-light border-bottom">
+                            <small className="text-muted fw-bold">Đã chọn ({selectedUsers.length})</small>
+                        </div>
+                        {selectedUsers.map((user) => (
+                            <ConversationCreateItemComp
+                                key={`selected-${user.id}`}
+                                user={user}
+                                isSelected={true}
+                                isOnline={Math.random() > 0.5}
+                                showCheckbox={showMultiSelect}
+                                onSelect={(selected) => handleUserSelect(user, selected)}
+                                onClick={() => {
+                                    if (!showMultiSelect) {
+                                        handleCreateDirectConversation(user);
+                                    }
+                                }}
+                            />
+                        ))}
+                    </>
+                )}
+
+                {/* Show search results */}
+                {searchResults.length === 0 && (!showMultiSelect || selectedUsers.length === 0) ? (
                     <div className="create-conversation-empty">
                         <i className="fa fa-search"></i>
                         <p>Tìm kiếm người dùng để bắt đầu cuộc hội thoại</p>
                     </div>
-                ) : (
-                    searchResults.map((user) => (
-                        <ConversationCreateItemComp
-                            key={user.id}
-                            user={user}
-                            isSelected={isUserSelected(user.id)}
-                            isOnline={Math.random() > 0.5}
-                            showCheckbox={showMultiSelect}
-                            onSelect={(selected) => handleUserSelect(user, selected)}
-                            onClick={() => {
-                                if (!showMultiSelect) {
-                                    handleCreateDirectConversation(user);
-                                }
-                            }}
-                        />
-                    ))
+                ) : searchResults.length > 0 && (
+                    <>
+                        {showMultiSelect && selectedUsers.length > 0 && (
+                            <div className="px-3 py-2 bg-light border-bottom">
+                                <small className="text-muted fw-bold">Kết quả tìm kiếm</small>
+                            </div>
+                        )}
+                        {searchResults
+                            .filter(user => !selectedUsers.some(selected => selected.id === user.id))
+                            .map((user) => (
+                                <ConversationCreateItemComp
+                                    key={`search-${user.id}`}
+                                    user={user}
+                                    isSelected={isUserSelected(user.id)}
+                                    isOnline={Math.random() > 0.5}
+                                    showCheckbox={showMultiSelect}
+                                    onSelect={(selected) => handleUserSelect(user, selected)}
+                                    onClick={() => {
+                                        if (!showMultiSelect) {
+                                            handleCreateDirectConversation(user);
+                                        }
+                                    }}
+                                />
+                            ))}
+                    </>
                 )}
             </div>
 
             {/* Controls Section - All at the bottom */}
-            {searchResults.length > 0 && (
+            {(searchResults.length > 0 || selectedUsers.length > 0) && (
                 <div className="create-conversation-controls">
                     {/* Toggle Multi-Select Button */}
                     <button
@@ -127,15 +159,6 @@ export default function ConversationCreateComp({ onClose, onConversationCreated 
                     >
                         {showMultiSelect ? '✓ Đang chọn nhiều người' : 'Chọn nhiều người'}
                     </button>
-
-                    {/* Selected Count Badge */}
-                    {showMultiSelect && selectedUsers.length > 0 && (
-                        <div className="create-conversation-count">
-                            <span className="create-conversation-badge">
-                                {selectedUsers.length} người được chọn
-                            </span>
-                        </div>
-                    )}
 
                     {/* Action Buttons */}
                     {showMultiSelect && selectedUsers.length > 0 && (

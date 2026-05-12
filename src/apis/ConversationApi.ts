@@ -15,3 +15,6 @@ export const createGroupConversation = async (data: ConversationRequest) => {
     return await httpPost<APIResponse<ConversationResponse>>(`/conversations/group`, data);
 }
 
+export const searchConversations = async (keyword: string) => {
+    return await httpGet<APIResponse<ConversationResponse>>(`/conversations/search?keyword=${keyword}`);
+}

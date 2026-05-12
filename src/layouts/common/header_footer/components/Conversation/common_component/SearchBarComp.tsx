@@ -1,14 +1,20 @@
 import { useState } from 'react';
 import { searchUsers } from '../../../../../../apis/UserApi.ts';
+import { searchConversations } from '../../../../../../apis/ConversationApi.ts';
 import type { UserBioResponse } from '../../../../../../models/response/user/UserBioResponse.ts';
+import type { ConversationResponse } from '../../../../../../models/response/conversation/ConversationResponse.ts';
 import { handleApiError } from '../../../../../../utils/errorHandler.ts';
 
-interface SearchBarCreateCompProps {
-    onSearch: (results: UserBioResponse[]) => void;
+type SearchType = 'users' | 'conversations';
+
+interface SearchBarCompProps {
+    onSearch: (results: UserBioResponse[] | ConversationResponse[]) => void;
     isLoading: boolean;
+    searchType: SearchType;
+    placeholder?: string;
 }
 
-export default function SearchBarCreateComp({ onSearch, isLoading }: SearchBarCreateCompProps) {
+export default function SearchBarComp({ onSearch, isLoading, searchType, placeholder }: SearchBarCompProps) {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [isSearching, setIsSearching] = useState(false);
 
@@ -20,11 +26,23 @@ export default function SearchBarCreateComp({ onSearch, isLoading }: SearchBarCr
 
         setIsSearching(true);
         try {
-            const response = await searchUsers(searchKeyword);
-            const results = response.resultList || [];
+            let response;
+            let results;
+
+            if (searchType === 'users') {
+                response = await searchUsers(searchKeyword);
+                results = response.resultList || [];
+            } else {
+                response = await searchConversations(searchKeyword);
+                results = response.resultList || [];
+            }
+
             onSearch(results);
         } catch (error: any) {
-            const message = handleApiError(error, 'Không thể tìm kiếm người dùng');
+            const errorMessage = searchType === 'users'
+                ? 'Không thể tìm kiếm người dùng'
+                : 'Không thể tìm kiếm cuộc hội thoại';
+            const message = handleApiError(error, errorMessage);
             console.error(message);
             onSearch([]);
         } finally {
@@ -50,7 +68,7 @@ export default function SearchBarCreateComp({ onSearch, isLoading }: SearchBarCr
                 <input
                     type="text"
                     className="create-search-input"
-                    placeholder="Tìm kiếm người dùng..."
+                    placeholder={placeholder || (searchType === 'users' ? 'Tìm kiếm người dùng...' : 'Tìm kiếm cuộc hội thoại...')}
                     value={searchKeyword}
                     onChange={(e) => setSearchKeyword(e.target.value)}
                     onKeyDown={handleKeyDown}

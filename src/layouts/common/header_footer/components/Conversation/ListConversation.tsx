@@ -10,7 +10,6 @@ export default function ListConversation() {
     const [myConversations, setMyConversations] = useState<ConversationResponse[]>([]);
     const [isLoadingMyConversations, setIsLoadingMyConversations] = useState(true);
     const [showCreateConversation, setShowCreateConversation] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Load my conversations on mount
@@ -105,8 +104,6 @@ export default function ListConversation() {
                             <ConversationMainComp
                                 myConversations={myConversations}
                                 isLoadingMyConversations={isLoadingMyConversations}
-                                searchQuery={searchQuery}
-                                setSearchQuery={setSearchQuery}
                                 onConversationClick={handleConversationClick}
                             />
                         )}

@@ -50,7 +50,7 @@ export default function ConversationItemComp({
 
             <div className="position-relative me-3">
                 <img
-                    src={avatarUrl || 'https://via.placeholder.com/48'}
+                    src={avatarUrl || 'myAvatar.jpg'}
                     alt={name}
                     className="rounded-circle"
                     width="48"
