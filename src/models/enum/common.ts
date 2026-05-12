@@ -7,6 +7,7 @@ export type NotificationAction = "PUBLIC" | "ADMIN_HIDDEN" | "ADMIN_DELETE" | "A
 export type NotificationContext = "DOCUMENT" | "LESSON" | "USER";
 export type NotificationType = "INFO" | "WARNING" | "SUCCESS" | "ERROR";
 export type VisibilityFilter = 'ALL' | 'VISIBLE' | 'HIDDEN';
+export type ChatRole = 'MANAGER' | 'DEPUTYMANAGER' | 'MEMBER';
 
 
 

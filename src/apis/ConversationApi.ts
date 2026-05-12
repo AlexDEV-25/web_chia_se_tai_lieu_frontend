@@ -29,3 +29,7 @@ export const createGroupConversation = async (avt: File | null, data: Conversati
 export const searchConversations = async (keyword: string) => {
     return await httpGet<APIResponse<ConversationResponse>>(`/conversations/search?keyword=${keyword}`);
 }
+
+export const getDetailConversations = async (id: number) => {
+    return await httpGet<APIResponse<ConversationResponse>>(`/conversations/detail/${id}`);
+}

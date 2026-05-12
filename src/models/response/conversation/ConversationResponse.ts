@@ -6,6 +6,4 @@ export interface ConversationResponse {
     conversationAvatar: string;
     conversationName: string;
     participantInfos: ParticipantInfoResponse[];
-    createdAt: string;
-    updatedAt: string;
 }

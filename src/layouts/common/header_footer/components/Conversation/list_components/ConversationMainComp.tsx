@@ -18,11 +18,9 @@ export default function ConversationMainComp({
     const [searchResults, setSearchResults] = useState<ConversationResponse[]>([]);
     const [isSearching, setIsSearching] = useState(false);
 
-    const handleConversationClick = (conversationId: number, conversationName: string, conversationAvatar: string | null) => {
-        if (conversationId && conversationName) {
+    const handleConversationClick = (conversationId: number) => {
+        if (conversationId) {
             context.setConversationId(conversationId);
-            context.setConversationName(conversationName);
-            context.setConversationAvatar(conversationAvatar);
         }
     };
 
@@ -60,7 +58,7 @@ export default function ConversationMainComp({
                                 avatarUrl={conversation.conversationAvatar || '/images/myAvatar.jpg'}
                                 isSelected={false}
                                 isOnline={isAllParticipantsOnline}
-                                onClick={() => handleConversationClick(conversation.id, conversation.conversationName, conversation.conversationAvatar)}
+                                onClick={() => handleConversationClick(conversation.id)}
                             />
                         );
                     })
@@ -88,7 +86,7 @@ export default function ConversationMainComp({
                                         avatarUrl={conversation.conversationAvatar || '/images/myAvatar.jpg'}
                                         isSelected={false}
                                         isOnline={isAllParticipantsOnline}
-                                        onClick={() => handleConversationClick(conversation.id, conversation.conversationName, conversation.conversationAvatar)}
+                                        onClick={() => handleConversationClick(conversation.id)}
                                     />
                                 );
                             })

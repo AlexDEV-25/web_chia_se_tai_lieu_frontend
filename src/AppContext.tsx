@@ -5,16 +5,10 @@ const AppContext = createContext({});
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [conversationId, setConversationId] = useState<number | null>(null);
-    const [conversationName, setConversationName] = useState<string | null>(null);
-    const [conversationAvatar, setConversationAvatar] = useState<string | null>(null);
 
     const value = {
         conversationId,
-        setConversationId,
-        conversationName,
-        setConversationName,
-        conversationAvatar,
-        setConversationAvatar
+        setConversationId
     }
     return (
         <AppContext.Provider value={value} >

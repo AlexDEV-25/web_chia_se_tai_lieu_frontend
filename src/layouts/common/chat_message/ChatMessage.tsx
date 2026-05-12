@@ -3,6 +3,7 @@ import type { ChatMessageResponse } from '../../../models/response/chatmessage/C
 import { getMyMessages } from '../../../apis/ChatMessageApi';
 import { handleApiError } from '../../../utils/errorHandler';
 import { AppContext } from '../../../AppContext';
+import { getDetailConversations } from '../../../apis/ConversationApi';
 
 export default function ChatMessage() {
     const context = useContext(AppContext) as any;
@@ -10,30 +11,53 @@ export default function ChatMessage() {
     const [messages, setMessages] = useState<ChatMessageResponse[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
+    const [conversationName, setConversationName] = useState<string>('');
+    const [conversationAvatar, setConversationAvatar] = useState<string>('');
 
     useEffect(() => {
+        const loadMessages = async () => {
+            setIsLoading(true);
+
+            try {
+                const response = await getMyMessages(context.conversationId);
+                setMessages(response.resultList || []);
+            } catch (error: any) {
+                const message = handleApiError(error, 'Không thể tải tin nhắn');
+                console.error(message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
         if (context.conversationId) {
             loadMessages();
         }
     }, [context.conversationId]);
 
-    const loadMessages = async () => {
-        setIsLoading(true);
+    useEffect(() => {
+        const fetchConversation = async () => {
+            if (!context.conversationId) {
+                return;
+            }
+            try {
+                setIsLoading(true);
+                const response = await getDetailConversations(context.conversationId);
+                setConversationName(response.result?.conversationName || '');
+                setConversationAvatar(response.result?.conversationAvatar || '');
+                console.log(response);
+            } catch (err: any) {
+                console.log(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchConversation();
+    }, [context.conversationId]);
 
-        try {
-            const response = await getMyMessages(context.conversationId);
-            setMessages(response.resultList || []);
-        } catch (error: any) {
-            const message = handleApiError(error, 'Không thể tải tin nhắn');
-            console.error(message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+
+
 
     const onClose = () => {
         context.setConversationId(null);
-        context.setConversationName(null);
     };
 
     const onMinimize = () => {
@@ -42,8 +66,8 @@ export default function ChatMessage() {
 
     const shortConversationName =
         context.conversationName?.length > 10
-            ? context.conversationName.slice(0, 10) + '...'
-            : context.conversationName;
+            ? conversationName.slice(0, 10) + '...'
+            : conversationName;
 
     return (
         <div className={`chat-popup ${isMinimized ? 'chat-popup-minimized' : ''}`}>
@@ -55,8 +79,8 @@ export default function ChatMessage() {
                 <div className="chat-header-container">
                     <div className="chat-header-left">
                         <img
-                            src={context.conversationAvatar || '/images/myAvatar.jpg'}
-                            alt={context.conversationName}
+                            src={conversationAvatar || '/images/myAvatar.jpg'}
+                            alt={conversationName}
                             className="chat-header-avatar"
                         />
 
