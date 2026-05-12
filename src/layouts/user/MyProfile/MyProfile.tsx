@@ -127,7 +127,7 @@ const MyProfile: React.FC = () => {
 
                         <div className="text-center mb-4">
                             <img
-                                src={`${user.avatarUrl ?? "myAvatar.jpg"}`}
+                                src={`${user.avatarUrl ?? "/images/myAvatar.jpg"}`}
                                 alt="avatar"
                                 style={{ width: 140, height: 140, borderRadius: "50%", objectFit: "cover", border: "3px solid #ddd", }}
                             />

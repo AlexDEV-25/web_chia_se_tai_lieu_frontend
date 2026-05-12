@@ -268,7 +268,7 @@ const Profile: React.FC = () => {
                 <div className="profile-info-section">
                     <div className="profile-avatar">
                         <img
-                            src={`${user?.avatarUrl ?? "myAvatar.jpg"}`}
+                            src={`${user?.avatarUrl ?? "/images/myAvatar.jpg"}`}
                             alt={user?.username || "User"}
                             className="avatar-img"
                         />

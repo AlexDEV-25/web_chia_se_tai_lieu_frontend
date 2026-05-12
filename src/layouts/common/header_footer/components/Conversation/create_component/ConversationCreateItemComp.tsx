@@ -47,7 +47,7 @@ export default function ConversationCreateItemComp({
 
             <div className="create-user-avatar-wrapper">
                 <img
-                    src={user.avatarUrl || 'myAvatar.jpg'}
+                    src={user.avatarUrl || '/images/myAvatar.jpg'}
                     alt={user.username}
                     className="create-user-avatar"
                 />

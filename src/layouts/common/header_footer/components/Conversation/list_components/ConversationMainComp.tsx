@@ -48,7 +48,7 @@ export default function ConversationMainComp({
                             <ConversationItemComp
                                 key={conversation.id}
                                 name={conversation.conversationName}
-                                avatarUrl={conversation.conversationAvatar || 'myAvatar.jpg'}
+                                avatarUrl={conversation.conversationAvatar || '/images/myAvatar.jpg'}
                                 isSelected={false}
                                 isOnline={isAllParticipantsOnline}
                                 onClick={() => onConversationClick(conversation.id)}
@@ -76,7 +76,7 @@ export default function ConversationMainComp({
                                     <ConversationItemComp
                                         key={conversation.id}
                                         name={conversation.conversationName}
-                                        avatarUrl={conversation.conversationAvatar || 'myAvatar.jpg'}
+                                        avatarUrl={conversation.conversationAvatar || '/images/myAvatar.jpg'}
                                         isSelected={false}
                                         isOnline={isAllParticipantsOnline}
                                         onClick={() => onConversationClick(conversation.id)}
