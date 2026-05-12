@@ -59,11 +59,6 @@ export default function ListConversation() {
         setShowCreateConversation(false);
     };
 
-    const handleConversationClick = (conversationId: number) => {
-        console.log('Clicked conversation:', conversationId);
-        setIsOpen(false);
-    };
-
     return (
         <div className="conversation-wrapper">
             {/* Conversation Bell */}
@@ -104,7 +99,6 @@ export default function ListConversation() {
                             <ConversationMainComp
                                 myConversations={myConversations}
                                 isLoadingMyConversations={isLoadingMyConversations}
-                                onConversationClick={handleConversationClick}
                             />
                         )}
                     </div>

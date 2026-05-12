@@ -1,20 +1,28 @@
-// App.tsx hoặc AppContext.tsx
-import { createContext } from "react";
-import type { UserResponse } from "./models/response/user/UserResponse";
 
-export interface AppContextType {
-    keyWords: string;
-    setKeyWords: (value: string) => void;
-}
+import { createContext, useState } from "react";
 
-export interface UserContextType {
-    currentUser: UserResponse | null;
-    setCurrentUser: (user: UserResponse | null) => void;
-    isLoadingUser: boolean;
-    setIsLoadingUser: (loading: boolean) => void;
-}
+const AppContext = createContext({});
 
-// Khởi tạo context với giá trị null ban đầu
-export const AppContext = createContext<AppContextType | null>(null);
+const AppProvider = ({ children }: { children: React.ReactNode }) => {
+    const [conversationId, setConversationId] = useState<number | null>(null);
+    const [conversationName, setConversationName] = useState<string | null>(null);
+    const [conversationAvatar, setConversationAvatar] = useState<string | null>(null);
 
-export const UserContext = createContext<UserContextType | null>(null);
+    const value = {
+        conversationId,
+        setConversationId,
+        conversationName,
+        setConversationName,
+        conversationAvatar,
+        setConversationAvatar
+    }
+    return (
+        <AppContext.Provider value={value} >
+            {children}
+        </AppContext.Provider>
+    );
+};
+
+export { AppContext, AppProvider }
+
+

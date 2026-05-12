@@ -16,6 +16,7 @@
 @import './styles/components/_loading-state.css';
 @import './styles/components/_error-alert.css';
 @import './styles/components/_right-properties.css';
+@import './styles/components/_chat-message.css';
 
 /* ========================================
    USER-FACING PAGES

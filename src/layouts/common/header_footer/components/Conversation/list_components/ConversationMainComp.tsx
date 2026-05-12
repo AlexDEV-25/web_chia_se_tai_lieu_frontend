@@ -1,22 +1,31 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import ConversationItemComp from './ConversationItemComp.tsx';
 import type { ConversationResponse } from '../../../../../../models/response/conversation/ConversationResponse.ts';
 import type { UserBioResponse } from '../../../../../../models/response/user/UserBioResponse.ts';
 import SearchBarComp from '../common_component/SearchBarComp.tsx';
+import { AppContext } from '../../../../../../AppContext.tsx';
 
 interface ConversationMainCompProps {
     myConversations: ConversationResponse[];
     isLoadingMyConversations: boolean;
-    onConversationClick: (conversationId: number) => void;
 }
 
 export default function ConversationMainComp({
     myConversations,
     isLoadingMyConversations,
-    onConversationClick,
 }: ConversationMainCompProps) {
+    const context = useContext(AppContext) as any;
     const [searchResults, setSearchResults] = useState<ConversationResponse[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+
+    const handleConversationClick = (conversationId: number, conversationName: string, conversationAvatar: string | null) => {
+        if (conversationId && conversationName) {
+            context.setConversationId(conversationId);
+            context.setConversationName(conversationName);
+            context.setConversationAvatar(conversationAvatar);
+        }
+    };
+
 
     const handleSearch = (results: UserBioResponse[] | ConversationResponse[]) => {
         setSearchResults(results as ConversationResponse[]);
@@ -51,7 +60,7 @@ export default function ConversationMainComp({
                                 avatarUrl={conversation.conversationAvatar || '/images/myAvatar.jpg'}
                                 isSelected={false}
                                 isOnline={isAllParticipantsOnline}
-                                onClick={() => onConversationClick(conversation.id)}
+                                onClick={() => handleConversationClick(conversation.id, conversation.conversationName, conversation.conversationAvatar)}
                             />
                         );
                     })
@@ -79,7 +88,7 @@ export default function ConversationMainComp({
                                         avatarUrl={conversation.conversationAvatar || '/images/myAvatar.jpg'}
                                         isSelected={false}
                                         isOnline={isAllParticipantsOnline}
-                                        onClick={() => onConversationClick(conversation.id)}
+                                        onClick={() => handleConversationClick(conversation.id, conversation.conversationName, conversation.conversationAvatar)}
                                     />
                                 );
                             })
