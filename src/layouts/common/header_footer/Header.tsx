@@ -1,9 +1,11 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import UploadDropdown from "./components/UploadDropdown";
 import ListNotification from "./components/ListNotification";
 import ListConversation from "./components/Conversation/ListConversation";
+import { AppContext } from "../../../AppContext";
+import WebSocketService from "../../../apis/WebSocketService";
 
 interface Props {
     token: string | null
@@ -19,7 +21,7 @@ const Header: React.FC<Props> = ({ token, setToken, setKeyWords, roles, setRoles
     const location = useLocation();
     const [valid, setValid] = useState<boolean>(false);
     const [TempKeyWords, setTempKeyWords] = useState("");
-
+    const context = useContext(AppContext) as any;
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -28,6 +30,8 @@ const Header: React.FC<Props> = ({ token, setToken, setKeyWords, roles, setRoles
         setToken(null);
         setRoles([]);
         setAvatar(null);
+        context.setConversationId(null);
+        WebSocketService.disconnect();
         navigate("/");
     };
     useEffect(() => {

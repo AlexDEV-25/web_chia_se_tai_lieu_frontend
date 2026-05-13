@@ -9,92 +9,183 @@ import type {
 class WebSocketService {
 
     private client: Client | null = null;
+    private isConnecting = false;
+    private isConnected = false;
+    private connectionPromise: Promise<void> | null = null;
 
-    connect(onConnected?: () => void) {
+    /**
+     * Get connection status
+     */
+    getIsConnected(): boolean {
+        return this.isConnected && !!this.client?.active;
+    }
 
-        const token =
-            localStorage.getItem("token");
+    /**
+     * Check if currently connecting
+     */
+    getIsConnecting(): boolean {
+        return this.isConnecting;
+    }
 
-        this.client = new Client({
+    /**
+     * Connect to WebSocket (idempotent - only connects once)
+     */
+    connect(onConnected?: () => void): Promise<void> {
+        // If already connected, return immediately
+        if (this.isConnected && this.client?.active) {
+            console.log("[WebSocket] Already connected");
+            if (onConnected) onConnected();
+            return Promise.resolve();
+        }
 
-            webSocketFactory: () =>
-                new SockJS(
-                    "http://localhost:8080/ws"
-                ),
+        // If currently connecting, return existing promise
+        if (this.isConnecting && this.connectionPromise) {
+            console.log("[WebSocket] Connection in progress, waiting...");
+            return this.connectionPromise;
+        }
 
-            connectHeaders: {
+        // Start new connection
+        this.isConnecting = true;
 
-                Authorization:
-                    `Bearer ${token}`
-            },
+        this.connectionPromise = new Promise((resolve, reject) => {
+            try {
+                const token = localStorage.getItem("token");
 
-            reconnectDelay: 5000,
-
-            onConnect: () => {
-
-                console.log(
-                    "WebSocket Connected"
-                );
-
-                if (onConnected) {
-                    onConnected();
+                if (!token) {
+                    console.error("[WebSocket] No token found in localStorage");
+                    this.isConnecting = false;
+                    reject(new Error("No authentication token"));
+                    return;
                 }
-            },
 
-            onStompError: (frame) => {
+                this.client = new Client({
 
-                console.error(
-                    "STOMP Error",
-                    frame
-                );
+                    webSocketFactory: () =>
+                        new SockJS(
+                            "http://localhost:8080/ws"
+                        ),
+
+                    connectHeaders: {
+                        Authorization: `Bearer ${token}`
+                    },
+
+                    reconnectDelay: 5000,
+                    heartbeatIncoming: 4000,
+                    heartbeatOutgoing: 4000,
+
+                    onConnect: () => {
+                        console.log("[WebSocket] Connected successfully");
+                        this.isConnected = true;
+                        this.isConnecting = false;
+
+                        if (onConnected) {
+                            onConnected();
+                        }
+                        resolve();
+                    },
+
+                    onStompError: (frame) => {
+                        console.error("[WebSocket] STOMP Error:", frame);
+                        this.isConnecting = false;
+                        reject(new Error(`STOMP Error: ${frame.headers.message}`));
+                    },
+
+                    onDisconnect: () => {
+                        console.log("[WebSocket] Disconnected");
+                        this.isConnected = false;
+                    },
+                });
+
+                this.client.activate();
+            } catch (e) {
+                console.error("[WebSocket] Connection error:", e);
+                this.isConnecting = false;
+                reject(e);
             }
         });
 
-        this.client.activate();
+        return this.connectionPromise;
     }
 
+    /**
+     * Subscribe to a destination
+     */
     subscribe(
         destination: string,
         callback: (data: any) => void
-    ) {
+    ): (() => void) | null {
 
         if (!this.client) {
-            return;
+            console.error("[WebSocket] Client not initialized");
+            return null;
         }
 
-        this.client.subscribe(
+        if (!this.client.active) {
+            console.error("[WebSocket] Client not connected");
+            return null;
+        }
 
+        const subscription = this.client.subscribe(
             destination,
-
             (message: IMessage) => {
-
-                callback(
-                    JSON.parse(message.body)
-                );
+                try {
+                    const data = JSON.parse(message.body);
+                    console.log(`[WebSocket] Message received from ${destination}:`, data);
+                    callback(data);
+                } catch (e) {
+                    console.error("[WebSocket] Error parsing message:", e);
+                }
             }
         );
+
+        // Return unsubscribe function
+        return () => {
+            subscription.unsubscribe();
+            console.log(`[WebSocket] Unsubscribed from ${destination}`);
+        };
     }
 
+    /**
+     * Send message to destination
+     */
     send(
         destination: string,
         body: any
-    ) {
+    ): void {
 
         if (!this.client) {
-            return;
+            console.error("[WebSocket] Client not initialized");
+            throw new Error("WebSocket client not initialized");
         }
 
-        this.client.publish({
+        if (!this.client.active) {
+            console.error("[WebSocket] Client not connected, current state:", this.client.state);
+            throw new Error("There is no underlying STOMP connection. WebSocket is not ready yet. Try again in a moment.");
+        }
 
-            destination,
+        try {
+            const payload = JSON.stringify(body);
+            console.log(`[WebSocket] Sending message to ${destination}:`, body);
 
-            body: JSON.stringify(body)
-        });
+            this.client.publish({
+                destination,
+                body: payload
+            });
+        } catch (e) {
+            console.error("[WebSocket] Error sending message:", e);
+            throw e;
+        }
     }
 
-    disconnect() {
-
-        this.client?.deactivate();
+    /**
+     * Disconnect from WebSocket
+     */
+    disconnect(): void {
+        if (this.client) {
+            this.client.deactivate();
+            this.isConnected = false;
+            console.log("[WebSocket] Disconnected");
+        }
     }
 }
 

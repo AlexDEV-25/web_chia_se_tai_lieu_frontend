@@ -1,193 +1,188 @@
-import { useState, useEffect, useContext } from 'react';
-import type { ChatMessageResponse } from '../../../models/response/chatmessage/ChatMessageResponse';
-import { getMyMessages } from '../../../apis/ChatMessageApi';
-import { handleApiError } from '../../../utils/errorHandler';
-import { AppContext } from '../../../AppContext';
-import { getDetailConversations } from '../../../apis/ConversationApi';
+import { useEffect, useState, useContext, useRef } from "react";
+
+import { AppContext } from "../../../AppContext";
+
+import { getMyMessages } from "../../../apis/ChatMessageApi";
+import { getDetailConversations } from "../../../apis/ConversationApi";
+import WebSocketService from "../../../apis/WebSocketService";
+
+import type { ChatMessageResponse } from "../../../models/response/chatmessage/ChatMessageResponse";
+
+import ChatHeader from "./component/ChatHeader";
+import MessageList from "./component/MessageList";
+import ChatInput from "./component/ChatInput";
+import type { ChatMessageRequest } from "../../../models/request/ChatMessageRequest";
+
+// Get current user ID from token
+const getCurrentUserName = (): string | null => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.sub ? payload.sub : null;
+    } catch {
+        return null;
+    }
+};
 
 export default function ChatMessage() {
+
     const context = useContext(AppContext) as any;
 
     const [messages, setMessages] = useState<ChatMessageResponse[]>([]);
+    const [conversationName, setConversationName] = useState("");
+    const [conversationAvatar, setConversationAvatar] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
-    const [conversationName, setConversationName] = useState<string>('');
-    const [conversationAvatar, setConversationAvatar] = useState<string>('');
+
+    const unsubscribeRef = useRef<(() => void) | null>(null);
+    const currentUserNameRef = useRef<string | null>(null);
 
     useEffect(() => {
+        if (!context.conversationId) {
+            return;
+        }
         const loadMessages = async () => {
-            setIsLoading(true);
-
             try {
+                setIsLoading(true);
+
+                const userName = getCurrentUserName();
+                currentUserNameRef.current = userName;
+
                 const response = await getMyMessages(context.conversationId);
-                setMessages(response.resultList || []);
-            } catch (error: any) {
-                const message = handleApiError(error, 'Không thể tải tin nhắn');
-                console.error(message);
+                const messages = response.resultList || [];
+                setMessages(messages);
             } finally {
                 setIsLoading(false);
             }
         };
-        if (context.conversationId) {
-            loadMessages();
-        }
+        loadMessages();
     }, [context.conversationId]);
 
     useEffect(() => {
+        if (!context.conversationId) {
+            return;
+        }
         const fetchConversation = async () => {
-            if (!context.conversationId) {
-                return;
-            }
-            try {
-                setIsLoading(true);
-                const response = await getDetailConversations(context.conversationId);
-                setConversationName(response.result?.conversationName || '');
-                setConversationAvatar(response.result?.conversationAvatar || '');
-                console.log(response);
-            } catch (err: any) {
-                console.log(err);
-            } finally {
-                setIsLoading(false);
-            }
+            const response =
+                await getDetailConversations(context.conversationId);
+            setConversationName(
+                response.result?.conversationName || ""
+            );
+            setConversationAvatar(
+                response.result?.conversationAvatar || ""
+            );
         };
         fetchConversation();
     }, [context.conversationId]);
 
+    useEffect(() => {
+        if (!context.conversationId) {
+            return;
+        }
+        if (unsubscribeRef.current) {
+            unsubscribeRef.current();
+        }
 
+        const subscribe = async () => {
 
+            let retries = 0;
 
-    const onClose = () => {
-        context.setConversationId(null);
+            while (
+                !WebSocketService.getIsConnected()
+                && retries < 20
+            ) {
+                await new Promise(
+                    resolve => setTimeout(resolve, 500)
+                );
+                retries++;
+            }
+
+            if (!WebSocketService.getIsConnected()) {
+                console.warn("[ChatMessage] WebSocket connection timeout");
+                return;
+            }
+
+            const unsubscribe =
+                WebSocketService.subscribe(
+                    `/topic/conversation/${context.conversationId}`,
+                    (newMessage: ChatMessageResponse) => {
+                        console.log("[ChatMessage] New message received:", newMessage);
+
+                        setMessages(prev => {
+
+                            const exists =
+                                prev.some(
+                                    m => m.id === newMessage.id
+                                );
+
+                            if (exists) {
+                                console.log("[ChatMessage] Message already exists, skipping duplicate");
+                                return prev;
+                            }
+
+                            // Fix `me` field based on current user ID
+                            const messageWithCorrectMe = {
+                                ...newMessage,
+                                me: newMessage.userName === currentUserNameRef.current
+                            };
+
+                            console.log("[ChatMessage] Adding message, me:", messageWithCorrectMe.me);
+                            return [...prev, messageWithCorrectMe];
+                        });
+                    }
+                );
+
+            unsubscribeRef.current = unsubscribe;
+        };
+
+        subscribe();
+
+        return () => {
+
+            if (unsubscribeRef.current) {
+                unsubscribeRef.current();
+            }
+        };
+
+    }, [context.conversationId]);
+
+    const handleSendMessage = (
+        message: string
+    ) => {
+        const newMessage: ChatMessageRequest = {
+            conversationId: context.conversationId,
+            message
+        };
+        WebSocketService.send(
+            "/app/chat",
+            newMessage
+        );
     };
-
-    const onMinimize = () => {
-        setIsMinimized(!isMinimized);
-    };
-
-    const shortConversationName =
-        context.conversationName?.length > 10
-            ? conversationName.slice(0, 10) + '...'
-            : conversationName;
 
     return (
-        <div className={`chat-popup ${isMinimized ? 'chat-popup-minimized' : ''}`}>
-            {/* HEADER */}
-            <div
-                className="chat-popup-header"
-                onClick={isMinimized ? onMinimize : undefined}
-            >
-                <div className="chat-header-container">
-                    <div className="chat-header-left">
-                        <img
-                            src={conversationAvatar || '/images/myAvatar.jpg'}
-                            alt={conversationName}
-                            className="chat-header-avatar"
-                        />
+        <div className={`chat-popup ${isMinimized ? "chat-popup-minimized" : ""}`}>
 
-                        <span className="chat-header-name">
-                            {shortConversationName}
-                        </span>
-                    </div>
+            <ChatHeader
+                avatar={conversationAvatar}
+                name={conversationName}
+                isMinimized={isMinimized}
+                onClose={() => context.setConversationId(null)}
+                onMinimize={() => setIsMinimized(!isMinimized)}
+            />
 
-                    <div className="chat-header-actions">
-                        <button
-                            className="chat-btn"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onMinimize();
-                            }}
-                        >
-                            <i
-                                className={`fa ${isMinimized
-                                    ? 'fa-chevron-up'
-                                    : 'fa-chevron-down'
-                                    }`}
-                            ></i>
-                        </button>
-
-                        <button
-                            className="chat-btn"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onClose();
-                            }}
-                        >
-                            <i className="fa fa-times"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* MESSAGES */}
-            <div className="chat-popup-messages">
-                {isLoading ? (
-                    <div className="chat-loading">
-                        <i className="fa fa-spinner fa-spin"></i>
-                        <span>Đang tải tin nhắn...</span>
-                    </div>
-                ) : messages.length === 0 ? (
-                    <div className="chat-empty">
-                        Chưa có tin nhắn nào
-                    </div>
-                ) : (
-                    <div className="messages-list">
-                        {messages.map((message) => (
-                            <div
-                                key={message.id}
-                                className={`message-item ${message.me
-                                    ? 'message-sent'
-                                    : 'message-received'
-                                    }`}
-                            >
-                                <div className="message-content">
-                                    {!message.me && (
-                                        <div className="message-avatar">
-                                            <img
-                                                src={
-                                                    message.userAvatar ||
-                                                    '/images/myAvatar.jpg'
-                                                }
-                                                alt={message.userName}
-                                            />
-                                        </div>
-                                    )}
-
-                                    <div className="message-bubble">
-                                        <div className="message-text">
-                                            {message.message}
-                                        </div>
-
-                                        <div className="message-time">
-                                            {new Date(
-                                                message.createdAt
-                                            ).toLocaleTimeString('vi-VN', {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                            })}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* INPUT */}
-            <div className="chat-popup-input">
-                <div className="input-group">
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Nhập tin nhắn..."
-                        disabled
+            {!isMinimized && (
+                <>
+                    <MessageList
+                        messages={messages}
+                        isLoading={isLoading}
                     />
 
-                    <button className="send-btn" disabled>
-                        <i className="fa fa-paper-plane"></i>
-                    </button>
-                </div>
-            </div>
+                    <ChatInput
+                        onSend={handleSendMessage}
+                    />
+                </>
+            )}
         </div>
     );
 }

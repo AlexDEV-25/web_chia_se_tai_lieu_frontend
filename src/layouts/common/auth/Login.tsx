@@ -10,6 +10,7 @@ import type { UserResponse } from "../../../models/response/user/UserResponse";
 import { getMyInfo } from "../../../apis/UserApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
+import WebSocketService from "../../../apis/WebSocketService";
 interface Props {
     setToken: (value: string | null) => void
     setRoles: (value: string[]) => void
@@ -59,6 +60,17 @@ const Login: React.FC<Props> = ({ setToken, setRoles, setAvatar }) => {
 
             localStorage.setItem("token", token);
             setToken(token);
+
+            // Connect WebSocket after successful login
+            try {
+                console.log("[Login] Connecting WebSocket...");
+                await WebSocketService.connect();
+                console.log("[Login] WebSocket connected successfully");
+            } catch (wsError) {
+                console.error("[Login] WebSocket connection failed:", wsError);
+                // Don't block login if WebSocket fails
+            }
+
             try {
                 const response = await getMyInfo();
                 const user: UserResponse | null = response.result;
@@ -117,6 +129,17 @@ const Login: React.FC<Props> = ({ setToken, setRoles, setAvatar }) => {
                     }
                     localStorage.setItem("token", token);
                     setToken(token);
+
+                    // Connect WebSocket after successful Google login
+                    try {
+                        console.log("[Login] Connecting WebSocket after Google login...");
+                        await WebSocketService.connect();
+                        console.log("[Login] WebSocket connected successfully");
+                    } catch (wsError) {
+                        console.error("[Login] WebSocket connection failed:", wsError);
+                        // Don't block login if WebSocket fails
+                    }
+
                     try {
                         const data = await getMyInfo();
                         const user: UserResponse | null = data.result;

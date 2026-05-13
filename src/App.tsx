@@ -36,6 +36,7 @@ import RatingList from './layouts/admin/interactions/ratings/RatingList';
 import ReportList from './layouts/admin/interactions/reports/ReportList';
 import ReportDetail from './layouts/admin/interactions/reports/ReportDetail';
 import ChatMessage from './layouts/common/chat_message/ChatMessage';
+import WebSocketService from './apis/WebSocketService';
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -47,6 +48,19 @@ function App() {
   const [roles, setRoles] = useState<string[]>(JSON.parse(localStorage.getItem("roles") || "[]"));
   const [avatar, setAvatar] = useState<string | null>(localStorage.getItem("avatar"));
 
+  // Ensure WebSocket is connected (important for page refresh)
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      return;
+    }
+
+    if (!WebSocketService.getIsConnected() && !WebSocketService.getIsConnecting()) {
+      console.log("[ChatMessage] Reconnecting WebSocket after page refresh...");
+      WebSocketService.connect().catch(err => {
+        console.error("[ChatMessage] Failed to reconnect WebSocket:", err);
+      });
+    }
+  }, []);
 
 
   useEffect(() => {
@@ -62,7 +76,7 @@ function App() {
       });
     }
     check()
-  }, [token, setRoles]);
+  }, [token]);
 
 
   useEffect(() => {
