@@ -315,7 +315,7 @@ const LessonDetail: React.FC = () => {
                         <CarouselComp
                             categoryId={lessonDetail.categoryId}
                             currentItemId={lessonDetail.id}
-                            type="lesson"
+                            type="LESSON"
                         />
                     </section>
                 )}

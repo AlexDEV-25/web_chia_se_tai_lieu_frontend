@@ -304,7 +304,7 @@ const DocumentDetail: React.FC = () => {
                         <CarouselComp
                             categoryId={documentDetail.categoryId}
                             currentItemId={documentDetail.id}
-                            type="document"
+                            type="DOCUMENT"
                         />
                     </section>
                 )}

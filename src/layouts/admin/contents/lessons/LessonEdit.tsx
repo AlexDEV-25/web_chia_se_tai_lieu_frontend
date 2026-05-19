@@ -73,7 +73,7 @@ const LessonEdit: React.FC = () => {
                 description,
                 status,
                 hide,
-                categoryId,
+                categoryId: categoryId ?? null,
             };
             const response = await updateLesson(lesson.id, requestData);
             setLesson(response.result);

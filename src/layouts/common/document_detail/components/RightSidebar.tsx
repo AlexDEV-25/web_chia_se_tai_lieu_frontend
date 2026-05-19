@@ -137,7 +137,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ userId, currentDocumentId }
                 {documents.map((doc) => (
                     <GrindItem
                         key={doc.id}
-                        itemType="document"
+                        itemType="DOCUMENT"
                         link={`/document/${doc.id}`}
                         title={doc.title}
                         thumbnailUrl={

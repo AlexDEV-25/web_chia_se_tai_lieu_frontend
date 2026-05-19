@@ -62,7 +62,7 @@ const DocumentEdit: React.FC = () => {
 
         setSaving(true);
         try {
-            const requestData: DocumentRequest = { title, description, status, hide, categoryId };
+            const requestData: DocumentRequest = { title, description, status, hide, categoryId: categoryId ?? null };
             const response = await updateDocument(document.id, requestData);
             setDocument(response.result);
             setError(null);
