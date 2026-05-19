@@ -62,7 +62,7 @@ class WebSocketService {
 
                     webSocketFactory: () =>
                         new SockJS(
-                            "http://localhost:8080/ws"
+                            import.meta.env.VITE_WEBSOCKET_URL
                         ),
 
                     connectHeaders: {
