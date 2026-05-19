@@ -7,7 +7,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import "font-awesome/css/font-awesome.min.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import { AppProvider } from './AppContext.tsx';
+import { AppProvider } from './contexts/AppContext.tsx';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AppProvider>

@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext, useRef } from "react";
 
-import { AppContext } from "../../../AppContext";
+import { AppContext } from "../../../contexts/AppContext";
 
 import { getMyMessages } from "../../../apis/ChatMessageApi";
 import { getDetailConversations } from "../../../apis/ConversationApi";

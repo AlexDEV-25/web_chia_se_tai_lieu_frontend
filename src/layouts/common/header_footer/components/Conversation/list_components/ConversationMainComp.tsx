@@ -3,7 +3,7 @@ import ConversationItemComp from './ConversationItemComp.tsx';
 import type { ConversationResponse } from '../../../../../../models/response/conversation/ConversationResponse.ts';
 import type { UserBioResponse } from '../../../../../../models/response/user/UserBioResponse.ts';
 import SearchBarComp from '../common_component/SearchBarComp.tsx';
-import { AppContext } from '../../../../../../AppContext.tsx';
+import { AppContext } from '../../../../../../contexts/AppContext.tsx';
 
 interface ConversationMainCompProps {
     myConversations: ConversationResponse[];

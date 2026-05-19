@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { search, stats, getAllPublicLesson } from "../../../apis/LessonApi";
 import { getAllPublicCategory } from "../../../apis/CategoryApi";
 import type { CategoryResponse } from "../../../models/response/category/CategoryResponse";
@@ -8,12 +8,9 @@ import MainBlockComp from "../components/MainBlockComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import type { LessonResponse } from "../../../models/response/lesson/LessonResponse";
+import { AppContext } from "../../../contexts/AppContext";
 
-interface Props {
-    keyWords: string
-}
-
-const Lesson = ({ keyWords }: Props) => {
+const Lesson = () => {
     const [lessons, setLessons] = useState<LessonResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [statsData, setStatsData] = useState<any>(null);
@@ -22,6 +19,8 @@ const Lesson = ({ keyWords }: Props) => {
     const [error, setError] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<"all" | number>("all");
     const [showAllCategories, setShowAllCategories] = useState(false);
+    const context = useContext(AppContext) as any;
+    const keyWords = context.keyword ?? '';
 
     useEffect(() => {
         const fetchStats = async () => {

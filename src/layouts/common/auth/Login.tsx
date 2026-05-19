@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Link } from "react-router-dom";
 import { login } from "../../../apis/AuthApi";
 import type { AuthenticationRequest } from "../../../models/request/AuthenticationRequest";
@@ -11,12 +11,9 @@ import { getMyInfo } from "../../../apis/UserApi";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import WebSocketService from "../../../apis/WebSocketService";
-interface Props {
-    setToken: (value: string | null) => void
-    setRoles: (value: string[]) => void
-    setAvatar: (value: string | null) => void
-}
-const Login: React.FC<Props> = ({ setToken, setRoles, setAvatar }) => {
+import { AppContext } from "../../../contexts/AppContext";
+
+const Login: React.FC = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -28,6 +25,9 @@ const Login: React.FC<Props> = ({ setToken, setRoles, setAvatar }) => {
     const calledRef = useRef(false);
     const [code, setCode] = useState<string>("");
     const [searchParams] = useSearchParams();
+
+    const context = useContext(AppContext) as any;
+    const { setToken, setRoles, setAvatar } = context;
 
     // ================= HANDLE SUBMIT =================
     const handleSubmit = async () => {

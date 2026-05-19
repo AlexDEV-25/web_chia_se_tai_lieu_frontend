@@ -4,32 +4,27 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import UploadDropdown from "./components/UploadDropdown";
 import ListNotification from "./components/ListNotification";
 import ListConversation from "./components/Conversation/ListConversation";
-import { AppContext } from "../../../AppContext";
+import { AppContext } from "../../../contexts/AppContext";
 import WebSocketService from "../../../apis/WebSocketService";
 
-interface Props {
-    token: string | null
-    setToken: (value: string | null) => void
-    setKeyWords: (value: string) => void
-    roles: string[]
-    setRoles: (value: string[]) => void
-    avatar: string | null
-    setAvatar: (value: string | null) => void
-}
-const Header: React.FC<Props> = ({ token, setToken, setKeyWords, roles, setRoles, avatar, setAvatar }) => {
+
+const Header: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [valid, setValid] = useState<boolean>(false);
     const [TempKeyWords, setTempKeyWords] = useState("");
     const context = useContext(AppContext) as any;
+    const token = context.token;
+    const roles = context.roles;
+    const avatar = context.avatar;
 
     const handleLogout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("roles")
         localStorage.removeItem("avatar")
-        setToken(null);
-        setRoles([]);
-        setAvatar(null);
+        context.setToken(null);
+        context.setRoles([]);
+        context.setAvatar(null);
         context.setConversationId(null);
         WebSocketService.disconnect();
         navigate("/");
@@ -51,7 +46,7 @@ const Header: React.FC<Props> = ({ token, setToken, setKeyWords, roles, setRoles
     const searchPlaceholder = location.pathname === "/lesson" ? "Tìm kiếm bài giảng..." : "Tìm kiếm tài liệu...";
 
     const handleSearch = () => {
-        setKeyWords(TempKeyWords);
+        context.setKeyWords(TempKeyWords);
         setTempKeyWords("");
         if (location.pathname === "/lesson") {
             navigate("/lesson");
