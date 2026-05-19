@@ -46,7 +46,7 @@ const CommentComp: React.FC<CommentCompProps> = ({ docId, lessonId }) => {
                 ? await getCommentsByLesson(targetId)
                 : await getCommentsByDocument(targetId);
 
-            setComments(Array.isArray(res.result) ? res.result : []);
+            setComments(res.resultList ?? []);
         } catch (err) {
             setError(handleApiError(err, ERROR_MESSAGES.COMMENT_LOAD_FAILED));
         } finally {

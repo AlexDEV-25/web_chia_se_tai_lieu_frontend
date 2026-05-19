@@ -16,11 +16,11 @@ export const updateComment = async (id: number, data: CommentRequest) => {
 }
 
 export const getCommentsByDocument = async (documentId: number) => {
-    return await httpGet<APIResponse<CommentTreeResponse[]>>(`/comments/document/${documentId}`);
+    return await httpGet<APIResponse<CommentTreeResponse>>(`/comments/document/${documentId}`);
 }
 
 export const getCommentsByLesson = async (lessonId: number) => {
-    return await httpGet<APIResponse<CommentTreeResponse[]>>(`/comments/lesson/${lessonId}`);
+    return await httpGet<APIResponse<CommentTreeResponse>>(`/comments/lesson/${lessonId}`);
 }
 // ==========================================================================================
 // admin

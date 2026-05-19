@@ -7,6 +7,7 @@ import type { AuthenticationResponse } from "../models/response/authentication/A
 import type { IntrospectResponse } from "../models/response/authentication/IntrospectResponse";
 import type { ActiveAccountRequest } from "../models/request/ActiveAccountRequest";
 import type { ForgotPasswordRequest } from "../models/request/ForgotPasswordRequest";
+import type { UserBioResponse } from "../models/response/user/UserBioResponse";
 
 export const register = (data: UserRequest) =>
     httpPost<APIResponse<UserResponse>>(`/auth/register`, data);
@@ -28,7 +29,7 @@ export const forgotPassword = async (email: string) => {
 }
 
 export const changePassword = async (data: ForgotPasswordRequest) => {
-    return await httpPost<APIResponse<void>>(`/auth/change-password`, data);
+    return await httpPost<APIResponse<UserBioResponse>>(`/auth/change-password`, data);
 }
 
 export const refreshToken = async () => {
