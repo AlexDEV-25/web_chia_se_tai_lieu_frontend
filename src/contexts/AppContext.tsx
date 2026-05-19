@@ -6,7 +6,7 @@ const AppContext = createContext({});
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [conversationId, setConversationId] = useState<number | null>(null);
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-    const [roles, setRoles] = useState<string | null>(localStorage.getItem('role'));
+    const [roles, setRoles] = useState<string[]>(JSON.parse(localStorage.getItem("roles") || "[]"));
     const [avatar, setAvatar] = useState<string | null>(localStorage.getItem('avatar'));
     const [keyword, setKeyword] = useState<string | null>('');
 
