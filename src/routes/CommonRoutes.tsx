@@ -1,13 +1,14 @@
 import { Route } from 'react-router-dom';
 
 import Home from '../layouts/common/home/Home';
-import Lesson from '../layouts/common/lesson/Lesson';
+import Lesson from '../layouts/common/home/Lesson';
 
 import UploadDocument from '../layouts/common/uploads/UploadDocument';
 import UploadLesson from '../layouts/common/uploads/UploadLesson';
 
-import DocumentDetail from '../layouts/common/document_detail/DocumentDetail';
-import LessonDetail from '../layouts/common/lesson_detail/LessonDetail';
+import DocumentDetail from '../layouts/common/content_detail/document_detail/DocumentDetail';
+import LessonDetail from '../layouts/common/content_detail/lesson_detail/LessonDetail';
+
 
 export default function CommonRoutes() {
     return (

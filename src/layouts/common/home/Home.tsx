@@ -1,26 +1,25 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { search, stats, getAllPublicDocument } from "../../../apis/DocumentApi";
-import { getAllPublicCategory } from "../../../apis/CategoryApi";
 import type { CategoryResponse } from "../../../models/response/category/CategoryResponse";
-import HeroBlockComp from "../components/HeroBlockComp";
-import CategoryBlockComp from "../components/CategoryBlockComp";
-import MainBlockComp from "../components/MainBlockComp";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES } from "../../../constants/messages";
 import type { DocumentResponse } from "../../../models/response/document/DocumentResponse";
 import { AppContext } from "../../../contexts/AppContext";
+import HeroBlockComp from "./components/HeroBlockComp";
+import CategoryBlockComp from "./components/CategoryBlockComp";
+import MainBlockComp from "./components/MainBlockComp";
+import usePublicCategories from "../../../hooks/usePublicCategory";
 
 const Home = () => {
     const [documents, setDocuments] = useState<DocumentResponse[]>([]);
-    const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [statsData, setStatsData] = useState<any>(null);
     const [loadingDocs, setLoadingDocs] = useState(true);
-    const [loadingCats, setLoadingCats] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<"all" | number>("all");
     const [showAllCategories, setShowAllCategories] = useState(false);
     const context = useContext(AppContext) as any;
     const keyWords = context.keyword ?? '';
+    const { categories, loading } = usePublicCategories();
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -59,20 +58,6 @@ const Home = () => {
         };
         fetchDocuments();
     }, [keyWords, selectedCategory]);
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await getAllPublicCategory();
-                setCategories((response?.resultList ?? []));
-            } catch (err: any) {
-                setError(handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED));
-            } finally {
-                setLoadingCats(false);
-            }
-        };
-        fetchCategories();
-    }, []);
 
     const filteredDocuments = useMemo(() => {
         return documents;
@@ -123,7 +108,7 @@ const Home = () => {
             />
 
             <CategoryBlockComp
-                loading={loadingCats}
+                loading={loading}
                 categories={displayedCategories}
                 selectedCategory={selectedCategory}
                 onSelectCategory={setSelectedCategory}

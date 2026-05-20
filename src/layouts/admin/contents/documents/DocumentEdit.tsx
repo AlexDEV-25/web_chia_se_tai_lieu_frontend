@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getDocumentById, updateDocument, deleteDocument } from "../../../../apis/DocumentApi";
-import DocumentViewComp from "../../../common/components/DocumentViewComp";
+import DocumentComp from "../../../components/DocumentComp";
 import RightProperties from "../components/RightProperties";
 import type { DocumentDetailResponse } from "../../../../models/response/document/DocumentDetailResponse";
 import type { DocumentRequest } from "../../../../models/request/DocumentRequest";
@@ -119,7 +119,7 @@ const DocumentEdit: React.FC = () => {
                     <div className="document-preview-section">
                         <div className="document-preview-card">
                             <h3 className="document-section-title">Xem trước tài liệu</h3>
-                            <DocumentViewComp
+                            <DocumentComp
                                 documentUrl={document.fileUrl}
                                 maxRenderWidth={860}
                                 emptyFallback={

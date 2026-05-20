@@ -28,31 +28,26 @@ export default function MessageList({
     return (
         <div className="chat-popup-messages">
 
-            {isLoading ? (
-                <div className="chat-loading">
-                    Đang tải...
-                </div>
-            ) : messages.length === 0 ? (
-                <div className="chat-empty">
-                    Chưa có tin nhắn
-                </div>
-            ) : (
-                <div className="messages-list">
+            {isLoading ?
+                (<div className="chat-loading">Đang tải...</div>) :
+                messages.length === 0 ?
+                    (<div className="chat-empty">Chưa có tin nhắn</div>) :
 
-                    {messages.map(message => (
+                    (<div className="messages-list">
 
-                        <MessageItem
-                            key={message.id}
-                            message={message}
-                            isMe={
-                                message.me == true
-                            }
-                        />
-                    ))}
+                        {messages.map(message => (
+                            <MessageItem
+                                key={message.id}
+                                message={message}
+                                isMe={
+                                    message.me == true
+                                }
+                            />
+                        ))}
 
-                    <div ref={bottomRef} />
-                </div>
-            )}
+                        <div ref={bottomRef} />
+                    </div>
+                    )}
         </div>
     );
 }

@@ -42,10 +42,6 @@ const UploadHistory: React.FC = () => {
     };
 
     const handleDeleteDocument = async (id: number) => {
-        if (!window.confirm("Bạn có muốn xóa tài liệu này không?")) {
-            return;
-        }
-
         try {
             await deleteMyDocument(id);
             setDocuments(prev => prev.filter(doc => doc.id !== id));

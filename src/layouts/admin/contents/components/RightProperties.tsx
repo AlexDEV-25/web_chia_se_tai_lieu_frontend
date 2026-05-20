@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { getAllCategory } from "../../../../apis/CategoryApi";
-import type { CategoryResponse } from "../../../../models/response/category/CategoryResponse";
+import React from "react";
+
 import type { ContentStatus, InteractionType } from "../../../../models/enum/common";
+import usePublicCategories from "../../../../hooks/usePublicCategory";
 
 
 interface BaseContent {
@@ -39,22 +39,7 @@ const RightProperties: React.FC<RightPropertiesProps> = ({
     onClose,
     saving = false,
 }) => {
-    const [categories, setCategories] = useState<CategoryResponse[]>([]);
-    const [loadingCategories, setLoadingCategories] = useState(false);
-
-    const fetchCategories = useCallback(async () => {
-        try {
-            setLoadingCategories(true);
-            const response = await getAllCategory();
-            setCategories(response?.resultList ?? []);
-        } finally {
-            setLoadingCategories(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchCategories();
-    }, [fetchCategories]);
+    const { categories, loading: loading } = usePublicCategories();
 
     return (
         <div className="document-properties-section">
@@ -93,7 +78,7 @@ const RightProperties: React.FC<RightPropertiesProps> = ({
                         onChange={(e) =>
                             setCategoryId(e.target.value ? Number(e.target.value) : undefined)
                         }
-                        disabled={saving || loadingCategories}
+                        disabled={saving || loading}
                         className="document-select"
                     >
                         <option value="">-- Chọn danh mục --</option>

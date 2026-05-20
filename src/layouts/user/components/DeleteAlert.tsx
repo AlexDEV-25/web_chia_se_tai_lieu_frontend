@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { handleApiError } from "../../../utils/errorHandler";
-import { ERROR_MESSAGES } from "../../../constants/messages";
 import type { InteractionType } from "../../../models/enum/common";
 
 
@@ -27,8 +25,6 @@ const DeleteAlert: React.FC<Props> = ({
         try {
             await onConfirm();
         } catch (err: any) {
-            const message = handleApiError(err, ERROR_MESSAGES.DELETE_FAILED_FORM);
-            console.error(message);
             setIsDeleting(false);
         }
     };

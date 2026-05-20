@@ -1,16 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { DocumentRequest } from "../../../models/request/DocumentRequest";
-import { getAllPublicCategory } from "./../../../apis/CategoryApi";
+
 import { uploadDocument } from "./../../../apis/DocumentApi";
-import type { CategoryResponse } from "./../../../models/response/category/CategoryResponse";
 import { useRef } from "react";
 import { handleApiError } from "../../../utils/errorHandler";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../../constants/messages";
 import { Link } from "react-router-dom";
+import CategoryComp from "./components/CategoryComp";
+import TitleComp from "./components/TitleComp";
+import DescriptionComp from "./components/DescriptionComp";
+import FileComp from "./components/FileComp";
+import ButtonComp from "./components/ButtonComp";
 const UploadDocument: React.FC = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [categoryId, setCategoryId] = useState(1);
     const [file, setFile] = useState<File | null>(null);
     const fileRef = useRef<HTMLInputElement | null>(null);
@@ -19,22 +22,8 @@ const UploadDocument: React.FC = () => {
     const [errTitle, setErrTitle] = useState("");
     const [errFile, setErrFile] = useState("");
 
-
     const [uploadMessage, setUploadMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await getAllPublicCategory();
-                setCategories((response?.resultList ?? []).filter(cat => !cat.hide));
-            } catch (err: any) {
-                const message = handleApiError(err, ERROR_MESSAGES.CATEGORY_LOAD_FAILED);
-                console.log(message);;
-            }
-        };
-        fetchCategories();
-    }, []);
 
     const handleUpload = async () => {
         if (isLoading) return;
@@ -42,7 +31,6 @@ const UploadDocument: React.FC = () => {
 
         let tErr = "";
         let fErr = "";
-
 
         if (title.trim() === "") tErr = ERROR_MESSAGES.TITLE_EMPTY;
         if (!file) fErr = ERROR_MESSAGES.FILE_EMPTY;
@@ -65,9 +53,8 @@ const UploadDocument: React.FC = () => {
         };
 
         try {
-            const response = await uploadDocument(file!, doc);
+            await uploadDocument(file!, doc);
 
-            console.log(response);
             setUploadMessage(SUCCESS_MESSAGES.UPLOAD_SUCCESS);
 
             // Reset form
@@ -100,74 +87,21 @@ const UploadDocument: React.FC = () => {
             <section className="glass-card">
                 <div className="upload-grid">
                     <div className="upload-left">
-                        <div className="input-field">
-                            <label>Tiêu đề tài liệu</label>
-                            <input
-                                type="text"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                placeholder="Nhập tiêu đề tài liệu"
-                            />
-                            {errTitle && <span className="error-text">{errTitle}</span>}
-                        </div>
-
-                        <div className="input-field">
-                            <label>Mô tả</label>
-                            <textarea
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Mô tả nội dung tài liệu"
-                                rows={4}
-                            />
-                        </div>
-
-                        <div className="input-field">
-                            <label>Danh mục</label>
-                            <select
-                                value={categoryId}
-                                onChange={(e) => setCategoryId(Number(e.target.value))}
-                            >
-                                <option value="">-- Chọn danh mục --</option>
-                                {categories.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.name}
-                                    </option>
-                                ))}
-                                <option key="-1" value="-1">Danh mục khác</option>
-                            </select>
-                        </div>
+                        <TitleComp title={title} setTitle={setTitle} errTitle={errTitle} />
+                        <DescriptionComp description={description} setDescription={setDescription} />
+                        <CategoryComp categoryId={categoryId} setCategoryId={setCategoryId} />
                     </div>
 
                     <div className="upload-right">
-                        <div className="input-field">
-                            <label>Tài liệu (pdf) *</label>
-                            <div className="file-drop">
-                                <input
-                                    type="file"
-                                    accept=".pdf"
-                                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                                    ref={fileRef}
-                                />
-                                <i className="fa" />
-                                <p>Kéo thả hoặc chọn file tài liệu</p>
-                            </div>
-                            {errFile && <span className="error-text">{errFile}</span>}
-                        </div>
+                        <FileComp label="Tài liệu (pdf) *" fileType=".pdf" setFile={setFile} ref={fileRef} />
+                        {errFile && <span className="error-text">{errFile}</span>}
 
                         {uploadMessage && (
                             <div className={uploadMessage.includes("thành công") ? "success-text" : "error-text"}>
                                 {uploadMessage}
                             </div>
                         )}
-
-                        <button
-                            type="button"
-                            onClick={handleUpload}
-                            className="btn-elevated"
-                            disabled={isLoading}
-                        >
-                            {isLoading ? "Đang xử lý..." : "Upload Tài Liệu"}
-                        </button>
+                        <ButtonComp handleUpload={handleUpload} isLoading={isLoading} buttonText="Upload Tài Liệu" />
                     </div>
                 </div>
             </section>

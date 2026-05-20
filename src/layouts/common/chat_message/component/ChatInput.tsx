@@ -6,35 +6,25 @@ type Props = {
     onSend: (message: string) => void;
 };
 
-export default function ChatInput({
-    onSend
-}: Props) {
+export default function ChatInput({ onSend }: Props) {
 
-    const [message, setMessage] =
-        useState("");
+    const [message, setMessage] = useState("");
 
-    const handleSubmit = (
-        e: React.FormEvent
-    ) => {
+    const handleSend = () => {
 
-        e.preventDefault();
-
-        if (!message.trim()) {
+        const trimmedMessage = message.trim();
+        if (!trimmedMessage) {
             return;
         }
 
-        onSend(message);
-
+        onSend(trimmedMessage);
         setMessage("");
     };
 
     return (
         <div className="chat-popup-input">
 
-            <form
-                onSubmit={handleSubmit}
-                className="input-group"
-            >
+            <div className="input-group">
 
                 <input
                     type="text"
@@ -44,19 +34,23 @@ export default function ChatInput({
                     onChange={(e) =>
                         setMessage(e.target.value)
                     }
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            handleSend();
+                        }
+                    }}
                     disabled={
                         !WebSocketService.getIsConnected()
                     }
                 />
-
                 <button
-                    type="submit"
+                    type="button"
                     className="send-btn"
+                    onClick={handleSend}
                 >
                     <i className="fa fa-paper-plane" />
                 </button>
-
-            </form>
+            </div>
         </div>
     );
 }

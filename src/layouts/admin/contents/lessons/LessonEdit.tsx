@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getLessonById, updateLesson, deleteLesson } from "../../../../apis/LessonApi";
-import VideoComp from "../../../common/components/VideoComp";
-import DocumentViewComp from "../../../common/components/DocumentViewComp";
+import VideoComp from "../../../components/VideoComp";
+import DocumentComp from "../../../components/DocumentComp";
 import RightProperties from "../components/RightProperties";
 import type { LessonDetailResponse } from "../../../../models/response/lesson/LessonDetailResponse";
 import type { LessonRequest } from "../../../../models/request/LessonRequest";
@@ -143,11 +143,14 @@ const LessonEdit: React.FC = () => {
                         {lesson.documentUrl && (
                             <div className="document-preview-card">
                                 <h3 className="document-section-title">Tài liệu bài giảng</h3>
-                                <DocumentViewComp documentUrl={lesson.documentUrl} maxRenderWidth={860} emptyFallback={
-                                    <div className="document-empty-preview">
-                                        <p>Không có tài liệu đi kèm</p>
-                                    </div>
-                                } />
+                                <DocumentComp
+                                    documentUrl={lesson.documentUrl}
+                                    maxRenderWidth={860}
+                                    emptyFallback={
+                                        <div className="document-empty-preview">
+                                            <p>Không có tài liệu đi kèm</p>
+                                        </div>
+                                    } />
                             </div>
                         )}
                     </div>

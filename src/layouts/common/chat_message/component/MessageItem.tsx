@@ -6,18 +6,10 @@ type Props = {
     isMe: boolean;
 };
 
-export default function MessageItem({
-    message,
-    isMe
-}: Props) {
+export default function MessageItem({ message, isMe }: Props) {
 
     return (
-        <div
-            className={`message-item ${isMe
-                ? "message-sent"
-                : "message-received"
-                }`}
-        >
+        <div className={`message-item ${isMe ? "message-sent" : "message-received"}`}>
 
             <div className="message-content">
 
@@ -50,11 +42,7 @@ export default function MessageItem({
                             new Date(
                                 message.createdAt
                             ).toLocaleTimeString(
-                                "vi-VN",
-                                {
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                }
+                                "vi-VN", { hour: "2-digit", minute: "2-digit" }
                             )
                         }
                     </div>
