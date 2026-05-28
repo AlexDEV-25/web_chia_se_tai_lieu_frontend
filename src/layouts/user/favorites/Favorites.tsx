@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import type { FavoriteResponse } from "../../../models/response/favorite/FavoriteResponse";
 import {
