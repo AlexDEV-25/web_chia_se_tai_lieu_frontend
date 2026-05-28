@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getMyDocument, deleteMyDocument, countMyDocument } from "../../../apis/DocumentApi";
 import { getMyLesson, deleteMyLesson, countMyLesson } from "../../../apis/LessonApi";
 import type { DocumentUserResponse } from "../../../models/response/document/DocumentUserResponse";
@@ -17,6 +17,9 @@ const UploadHistory: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [documentQuantity, setDocumentQuantity] = useState<number>(0);
     const [lessonQuantity, setLessonQuantity] = useState<number>(0);
+
+    const handleSelectDocumentTab = useCallback(() => setActiveTab("DOCUMENT"), []);
+    const handleSelectLessonTab = useCallback(() => setActiveTab("LESSON"), []);
 
     useEffect(() => {
         loadData();
@@ -98,13 +101,13 @@ const UploadHistory: React.FC = () => {
                 <div className="tab-navigation">
                     <button
                         className={`tab-button ${activeTab === "DOCUMENT" ? "active" : ""}`}
-                        onClick={() => setActiveTab("DOCUMENT")}
+                        onClick={handleSelectDocumentTab}
                     >
                         Tài liệu ({documentQuantity})
                     </button>
                     <button
                         className={`tab-button ${activeTab === "LESSON" ? "active" : ""}`}
-                        onClick={() => setActiveTab("LESSON")}
+                        onClick={handleSelectLessonTab}
                     >
                         Bài học ({lessonQuantity})
                     </button>

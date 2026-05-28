@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { memo, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { InteractionType } from "../../../models/enum/common";
 
@@ -57,6 +57,8 @@ const GrindItem: React.FC<GrindItemProps> = ({
         thumbnailUrl && thumbnailUrl.trim() !== "" ? thumbnailUrl : "/images/video-placeholder.jpg";
     const resolvedDocType = itemType === "DOCUMENT" ? "PDF" : "Video";
     const itemClasses = ["document-card"];
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(token);
 
     if (variant === "compact") {
         itemClasses.push("compact");
@@ -125,7 +127,7 @@ const GrindItem: React.FC<GrindItemProps> = ({
                 {showInlineFavorite && onToggleFavorite && (
                     <button
                         type="button"
-                        className={`favorite-inline ${isFavorite ? "active" : ""}`}
+                        className={`favorite-inline ${isAuthenticated && isFavorite ? "active" : ""}`}
                         aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
                         onClick={onToggleFavorite}
                         disabled={favoriteDisabled}
@@ -149,4 +151,4 @@ const GrindItem: React.FC<GrindItemProps> = ({
     );
 };
 
-export default GrindItem;
+export default memo(GrindItem);

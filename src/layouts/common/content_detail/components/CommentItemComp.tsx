@@ -1,4 +1,4 @@
-import type { FormEvent } from "react";
+import { memo, type FormEvent } from "react";
 import type { CommentTreeResponse } from "../../../../models/response/comment/CommentTreeResponse";
 
 interface CommentItemCompProps {
@@ -109,4 +109,4 @@ const CommentItemComp: React.FC<CommentItemCompProps> = ({
     );
 };
 
-export default CommentItemComp;
+export default memo(CommentItemComp);

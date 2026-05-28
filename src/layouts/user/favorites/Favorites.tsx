@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import type { FavoriteResponse } from "../../../models/response/favorite/FavoriteResponse";
 import {
@@ -24,9 +24,13 @@ const Favorites: React.FC = () => {
     const [removingId, setRemovingId] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState<InteractionType>("DOCUMENT");
     const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
-    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
 
-    const formatSavedDate = (value: string) => {
+    const handleCloseAlert = useCallback(() => setAlertDialog({ isOpen: false, title: '', message: '' }), []);
+
+    const handleSelectDocumentTab = useCallback(() => setActiveTab("DOCUMENT"), []);
+    const handleSelectLessonTab = useCallback(() => setActiveTab("LESSON"), []);
+
+    const formatSavedDate = useCallback((value: string) => {
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return "Không xác định";
         return date.toLocaleDateString("vi-VN", {
@@ -34,7 +38,7 @@ const Favorites: React.FC = () => {
             month: "2-digit",
             year: "numeric",
         });
-    };
+    }, []);
 
     useEffect(() => {
 
@@ -77,7 +81,7 @@ const Favorites: React.FC = () => {
         };
     }, [isAuthenticated]);
 
-    const handleRemove = async (contentId: number, type: InteractionType) => {
+    const handleRemove = useCallback(async (contentId: number, type: InteractionType) => {
         setRemovingId(contentId);
         try {
             if (type === 'DOCUMENT') {
@@ -101,7 +105,7 @@ const Favorites: React.FC = () => {
         } finally {
             setRemovingId(null);
         }
-    };
+    }, []);
 
     const renderEmptyState = (tab: InteractionType) => (
         <div className="text-center py-5">
@@ -174,7 +178,7 @@ const Favorites: React.FC = () => {
                                 ? "btn-primary"
                                 : "btn-outline-secondary"
                                 }`}
-                            onClick={() => setActiveTab("DOCUMENT")}
+                            onClick={handleSelectDocumentTab}
                         >
                             Tài liệu ({documentFavorites.length})
                         </button>
@@ -184,7 +188,7 @@ const Favorites: React.FC = () => {
                                 ? "btn-primary"
                                 : "btn-outline-secondary"
                                 }`}
-                            onClick={() => setActiveTab("LESSON")}
+                            onClick={handleSelectLessonTab}
                         >
                             Bài giảng ({lessonFavorites.length})
                         </button>

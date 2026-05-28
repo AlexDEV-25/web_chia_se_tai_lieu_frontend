@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface ConversationItemCompProps {
     isSelected?: boolean;
     isOnline?: boolean;
@@ -6,7 +8,17 @@ interface ConversationItemCompProps {
     avatarUrl: string;
 }
 
-export default function ConversationItemComp({
+// Memoize inline styles to prevent unnecessary object recreation
+const containerStyle = { cursor: 'pointer', transition: 'background-color 0.2s' };
+const onlineDotStyle = {
+    width: '12px',
+    height: '12px',
+    backgroundColor: '#28a745',
+    borderRadius: '50%',
+    border: '2px solid white',
+};
+
+function ConversationItemComp({
     isSelected,
     isOnline,
     onClick,
@@ -19,7 +31,7 @@ export default function ConversationItemComp({
             className={`conversation-item d-flex align-items-center p-3 border-bottom cursor-pointer 
                 ${isSelected ? 'bg-light' : ''}`}
             onClick={onClick}
-            style={{ cursor: 'pointer', transition: 'background-color 0.2s' }}
+            style={containerStyle}
         >
             <div className="position-relative me-3">
                 <img
@@ -33,13 +45,7 @@ export default function ConversationItemComp({
                 {isOnline && (
                     <div
                         className="position-absolute bottom-0 end-0"
-                        style={{
-                            width: '12px',
-                            height: '12px',
-                            backgroundColor: '#28a745',
-                            borderRadius: '50%',
-                            border: '2px solid white',
-                        }}
+                        style={onlineDotStyle}
                     ></div>
                 )}
             </div>
@@ -50,3 +56,5 @@ export default function ConversationItemComp({
         </div>
     );
 }
+
+export default memo(ConversationItemComp);

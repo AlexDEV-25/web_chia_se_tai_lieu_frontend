@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../../../apis/HttpClient";
 import type { UserResponse } from "../../../models/response/user/UserResponse";
 import { getMyInfo } from "../../../apis/UserApi";
@@ -28,7 +28,7 @@ const MyProfile: React.FC = () => {
 
 
     // ================= GET MY INFO =================
-    const fetchMyInfo = async () => {
+    const fetchMyInfo = useCallback(async () => {
         try {
             const response = await getMyInfo();
             setUser(response.result);
@@ -38,12 +38,12 @@ const MyProfile: React.FC = () => {
         } catch (err: any) {
             setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_LOAD_FAILED))
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchMyInfo();
     }, []);
-    const handleUpdate = async () => {
+    const handleUpdate = useCallback(async () => {
         let uErr = "";
         let eErr = "";
         let pErr1 = "";
@@ -107,7 +107,33 @@ const MyProfile: React.FC = () => {
         } catch (err: any) {
             setInfoMessage(handleApiError(err, ERROR_MESSAGES.PROFILE_UPDATE_FAILED));
         }
-    };
+    }, [username, email, bio, showChangePassword, newPassword, confirmPassword, user, avt, fetchMyInfo]);
+
+    const handleBioChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setBio(e.target.value);
+    }, []);
+
+    const handleAvatarChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setAvt(e.target.files?.[0] || null);
+    }, []);
+
+    const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setNewPassword(e.target.value);
+    }, []);
+
+    const handleConfirmPasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setConfirmPassword(e.target.value);
+    }, []);
+
+    const handleTogglePasswordSection = useCallback(() => {
+        if (showChangePassword) {
+            setNewPassword("");
+            setConfirmPassword("");
+            setErrNewPassword("");
+            setErrConfirmPassword("");
+        }
+        setShowChangePassword(!showChangePassword);
+    }, [showChangePassword]);
 
 
     if (!user) {
@@ -152,7 +178,7 @@ const MyProfile: React.FC = () => {
                             <textarea
                                 className="form-control"
                                 value={bio}
-                                onChange={(e) => setBio(e.target.value)}
+                                onChange={handleBioChange}
                                 rows={3}
                                 placeholder="Nhập tiểu sử ngắn gọn về bạn..."
                             />
@@ -179,22 +205,14 @@ const MyProfile: React.FC = () => {
 
                         <div className="mb-3">
                             <label className="form-label fw-bold">Cập nhật Avatar</label>
-                            <input type="file" accept="image/*" className="form-control" onChange={(e) => setAvt(e.target.files?.[0] || null)} />
+                            <input type="file" accept="image/*" className="form-control" onChange={handleAvatarChange} />
                         </div>
 
                         <div className="text-end">
                             <button
                                 className="btn btn-sm btn-outline-secondary"
                                 type="button"
-                                onClick={() => {
-                                    if (showChangePassword) {
-                                        setNewPassword("");
-                                        setConfirmPassword("");
-                                        setErrNewPassword("");
-                                        setErrConfirmPassword("");
-                                    }
-                                    setShowChangePassword(!showChangePassword);
-                                }}
+                                onClick={handleTogglePasswordSection}
                             >
                                 {showChangePassword ? "Hủy" : "Đổi mật khẩu"}
                             </button>
@@ -210,7 +228,7 @@ const MyProfile: React.FC = () => {
                                         type="password"
                                         className="form-control"
                                         value={newPassword}
-                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        onChange={handlePasswordChange}
                                     />
                                     <div style={{ color: "red" }}>{errNewPassword}</div>
                                 </div>
@@ -221,7 +239,7 @@ const MyProfile: React.FC = () => {
                                         type="password"
                                         className="form-control"
                                         value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        onChange={handleConfirmPasswordChange}
                                     />
                                     <div style={{ color: "red" }}>{errConfirmPassword}</div>
                                 </div>

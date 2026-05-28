@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Document, Page } from "react-pdf";
 import { ERROR_MESSAGES } from "../../constants/messages";
 import ZoomComp from "./ZoomComp";
@@ -138,32 +138,32 @@ const DocumentComp: React.FC<Props> = ({
         );
     }
 
-    const goToPage = (target: number) => {
+    const goToPage = useCallback((target: number) => {
         if (!numPages || target < 1 || target > numPages) return;
 
         if (!isControlled) {
             setInternalPage(target);
         }
         onPageChange?.(target);
-    };
+    }, [numPages, isControlled, onPageChange]);
 
-    const nextPage = () => goToPage(currentPage + 1);
-    const prevPage = () => goToPage(currentPage - 1);
+    const nextPage = useCallback(() => goToPage(currentPage + 1), [goToPage, currentPage]);
+    const prevPage = useCallback(() => goToPage(currentPage - 1), [goToPage, currentPage]);
 
-    const handleZoomIn = () => handleZoomChange(zoomLevel + 10);
+    const handleZoomIn = useCallback(() => handleZoomChange(zoomLevel + 10), [zoomLevel]);
 
-    const handleZoomOut = () => handleZoomChange(zoomLevel - 10);
+    const handleZoomOut = useCallback(() => handleZoomChange(zoomLevel - 10), [zoomLevel]);
 
-    const resetZoom = () => {
+    const resetZoom = useCallback(() => {
         setZoomLevel(100);
         setOffset({ x: 0, y: 0 });
-    };
+    }, []);
 
-    const toggleZoomControls = () => {
+    const toggleZoomControls = useCallback(() => {
         setShowZoomControls(!showZoomControls);
-    };
+    }, [showZoomControls]);
 
-    const handlePointerDown = (e: React.PointerEvent) => {
+    const handlePointerDown = useCallback((e: React.PointerEvent) => {
         if (e.button !== 0) return;
         if (zoomLevel <= 100 || !stageRef.current) return;
         if (activePointer !== null) return;
@@ -176,18 +176,18 @@ const DocumentComp: React.FC<Props> = ({
             x: e.clientX - offset.x,
             y: e.clientY - offset.y,
         };
-    };
+    }, [zoomLevel, activePointer, offset]);
 
-    const handlePointerMove = (e: React.PointerEvent) => {
+    const handlePointerMove = useCallback((e: React.PointerEvent) => {
         if (!isDragging || activePointer !== e.pointerId || !dragStartRef.current) return;
 
         const newX = e.clientX - dragStartRef.current.x;
         const newY = e.clientY - dragStartRef.current.y;
 
         applyOffset(newX, newY);
-    };
+    }, [isDragging, activePointer]);
 
-    const endPointerInteraction = (e: React.PointerEvent) => {
+    const endPointerInteraction = useCallback((e: React.PointerEvent) => {
         if (activePointer !== e.pointerId) return;
         const stageNode = stageRef.current;
         if (stageNode?.hasPointerCapture?.(e.pointerId)) {
@@ -196,23 +196,33 @@ const DocumentComp: React.FC<Props> = ({
         setIsDragging(false);
         dragStartRef.current = null;
         setActivePointer(null);
-    };
+    }, [activePointer]);
 
-    const handlePageRenderSuccess = (page: any) => {
+    const handlePageRenderSuccess = useCallback((page: any) => {
         setPageDimensions({ width: page.width, height: page.height });
         setOffset({ x: 0, y: 0 });
-    };
+    }, []);
 
-    function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
         setNumPages(numPages);
         setErrorMessage(null);
         onLoadPages?.(numPages);
         if (!isControlled) setInternalPage(1);
-    }
+    }, [onLoadPages, isControlled]);
 
-    function onDocumentLoadError() {
+    const onDocumentLoadError = useCallback(() => {
         setErrorMessage(ERROR_MESSAGES.PDF_LOAD_ERROR);
-    }
+    }, []);
+
+    const stageCanvasStyle = useMemo(() => ({
+        touchAction: zoomLevel > 100 ? "none" : "pan-y" as const,
+        cursor: isDragging ? "grabbing" : zoomLevel > 100 ? "grab" : "default" as const,
+    }), [zoomLevel, isDragging]);
+
+    const stageContentStyle = useMemo(() => ({
+        transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoomLevel / 100})`,
+        transition: isDragging ? "none" : "transform 0.2s ease-out" as const,
+    }), [offset.x, offset.y, zoomLevel, isDragging]);
 
     return (
         <div className="pdf-viewer-shell">
@@ -226,17 +236,11 @@ const DocumentComp: React.FC<Props> = ({
                     onPointerLeave={endPointerInteraction}
                     onPointerCancel={endPointerInteraction}
                     data-drag-state={isDragging ? "dragging" : zoomLevel > 100 ? "ready" : "disabled"}
-                    style={{
-                        touchAction: zoomLevel > 100 ? "none" : "pan-y",
-                        cursor: isDragging ? "grabbing" : zoomLevel > 100 ? "grab" : "default",
-                    }}
+                    style={stageCanvasStyle}
                 >
                     <div
                         className="pdf-stage-content"
-                        style={{
-                            transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoomLevel / 100})`,
-                            transition: isDragging ? "none" : "transform 0.2s ease-out",
-                        }}
+                        style={stageContentStyle}
                     >
                         {fileData && !loadingFile && !errorMessage ? (
                             <Document

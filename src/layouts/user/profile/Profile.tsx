@@ -42,7 +42,11 @@ const Profile: React.FC = () => {
     const [lessonQuantity, setLessonQuantity] = useState<number>(0);
     const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | null>(null);
     const [alertDialog, setAlertDialog] = useState({ isOpen: false, title: '', message: '' });
-    const handleCloseAlert = () => setAlertDialog({ isOpen: false, title: '', message: '' });
+    const handleCloseAlert = useCallback(() => setAlertDialog({ isOpen: false, title: '', message: '' }), []);
+
+    const handleSelectDocumentTab = useCallback(() => setActiveTab("DOCUMENT"), []);
+    const handleSelectLessonTab = useCallback(() => setActiveTab("LESSON"), []);
+
     const fetchFollowerCount = useCallback(async () => {
         try {
             const response = await getFollowCount(userId);
@@ -52,7 +56,7 @@ const Profile: React.FC = () => {
         }
     }, [userId]);
 
-    const handleToggleFavoriteDocument = async (doc: DocumentResponse) => {
+    const handleToggleFavoriteDocument = useCallback(async (doc: DocumentResponse) => {
         if (!isAuthenticated) {
             setAlertDialog({
                 isOpen: true,
@@ -93,9 +97,9 @@ const Profile: React.FC = () => {
         } finally {
             setFavoriteLoadingId(null);
         }
-    };
+    }, [isAuthenticated]);
 
-    const handleToggleFavoriteLesson = async (lesson: LessonResponse) => {
+    const handleToggleFavoriteLesson = useCallback(async (lesson: LessonResponse) => {
         if (!isAuthenticated) {
             setAlertDialog({
                 isOpen: true,
@@ -136,7 +140,7 @@ const Profile: React.FC = () => {
         } finally {
             setFavoriteLoadingId(null);
         }
-    };
+    }, [isAuthenticated]);
 
     const fetchCheckFollowed = useCallback(async () => {
         if (!isAuthenticated) return;
@@ -332,13 +336,13 @@ const Profile: React.FC = () => {
                     <div className="tabs-nav">
                         <button
                             className={`tab-btn ${activeTab === "DOCUMENT" ? "active" : ""}`}
-                            onClick={() => setActiveTab("DOCUMENT")}
+                            onClick={handleSelectDocumentTab}
                         >
                             📄 Tài liệu ({documentQuantity})
                         </button>
                         <button
                             className={`tab-btn ${activeTab === "LESSON" ? "active" : ""}`}
-                            onClick={() => setActiveTab("LESSON")}
+                            onClick={handleSelectLessonTab}
                         >
                             📚 Bài học ({lessonQuantity})
                         </button>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 
 import FormUpdate, { type FormDataType } from "./FormUpdate";
 import DeleteAlert from "./DeleteAlert";
@@ -165,4 +165,4 @@ const LessonComp: React.FC<Props> = ({ lessons, onDelete, onUpdate }) => {
     );
 };
 
-export default LessonComp;
+export default memo(LessonComp);
