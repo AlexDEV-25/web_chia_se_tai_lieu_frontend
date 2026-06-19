@@ -8,6 +8,7 @@ import type { IntrospectResponse } from "../models/response/authentication/Intro
 import type { ActiveAccountRequest } from "../models/request/ActiveAccountRequest";
 import type { ForgotPasswordRequest } from "../models/request/ForgotPasswordRequest";
 import type { UserBioResponse } from "../models/response/user/UserBioResponse";
+import type { TokenRequest } from "../models/request/TokenRequest";
 
 export const register = (data: UserRequest) =>
     httpPost<APIResponse<UserResponse>>(`/auth/register`, data);
@@ -32,10 +33,10 @@ export const changePassword = async (data: ForgotPasswordRequest) => {
     return await httpPost<APIResponse<UserBioResponse>>(`/auth/change-password`, data);
 }
 
-export const refreshToken = async () => {
-    return await httpPost<APIResponse<AuthenticationResponse>>(`/auth/refresh-token`);
+export const refreshToken = async (data: TokenRequest) => {
+    return await httpPost<APIResponse<AuthenticationResponse>>(`/auth/refresh-token`, data);
 }
 
-export const introspect = async () => {
-    return await httpPost<APIResponse<IntrospectResponse>>(`/auth/introspect`);
+export const introspect = async (data: TokenRequest) => {
+    return await httpPost<APIResponse<IntrospectResponse>>(`/auth/introspect`, data);
 }

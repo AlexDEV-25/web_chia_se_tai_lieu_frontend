@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { introspect, refreshToken } from '../apis/AuthApi';
+import type { TokenRequest } from '../models/request/TokenRequest';
 
 export const useAuth = () => {
 
@@ -10,7 +11,8 @@ export const useAuth = () => {
 
         const check = async () => {
             try {
-                await introspect();
+                const data: TokenRequest = { token };
+                await introspect(data);
             } catch {
                 localStorage.removeItem('token');
                 localStorage.removeItem('roles');
@@ -23,9 +25,9 @@ export const useAuth = () => {
 
     useEffect(() => {
         if (!token) return;
-
+        const oldToken: TokenRequest = { token };
         const interval = setInterval(async () => {
-            const data = await refreshToken();
+            const data = await refreshToken(oldToken);
 
             if (data != null) {
                 localStorage.setItem(
